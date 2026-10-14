@@ -98,3 +98,56 @@ export function averageWindDirection(anglesDeg: number[]): number {
 export function wrapDeg(deg: number): number {
   return ((deg % 360) + 360) % 360;
 }
+
+export const COMPASS_WORDS: Record<string, string> = {
+  N: 'North',
+  NNE: 'North-northeast',
+  NE: 'North-east',
+  ENE: 'East-northeast',
+  E: 'East',
+  ESE: 'East-southeast',
+  SE: 'South-east',
+  SSE: 'South-southeast',
+  S: 'South',
+  SSW: 'South-southwest',
+  SW: 'South-west',
+  WSW: 'West-southwest',
+  W: 'West',
+  WNW: 'West-northwest',
+  NW: 'North-west',
+  NNW: 'North-northwest',
+};
+
+/**
+ * Returns the human-readable compass point word for a degree heading (e.g. "South-west").
+ */
+export function compassWord(deg: number): string {
+  const label = windDirectionLabel(deg);
+  return COMPASS_WORDS[label] ?? 'North';
+}
+
+/**
+ * Formats full screen-reader text for wind readings per docs/03.
+ * Example: "Wind from the south-west, 14 kilometres per hour, gusting 24."
+ */
+export function windScreenReaderText(params: {
+  directionDeg: number;
+  speed: number;
+  gust: number;
+  speedUnit?: 'km/h' | 'mph';
+}): string {
+  const dirWord = compassWord(params.directionDeg).toLowerCase();
+  const speed = Math.round(params.speed);
+  const gust = Math.round(params.gust);
+  const unitText =
+    params.speedUnit === 'mph' ? 'miles per hour' : 'kilometres per hour';
+
+  if (speed < 1) {
+    return 'Calm wind, less than 1 kilometre per hour.';
+  }
+
+  if (gust > speed) {
+    return `Wind from the ${dirWord}, ${speed} ${unitText}, gusting ${gust}.`;
+  }
+  return `Wind from the ${dirWord}, ${speed} ${unitText}.`;
+}
