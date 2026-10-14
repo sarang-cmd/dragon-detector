@@ -4,25 +4,97 @@
 
 @layer base {
   :root {
+    /* Brand color primitives */
     --dis-blue: #00529E;
     --dis-amber: #F6A800;
     --dis-green: #B3D236;
-    --accent: var(--dis-blue);
 
-    --color-background: #FAFAFA;
-    --color-surface: #FFFFFF;
-    --color-border: #E5E5E5;
-    --color-text: #0A0A0A;
-    --color-muted: #6B6B6B;
-  }
-
-  .dark {
-    --accent: var(--dis-amber);
+    /* Dark theme is default per docs/03 and docs/03a */
     --color-background: #0A0A0A;
     --color-surface: #111111;
     --color-border: #1F1F1F;
     --color-text: #F5F5F5;
     --color-muted: #8A8A8A;
+    --accent: var(--dis-amber);
+    --accent-foreground: #0A0A0A;
+
+    /* shadcn semantic tokens mapped to design system */
+    --background: var(--color-background);
+    --foreground: var(--color-text);
+    --card: var(--color-surface);
+    --card-foreground: var(--color-text);
+    --popover: var(--color-surface);
+    --popover-foreground: var(--color-text);
+    --primary: var(--accent);
+    --primary-foreground: var(--accent-foreground);
+    --secondary: #1F1F1F;
+    --secondary-foreground: #F5F5F5;
+    --muted: #1A1A1A;
+    --muted-foreground: var(--color-muted);
+    --destructive: #7F1D1D;
+    --destructive-foreground: #F5F5F5;
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--accent);
+    --radius: 0.75rem; /* 12px per docs/03 section 5 */
+  }
+
+  .dark {
+    /* Dark theme tokens explicitly repeated for .dark class */
+    --color-background: #0A0A0A;
+    --color-surface: #111111;
+    --color-border: #1F1F1F;
+    --color-text: #F5F5F5;
+    --color-muted: #8A8A8A;
+    --accent: var(--dis-amber);
+    --accent-foreground: #0A0A0A;
+
+    --background: var(--color-background);
+    --foreground: var(--color-text);
+    --card: var(--color-surface);
+    --card-foreground: var(--color-text);
+    --popover: var(--color-surface);
+    --popover-foreground: var(--color-text);
+    --primary: var(--accent);
+    --primary-foreground: var(--accent-foreground);
+    --secondary: #1F1F1F;
+    --secondary-foreground: #F5F5F5;
+    --muted: #1A1A1A;
+    --muted-foreground: var(--color-muted);
+    --destructive: #7F1D1D;
+    --destructive-foreground: #F5F5F5;
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--accent);
+  }
+
+  .light {
+    /* Light theme tokens per docs/03 and docs/03a */
+    --color-background: #FAFAFA;
+    --color-surface: #FFFFFF;
+    --color-border: #E5E5E5;
+    --color-text: #0A0A0A;
+    --color-muted: #6B6B6B;
+    --accent: var(--dis-blue);
+    --accent-foreground: #FFFFFF;
+
+    --background: var(--color-background);
+    --foreground: var(--color-text);
+    --card: var(--color-surface);
+    --card-foreground: var(--color-text);
+    --popover: var(--color-surface);
+    --popover-foreground: var(--color-text);
+    --primary: var(--accent);
+    --primary-foreground: var(--accent-foreground);
+    --secondary: #F0F0F0;
+    --secondary-foreground: #0A0A0A;
+    --muted: #F4F4F4;
+    --muted-foreground: var(--color-muted);
+    --destructive: #DC2626;
+    --destructive-foreground: #FFFFFF;
+    --border: var(--color-border);
+    --input: var(--color-border);
+    --ring: var(--accent);
   }
 
   html {
@@ -30,18 +102,68 @@
   }
 
   body {
-    @apply bg-[var(--color-background)] text-[var(--color-text)] antialiased;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Accessible focus rings in var(--accent) */
   *:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 }
 
-@layer components {
-  .mono {
-    font-family: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, monospace;
+@layer utilities {
+  /* Utility class: .label (11-12px uppercase tracking .08em muted) */
+  .label {
+    font-size: 0.75rem; /* 12px */
+    line-height: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-muted);
+    font-weight: 500;
+  }
+
+  /* Utility class: .numeric (tabular-nums, mono) */
+  .numeric {
+    font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Utility class: .display (hero sizes with clamp) */
+  .display {
+    font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: clamp(2.25rem, 5vw + 1rem, 4.5rem);
+    line-height: 1.05;
+    font-weight: 300;
+    letter-spacing: -0.035em;
+  }
+
+  /* Anti-AI design rule enforcement: strict 1px border, 12px radius, no shadows */
+  .instrument-tile {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: none;
+    transition: border-color 150ms ease;
+  }
+
+  .instrument-tile:hover {
+    border-color: color-mix(in srgb, var(--color-text) 30%, var(--color-border));
+  }
+}
+
+/* Obey prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

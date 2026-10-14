@@ -1,11 +1,26 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
-import { useTheme } from 'next-themes';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Sun, Moon, Droplets, ChevronDown } from 'lucide-react';
+import { Menu } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { UnitToggle } from '@/components/unit-toggle';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
-const nav = [
+interface NavItem {
+  href: string;
+  label: string;
+}
+
+const navItems: NavItem[] = [
   { href: '/', label: 'Live' },
   { href: '/data', label: 'Data' },
   { href: '/learn', label: 'Learn' },
@@ -14,54 +29,169 @@ const nav = [
 
 export function Header() {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   return (
-    <header className="border-b border-[var(--color-border)]">
-      <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3 sm:px-6">
-        <Link href="/" className="flex items-center">
-          <div className="flex h-8 w-28 items-center justify-center rounded-full bg-white shadow-sm">
-            <span className="text-lg font-bold uppercase tracking-tight" style={{ color: 'var(--color-text)' }}>
-              dis
-            </span>
-          </div>
-        </Link>
-
-        <nav className="hidden items-center gap-6 md:flex">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={
-                "text-sm uppercase tracking-widest transition-colors " +
-                (pathname === item.href
-                  ? 'text-[var(--color-text)]'
-                  : 'text-[var(--color-muted)] hover:text-[var(--color-text)]')
-              }
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="ml-auto flex items-center gap-3">
-          <button
-            className="rounded-full border border-[var(--color-border)] px-3 py-1 text-xs uppercase tracking-widest transition-colors hover:border-[var(--color-text)]"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+    <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-[var(--color-background)]/95 backdrop-blur-none">
+      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6">
+        {/* Left: Brand Logo & Title */}
+        <div className="flex items-center gap-6">
+          <Link
+            href="/"
+            className="flex items-center gap-3 transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-[var(--accent)] rounded-[8px]"
+            aria-label="DIS Weather Station Home"
           >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            <span className="ml-2">{theme === 'dark' ? 'Light' : 'Dark'}</span>
-          </button>
+            {/* 
+              TODO: Swap /brand/dis-logo-horizontal.jpg for a transparent SVG knockout 
+              when supplied by DIS IT / communications team. 
+              The JPG has a white background, so we place it on a small white rounded plate in dark mode.
+            */}
+            <div className="flex h-8 items-center justify-center rounded-[8px] bg-white px-2 py-1 border border-neutral-200">
+              <Image
+                src="/brand/dis-logo-horizontal.jpg"
+                alt="Dresden International School"
+                width={104}
+                height={26}
+                priority
+                className="h-[22px] w-auto object-contain"
+              />
+            </div>
+            <div className="hidden sm:flex flex-col">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]">
+                Weather Station
+              </span>
+              <span className="label text-[10px]">
+                Dresden
+              </span>
+            </div>
+          </Link>
 
-          <UnitToggle />
+          {/* Desktop Navigation */}
+          <nav
+            aria-label="Main Navigation"
+            className="hidden md:flex items-center gap-1 lg:gap-2 ml-4"
+          >
+            {navItems.map((item) => {
+              const isActive =
+                item.href === '/'
+                  ? pathname === '/'
+                  : pathname?.startsWith(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`relative min-h-[44px] px-3 inline-flex items-center text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--accent)] rounded-[8px] ${
+                    isActive
+                      ? 'text-[var(--color-text)]'
+                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {item.label}
+                  {isActive && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute bottom-1.5 left-3 right-3 h-[2px] bg-[var(--accent)] rounded-full"
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Right: Controls & Mobile Trigger */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="hidden sm:flex items-center gap-2">
+            <UnitToggle />
+            <ThemeToggle />
+          </div>
+
+          <div className="flex sm:hidden items-center">
+            <ThemeToggle />
+          </div>
+
+          {/* Mobile Navigation Sheet */}
+          <div className="md:hidden">
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] hover:border-[var(--color-text)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+                  aria-label="Open navigation menu"
+                >
+                  <Menu className="h-5 w-5" strokeWidth={1.5} />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="right" className="flex flex-col justify-between w-80 max-w-[85vw]">
+                <div>
+                  <SheetHeader className="mb-6 text-left">
+                    <SheetTitle>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 items-center justify-center rounded-[8px] bg-white px-2 py-1 border border-neutral-200">
+                          <Image
+                            src="/brand/dis-logo-horizontal.jpg"
+                            alt="Dresden International School"
+                            width={96}
+                            height={24}
+                            className="h-5 w-auto object-contain"
+                          />
+                        </div>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]">
+                          Weather
+                        </span>
+                      </div>
+                    </SheetTitle>
+                  </SheetHeader>
+
+                  <nav className="flex flex-col gap-1" aria-label="Mobile Navigation">
+                    {navItems.map((item) => {
+                      const isActive =
+                        item.href === '/'
+                          ? pathname === '/'
+                          : pathname?.startsWith(item.href);
+
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`flex min-h-[44px] items-center justify-between rounded-[8px] px-3 text-base transition-colors duration-150 ${
+                            isActive
+                              ? 'bg-[var(--color-border)] text-[var(--color-text)] font-semibold'
+                              : 'text-[var(--color-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)]'
+                          }`}
+                          aria-current={isActive ? 'page' : undefined}
+                        >
+                          <span>{item.label}</span>
+                          {isActive && (
+                            <span
+                              className="h-2 w-2 rounded-full bg-[var(--accent)]"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </nav>
+                </div>
+
+                {/* Mobile Drawer Footer: Unit selector */}
+                <div className="border-t border-[var(--color-border)] pt-4 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="label">Unit System</span>
+                    <UnitToggle />
+                  </div>
+                  <div className="text-[11px] text-[var(--color-muted)]">
+                    Sainlogic WS3500 &middot; Dresden
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>
   );
-}
-
-function UnitToggle() {
-  // placeholder: unit toggle implementation lives in a later session.
-  return null;
 }
