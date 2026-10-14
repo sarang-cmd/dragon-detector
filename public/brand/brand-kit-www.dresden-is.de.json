@@ -1,0 +1,42 @@
+{
+  "url": "https://www.dresden-is.de/en/",
+  "title": "Dresden International School",
+  "description": "",
+  "logos": [
+    "https://www.dresden-is.de/typo3conf/ext/customize/Resources/Public/Icons/favicon.ico",
+    "https://www.dresden-is.de/cdn/img/News/2026-27/30YearsLogo_DISWebsite_new.png",
+    "https://www.dresden-is.de/cdn/img/logo-partner_ohneEccoSchool.png"
+  ],
+  "colors": [
+    "#00529e",
+    "#f6a800",
+    "#b3d236",
+    "#10171c",
+    "#f3f6fa",
+    "#ffffff"
+  ],
+  "fonts": [
+    {
+      "family": "InterstatePlus",
+      "name": "InterstatePlus Regular",
+      "weight": 400,
+      "url": "https://www.dresden-is.de/typo3conf/ext/customize/Resources/Public/Fonts/InterstatePlus/InterstatePlus-Regular.woff"
+    },
+    {
+      "family": "InterstatePlus",
+      "name": "InterstatePlus Light",
+      "weight": 300,
+      "url": "https://www.dresden-is.de/typo3conf/ext/customize/Resources/Public/Fonts/InterstatePlus/InterstatePlus-Light.woff"
+    },
+    {
+      "family": "InterstatePlus",
+      "name": "InterstatePlus Bold",
+      "weight": 700,
+      "url": "https://www.dresden-is.de/typo3conf/ext/customize/Resources/Public/Fonts/InterstatePlus/InterstatePlus-Bold.woff"
+    }
+  ],
+  "socials": {
+    "facebook": "https://www.facebook.com/DresdenInternationalSchool",
+    "instagram": "https://www.instagram.com/dresden.international.school/"
+  }
+}

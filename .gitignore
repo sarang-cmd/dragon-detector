@@ -1,0 +1,31 @@
+# Environment and secrets (server-only)
+.env
+.env.local
+.env*.local
+
+# Next.js
+.next
+out
+/.vite
+
+# Dependencies
+node_modules
+.pnp.*
+pnp.lock
+
+# Build / tooling artifacts
+dist
+build
+
+# Editor
+.vscode/*
+.idea/*
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
