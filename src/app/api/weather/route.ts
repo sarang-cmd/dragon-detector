@@ -1,112 +1,168 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getSource } from '@/sources';
-import { WeatherReading, HistoryPoint } from '@/lib/types';
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { getSource } from '@/lib/sources'
+import { WeatherApiResponseSchema } from '@/lib/types'
 
-// Client-friendly response shape.
-type WeatherResponse = {
-  reading: WeatherReading;
-  history: { h24: HistoryPoint[]; d7: HistoryPoint[] };
-  meta: {
-    fetchedAt: string;
-    stale: boolean;
-    isOffline: boolean;
-    source: 'mock' | 'ecowitt';
-    measuredAt: string;
-    updatedAt: string;
-    scenario?: string;
-  };
-};
+const STALE_MS = 10 * 60 * 1000
+const OFFLINE_MS = 30 * 60 * 1000
 
-const SOURCE_CACHE_MS = 60_000; // 60 s server-side cache protects Ecowitt rate limits.
-const STALE_MS = 10 * 60 * 1000; // older than 10 min: stale
-const OFFLINE_MS = 30 * 60 * 1000; // older than 30 min: offline
+const querySchema = z.object({
+  range: z.enum(['24h', '7d']).optional(),
+  scenario: z
+    .enum(['storm', 'calm', 'rain', 'offline', 'default'])
+    .optional(),
+})
 
-let lastGood: WeatherReading | null = null;
-let lastResponse: WeatherResponse | null = null;
-let lastFetchAt = 0;
+const scenarioEnum = z.enum(['storm', 'calm', 'rain', 'offline', 'default'])
 
-function now(): number {
-  return Date.now();
+// Non-production only: allow picking the mock scenario by cookie as well
+// as query param (query param wins).
+function resolveScenario(
+  params: z.infer<typeof querySchema>,
+  req: NextRequest
+): string | undefined {
+  if (params.scenario) return params.scenario
+  if (!isDev()) return undefined
+  const cookieScenario = req.cookies.get('weather_scenario')?.value
+  if (!cookieScenario) return undefined
+  const parsed = scenarioEnum.safeParse(cookieScenario)
+  return parsed.success ? parsed.data : undefined
 }
 
-function secondsStale(measuredAt: string) {
-  const ms = now() - new Date(measuredAt).getTime();
-  return Math.max(0, Math.round(ms / 1000));
-}
-
-function buildMeta(reading: WeatherReading, scenario?: string) {
-  const measuredAt = reading.timestamp;
-  const fetchedAt = new Date().toISOString();
-  const age = secondsStale(measuredAt);
-  const stale = age > STALE_MS / 1000;
-  const isOffline = age > OFFLINE_MS / 1000;
-  return {
-    fetchedAt,
-    stale,
-    isOffline,
-    source: reading.source,
-    measuredAt,
-    updatedAt: measuredAt,
-    scenario: scenario || undefined,
-  };
-}
-
-function createEmptyHistory(): { h24: HistoryPoint[]; d7: HistoryPoint[] } {
-  return { h24: [], d7: [] };
+function isDev() {
+  const nodeEnv = process.env.NODE_ENV
+  const vercel = process.env.VERCEL
+  return nodeEnv !== 'production' && vercel !== '1'
 }
 
 export async function GET(req: NextRequest) {
-  const scenario = (req.nextUrl.searchParams.get('scenario') || '').toLowerCase();
-  const forceMock = req.nextUrl.searchParams.has('force_mock');
+  const rawParams = Object.fromEntries(req.nextUrl.searchParams.entries())
+  const parsed = querySchema.safeParse(rawParams)
 
-  const source = getSource();
-  // DEV: route param can override scenario on the shared mock source.
-  if (scenario && !forceMock) {
-    // update the shared source's scenario (mock only)
-    if (process.env.DATA_SOURCE !== 'ecowitt') {
-      ;(source as unknown as { __scenario?: string }).__scenario = scenario;
-    } else {
-      // still accept scenario param for metadata only.
-    }
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Invalid query parameters' },
+      { status: 400 }
+    )
   }
 
-  const freshEnough = now() - lastFetchAt < SOURCE_CACHE_MS;
-  let reading: WeatherReading;
-  let history = createEmptyHistory();
+  const params = parsed.data
+  const scenario = resolveScenario(params, req)
 
-  if (freshEnough && lastResponse) {
-    // Reuse cached response for this interval (does not update measuredAt).
-    reading = lastResponse.reading;
-    history = lastResponse.history;
-  } else {
+  // Scenario override only available in development / non-production.
+  if (scenario && !isDev()) {
+    return NextResponse.json(
+      { error: 'Scenario overrides are not available in production' },
+      { status: 403 }
+    )
+  }
+
+  const source = getSource()
+
+  // If a scenario was provided, attempt to apply it on the mock source.
+  if (scenario && process.env.DATA_SOURCE !== 'ecowitt') {
     try {
-      reading = await source.getCurrent();
-      lastGood = reading;
-      const hist = await source.getHistory('24h');
-      const hist7 = await source.getHistory('7d');
-      history = { h24: hist, d7: hist7 };
-    } catch (err) {
-      // Fallback to last-good, flagged stale/offline.
-      if (!lastGood) {
-        return NextResponse.json(
-          { error: 'Weather unavailable', stale: false, isOffline: true },
-          { status: 503 }
-        );
+      const s = source as any
+      if (typeof s.setScenario === 'function') {
+        s.setScenario(scenario)
       }
-      reading = lastGood;
-      history = createEmptyHistory();
+    } catch {
+      // ignore failure to set scenario on incompatible source
     }
-    lastFetchAt = now();
-    lastResponse = { reading, history, meta: buildMeta(reading, scenario) };
   }
 
-  const meta = buildMeta(reading, scenario);
-  lastResponse = { reading, history, meta };
+  const nowMs = Date.now()
+  let readingResult: any = null
 
-  return NextResponse.json(lastResponse, {
-    headers: {
-      'Cache-Control': 'private, max-age=0, no-cache',
-      Vary: 'Origin',
-    },
-  });
+  try {
+    const [readingResult_, history24, history7] = await Promise.all([
+      source.getCurrent(),
+      source.getHistory('24h'),
+      source.getHistory('7d'),
+    ])
+
+    readingResult = readingResult_
+    const measuredAt = readingResult.timestamp
+    const ageMs = nowMs - new Date(measuredAt).getTime()
+    const stale = ageMs > STALE_MS
+    const offline = ageMs > OFFLINE_MS
+
+    const responseBody = {
+      reading: readingResult,
+      history: { h24: history24, d7: history7 },
+      meta: {
+        fetchedAt: new Date().toISOString(),
+        fetchedAtServer: new Date().toISOString(),
+        stale,
+        offline,
+        measuredAt,
+        source: readingResult.source,
+        scenario,
+      },
+    }
+
+    const validated = WeatherApiResponseSchema.parse(responseBody)
+
+    const isMock = readingResult.source === 'mock'
+    const cacheHeaders = isMock
+      ? 'no-store'
+      : 'public, s-maxage=60, stale-while-revalidate=30, no-transform'
+
+    return NextResponse.json(validated, {
+      headers: {
+        'Cache-Control': cacheHeaders,
+        Vary: 'Origin',
+      },
+    })
+  } catch (err) {
+    // Never leak internal error messages.
+    console.error('[weather-api] Failed to fetch weather data')
+
+    let status = 502
+    let message = 'Weather data unavailable'
+
+    const prev = (globalThis as any).__weatherLastGoodReading
+    if (prev && prev.source) {
+      status = 200
+      const ageMs = nowMs - new Date(prev.timestamp).getTime()
+      const stale = ageMs > STALE_MS
+      const offline = ageMs > OFFLINE_MS
+      return NextResponse.json(
+        {
+          reading: prev,
+          history: { h24: [], d7: [] },
+          meta: {
+            fetchedAt: new Date().toISOString(),
+            fetchedAtServer: new Date().toISOString(),
+            stale,
+            offline,
+            measuredAt: prev.timestamp,
+            source: prev.source,
+            scenario,
+          },
+        },
+        {
+          headers: {
+            'Cache-Control': 'no-store',
+            Vary: 'Origin',
+          },
+        }
+      )
+    }
+
+    if (process.env.DATA_SOURCE === 'ecowitt') {
+      status = 503
+      message = 'Weather service unavailable'
+    }
+
+    return NextResponse.json(
+      { error: message, stale: false, offline: false },
+      { status }
+    )
+  } finally {
+    // Keep last good reading for fallback (no secrets).
+    if (readingResult && readingResult.source) {
+      ;(globalThis as any).__weatherLastGoodReading = readingResult
+    }
+  }
 }

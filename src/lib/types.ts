@@ -1,45 +1,88 @@
-export type WeatherReading = {
-  timestamp: string; // ISO 8601 UTC
-  source: 'mock' | 'ecowitt';
-  temperatureC: number;
-  feelsLikeC?: number;
-  dewPointC?: number;
-  humidityPct: number;
-  pressureHpa?: number;
-  windSpeedKmh: number;
-  windGustKmh: number;
-  windDirectionDeg: number;
-  rainRateMmH: number;
-  rainTodayMm: number;
-  rainHourMm?: number;
-  rainWeekMm?: number;
-  uvIndex?: number;
-  solarWm2?: number;
-};
+// Schema-based types as requested in docs/02 and docs/04.
+// Using zod so the TS types are inferred from a single source of truth.
+import { z } from 'zod';
 
-export type HistoryPoint = Pick<
-  WeatherReading,
-  'timestamp' | 'temperatureC' | 'humidityPct' | 'windSpeedKmh' | 'rainRateMmH' | 'pressureHpa'
->;
+export const UnitSystemSchema = z.enum(['metric', 'imperial']);
 
-export type WeatherApiResponse = {
-  reading: WeatherReading;
-  history: {
-    h24: HistoryPoint[];
-    d7: HistoryPoint[];
-  };
-  meta: {
-    fetchedAt: string; // ISO 8601 UTC
-    stale: boolean;
-    isOffline: boolean;
-    source: WeatherReading['source'];
-    measuredAt: string; // upstream station time, not fetch time
-    updatedAt: string; // station upload interval
-    scenario?: string;
-  };
-};
+export const WeatherReadingSchema = z.object({
+  timestamp: z.string(),
+  source: z.enum(['mock', 'ecowitt']),
+  temperatureC: z.number(),
+  feelsLikeC: z.number().optional(),
+  dewPointC: z.number().optional(),
+  humidityPct: z.number(),
+  pressureHpa: z.number().optional(),
+  windSpeedKmh: z.number(),
+  windGustKmh: z.number(),
+  windDirectionDeg: z.number(),
+  rainRateMmH: z.number(),
+  rainTodayMm: z.number(),
+  rainHourMm: z.number().optional(),
+  rainWeekMm: z.number().optional(),
+  uvIndex: z.number().optional(),
+  solarWm2: z.number().optional(),
+});
+
+export type WeatherReading = z.infer<typeof WeatherReadingSchema>;
+
+export const HistoryPointSchema = WeatherReadingSchema.pick({
+  timestamp: true,
+  temperatureC: true,
+  humidityPct: true,
+  windSpeedKmh: true,
+  rainRateMmH: true,
+  pressureHpa: true,
+});
+
+export type HistoryPoint = z.infer<typeof HistoryPointSchema>;
+
+export const WeatherApiResponseSchema = z.object({
+  reading: WeatherReadingSchema,
+  history: z.object({
+    h24: z.array(HistoryPointSchema),
+    d7: z.array(HistoryPointSchema),
+  }),
+  meta: z.object({
+    fetchedAt: z.string(),
+    fetchedAtServer: z.string(),
+    stale: z.boolean(),
+    offline: z.boolean(),
+    measuredAt: z.string(),
+    source: z.enum(['mock', 'ecowitt']),
+    scenario: z.string().optional(),
+  }),
+});
+
+export type WeatherApiResponse = z.infer<typeof WeatherApiResponseSchema>;
 
 export interface WeatherSource {
   getCurrent(): Promise<WeatherReading>;
   getHistory(range: '24h' | '7d'): Promise<HistoryPoint[]>;
 }
+
+// Keep a small assertion helper for tests without importing zod shape directly.
+export function assertReading(r: unknown): asserts r is WeatherReading {
+  WeatherReadingSchema.parse(r);
+}
+
+export function assertHistoryPoint(p: unknown): asserts p is HistoryPoint {
+  HistoryPointSchema.parse(p);
+}
+
+// History API response shape.
+export const HistoryApiResponseSchema = z.object({
+  points: z.array(HistoryPointSchema),
+  range: z.enum(['24h', '7d']),
+  fetchedAt: z.string(),
+  measuredAt: z.string().optional(),
+});
+
+export type HistoryApiResponse = z.infer<typeof HistoryApiResponseSchema>;
+
+// Re-export schemas for convenience in tests.
+export const Schemas = {
+  WeatherReading: WeatherReadingSchema,
+  HistoryPoint: HistoryPointSchema,
+  WeatherApiResponse: WeatherApiResponseSchema,
+  HistoryApiResponse: HistoryApiResponseSchema,
+};

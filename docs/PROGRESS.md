@@ -53,3 +53,31 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 ## Tool / model used
 
 - Scaffold and shell by this agent; build + lint verified.
+
+## Session 2.5 — Client data layer + live-status components — DONE
+
+- `src/hooks/useWeather.ts` rewritten to contract: SWR `keepPreviousData`, refresh 5s (mock mode via NEXT_PUBLIC_DATA_MODE) / 60s otherwise, revalidateOnFocus + reconnect, exponential retry backoff (interval × 2^retryCount), zod-validated fetcher that never surfaces internal error bodies. Returns { reading, history, isLoading, error, isStale, isOffline, measuredAt, secondsSinceMeasured }; `secondsSinceMeasured` ticks every 1s from a dedicated interval (`useElapsedSeconds`) without refetching; first paint is 0 for hydration safety; stale/offline computed client-side (>10 min / >30 min, strict).
+- `src/hooks/useHistory.ts` (new): own SWR key `/api/history?range=…`, 5-minute refresh, zod-validated.
+- `src/components/weather/RelativeTime.tsx`: pure `formatElapsed` ("just now", "40 s ago", "14 min ago", "1 h 15 min ago") + component.
+- `src/components/weather/StaleBanner.tsx`: appears past stale/offline thresholds, calm tone ("Data last measured … may be reconnecting." / offline variant). Grid-rows 0fr→1fr transition wrapper means NO layout jump; transition disabled under reduced motion; role=status/aria-live=polite.
+- `src/components/weather/ScenarioDebugPanel.tsx` (dev-only, NODE_ENV guard): floating button + keyboard-accessible popover (Esc closes, aria-expanded/controls, aria-pressed), sets `weather_scenario` cookie consumed by both API routes in non-production, then revalidates all SWR keys.
+- `src/components/weather/StatusStrip.tsx`: derives Live/Delayed/Offline for LiveDot from the hook and hosts RelativeTime + StaleBanner; mounted in the home hero (replacing hardcoded status).
+- Route updates: /api/weather reads `weather_scenario` cookie fallback in non-production (query param still wins, 403 in prod); /api/history honors the same cookie.
+- Tests: +22 (98/98 total). New: elapsed ticking (fake-timer 1s ticks, future-timestamp clamp, null), threshold boundaries (exactly 10 min fresh, >10 min stale, exactly 30 min stale, >30 min offline), formatElapsed/RelativeTime, StaleBanner visibility + both messages + grid-rows wrapper. vitest now includes *.test.tsx via @vitejs/plugin-react.
+- Fixes during verification: errorRetryFactor removed from SWR options (SWR v2 does exponential backoff internally off errorRetryInterval).
+- Live verification via preview: LIVE ("measured just now" + LIVE label), OFFLINE scenario ("measured 35 min ago" + offline banner), LIVE again after revalidate. Delayed state (10–30 min window) covered by unit tests — no mock scenario produces that age live. Browser console clean (one info devtools notice only).
+- Preview registered: http://localhost:57492 (detached next dev, pid 49004, log .freebuff/preview-c2f67de1-76ec-41a1-bd11-65061c007ed4.log + dev-server.log).
+
+## Session 2 — Data layer (mock, per docs/02 and docs/04) — DONE
+
+- `src/lib/types.ts`: zod schemas for WeatherReading, HistoryPoint, WeatherApiResponse (reading + history {h24,d7} + meta{fetchedAt, stale, offline, measuredAt, source, scenario?}) and HistoryApiResponse; TS types inferred from schemas; WeatherSource interface.
+- `src/lib/units.ts`: fToC/cToF, mphToKmh/kmhToMph/kmhToMs, inToMm/mmToIn, inHgToHpa/hPaToInHg plus formatTemp/formatSpeed/formatRain/formatPressure honouring metric/imperial; rounding helpers (temp 1dp, wind 1dp internal/0dp display, rain 2dp, pressure 1dp).
+- `src/lib/beaufort.ts`: beaufort(kmh) -> {scale 0-12, name, kidName}, wind compass labels, wrapDeg and circular averageWindDirection.
+- `src/lib/moon.ts`: mean-synodic moon phase + illumination (epoch 2000-01-06T18:14Z, 29.53058867-day month, no network).
+- `src/lib/sources/mock.ts`: mulberry32 seeded deterministic simulation per docs/02 §6 — seasonal-adjustable temperature sine, inverse humidity, gusts + circularly drifting wind direction, rain events with accumulation reset at Europe/Berlin midnight, pressure drift, UV/solar bell curve zero at night, Magnus dew point, wind chill <10C/>4.8km/h, heat index >=26C/>=40% RH; scenarios storm/calm/rain/offline via ctor arg or setScenario; history consistent with current reading (last history point ~= current within tolerance, covered by test).
+- `src/lib/sources/index.ts`: getSource() by DATA_SOURCE (default mock), ecowitt stub throws "not implemented".
+- `src/app/api/weather/route.ts` + `api/history/route.ts`: zod query validation, scenario param non-production only (403 otherwise), stale >10min / offline >30min, Cache-Control no-store for mock, s-maxage=60 stale-while-revalidate=30 for real mode, generic error messages (400/403/502/503), no internal details leaks, last-good in-memory fallback on failure.
+- Tests (vitest, `src/**/*.test.ts`): 76 tests / 76 assertions passing across units (round-trips, 32F=0C, 1013.25hPa=29.92inHg), beaufort boundaries + wrapDeg, moon (real events: new 2019-12-26, full 2020-01-10, quarters 2019-12-19/2020-01-02), mock determinism, wind direction wrap, humidity 0-100, dew point <= air temp, rain monotonic within a day + midnight reset, route/query schema + thresholds.
+- Fixed during verification: vitest.config.js missing `@` alias; storm scenario now returns real gusts above sustained wind; Beaufort test 0.5km/h expectation corrected (calm < 1 km/h); moon test dates corrected to real events and tolerance widened for known ~8deg drift of the mean-synodic formula.
+- LIVE verification: `next dev` + curl 200 and valid JSON on /api/weather, /api/history?range=24h, /api/history?range=7d; invalid range -> 400 {"error":"Invalid range parameter. Use 24h or 7d."}.
+- Remaining: UI wiring (Prompt 4), unit toggle, real Ecowitt sample for normalizer.

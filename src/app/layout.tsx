@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { ThemeProviderWrapper } from '@/components/theme-provider';
 import { UnitProvider } from '@/context/unit-context';
+import { ScenarioDebugPanel } from '@/components/weather/ScenarioDebugPanel';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -19,7 +20,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans`}>
         <ThemeProviderWrapper>
-          <UnitProvider>{children}</UnitProvider>
+          <UnitProvider>
+            {children}
+            <ScenarioDebugPanel />
+          </UnitProvider>
         </ThemeProviderWrapper>
       </body>
     </html>

@@ -1,4 +1,4 @@
-import { beaufortNames, beaufortIndex, windDirectionLabel } from './beaufort';
+import { beaufort, beaufortNames, windDirectionLabel } from './beaufort';
 
 type Band = 'freezing' | 'cold' | 'cool' | 'mild' | 'warm' | 'hot';
 const bandMap: Record<Band, { from: number; to: number; label: string }> = {
@@ -34,8 +34,8 @@ export function summarySentence(r: {
   const wind = r.windSpeedKmh;
   const gust = r.windGustKmh;
   const band = temperatureBand(t);
-  const bIndex = beaufortIndex(wind);
-  const gustIndex = beaufortIndex(gust);
+  const bIndex = beaufort(wind).scale;
+  const gustIndex = beaufort(gust).scale;
 
   const parts: string[] = [];
   parts.push(`${Math.round(t)} degrees and ${band}.`);
@@ -49,7 +49,7 @@ export function summarySentence(r: {
   }
 
   if (wind >= 1) {
-    parts.push(`Light breeze from the ${windDir} at ${Math.round(wind)} km/h.`);
+    parts.push(`${beaufort(wind).name.toLowerCase()} from the ${windDir} at ${Math.round(wind)} km/h.`);
     if (gustIndex > bIndex) {
       parts.push(`Gusts to ${Math.round(gust)} km/h.`);
     }

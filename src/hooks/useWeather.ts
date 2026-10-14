@@ -1,85 +1,119 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
-import { WeatherReading, HistoryPoint } from '@/lib/types';
+import { WeatherApiResponseSchema, WeatherApiResponse } from '@/lib/types';
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url, { cache: 'no-store', next: { revalidate: 0 } });
+const STALE_AFTER_MS = 10 * 60 * 1000;
+const OFFLINE_AFTER_MS = 30 * 60 * 1000;
+
+export const WEATHER_STALE_MS = STALE_AFTER_MS;
+export const WEATHER_OFFLINE_MS = OFFLINE_AFTER_MS;
+
+export async function weatherFetcher(url: string): Promise<WeatherApiResponse> {
+  const res = await fetch(url, { credentials: 'same-origin' });
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(text || `Weather API error ${res.status}`);
+    // Never surface internal API error bodies to the UI.
+    throw new Error('Weather data unavailable');
   }
-  return res.json() as Promise<{
-    reading: WeatherReading;
-    history: { h24: HistoryPoint[]; d7: HistoryPoint[] };
-    meta: {
-      fetchedAt: string;
-      stale: boolean;
-      isOffline: boolean;
-      source: 'mock' | 'ecowitt';
-      measuredAt: string;
-      updatedAt: string;
-      scenario?: string;
-    };
-  }>;
-};
+  try {
+    return WeatherApiResponseSchema.parse(await res.json());
+  } catch {
+    throw new Error('Weather data unavailable');
+  }
+}
 
-type WeatherState = {
-  reading: WeatherReading | null;
-  history: { h24: HistoryPoint[]; d7: HistoryPoint[] } | null;
-  isLoading: boolean;
+/** Age of a measured value in ms; 0 when not yet mounted or unknown. */
+export function measuredAgeMs(
+  measuredAt: string | null | undefined,
+  nowMs: number | null
+): number {
+  if (measuredAt == null || nowMs == null) return 0;
+  return Math.max(0, nowMs - Date.parse(measuredAt));
+}
+
+/** Derive stale/offline flags from an age in ms (strictly greater than thresholds). */
+export function classifyWeatherAge(ageMs: number): {
   isStale: boolean;
   isOffline: boolean;
-  secondsSinceUpdate: number;
-  scenario?: string;
+} {
+  return {
+    isStale: ageMs > STALE_AFTER_MS,
+    isOffline: ageMs > OFFLINE_AFTER_MS,
+  };
+}
+
+/** Seconds since `measuredAt`, recomputed every second WITHOUT refetching. */
+export function useElapsedSeconds(measuredAt: string | null | undefined): number {
+  const [nowMs, setNowMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    // First paint matches the server render (0), then we tick.
+    setNowMs(Date.now());
+    const id = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  if (measuredAt == null) return 0;
+  if (nowMs == null) return 0;
+  return Math.max(0, Math.round((nowMs - Date.parse(measuredAt)) / 1000));
+}
+
+export type WeatherQueryResult = {
+  reading: WeatherApiResponse['reading'] | null;
+  history: WeatherApiResponse['history'] | null;
+  measuredAt: string | null;
+  secondsSinceMeasured: number;
+  isStale: boolean;
+  isOffline: boolean;
+  isLoading: boolean;
   error: string | null;
-  refresh: () => Promise<void>;
 };
 
-export function useWeather(scenario?: string) {
-  const shouldScenario = typeof window !== 'undefined' && scenario;
-  const url = new URL('/api/weather', window.location.origin);
-  if (shouldScenario) url.searchParams.set('scenario', scenario);
+export function useWeather(scenario?: string): WeatherQueryResult {
+  const isMockMode = process.env.NEXT_PUBLIC_DATA_MODE !== 'real';
 
-  const { data, error, mutate } = useSWR<{
-    reading: WeatherReading;
-    history: { h24: HistoryPoint[]; d7: HistoryPoint[] };
-    meta: {
-      fetchedAt: string;
-      stale: boolean;
-      isOffline: boolean;
-      source: 'mock' | 'ecowitt';
-      measuredAt: string;
-      updatedAt: string;
-      scenario?: string;
-    };
-  }>(url.toString(), fetcher, {
-    refreshInterval: shouldScenario ? 0 : undefined,
-    revalidateOnFocus: false,
-  });
+  const key = scenario
+    ? `/api/weather?scenario=${encodeURIComponent(scenario)}`
+    : '/api/weather';
 
-  const reading = data?.reading ?? null;
-  const history = data?.history ?? null;
-  const meta = data?.meta;
-  const isLoading = !data && !error;
-  const isStale = meta?.stale ?? false;
-  const isOffline = meta?.isOffline ?? false;
+  const { data, error, isLoading } = useSWR<WeatherApiResponse>(
+    key,
+    weatherFetcher,
+    {
+      refreshInterval: isMockMode ? 5_000 : 60_000,
+      keepPreviousData: true,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+      // SWR applies exponential backoff (interval × 2^retryCount) on retry.
+      shouldRetryOnError: true,
+      errorRetryInterval: 1_000,
+    }
+  );
 
-  let secondsSinceUpdate = 0;
-  if (meta?.measuredAt && typeof window !== 'undefined') {
-    const diff = Date.now() - new Date(meta.measuredAt).getTime();
-    secondsSinceUpdate = Math.max(0, Math.round(diff / 1000));
-  }
+  // Separate 1-second interval so secondsSinceMeasured ticks live
+  // without triggering a refetch (refetching is SWR's job above).
+  const secondsSinceMeasured = useElapsedSeconds(data?.meta.measuredAt ?? null);
+
+  const ageMs =
+    data?.meta.measuredAt != null
+      ? nowBasedAge(data.meta.measuredAt, secondsSinceMeasured)
+      : 0;
+  const { isStale, isOffline } = classifyWeatherAge(ageMs);
 
   return {
-    reading,
-    history,
-    isLoading,
+    reading: data?.reading ?? null,
+    history: data?.history ?? null,
+    measuredAt: data?.meta.measuredAt ?? null,
+    secondsSinceMeasured,
     isStale,
     isOffline,
-    secondsSinceUpdate,
-    scenario: meta?.scenario,
+    isLoading: !data && !error,
     error: error ? error.message : null,
-    refresh: mutate,
   };
+}
+
+/** Round-trip the seconds to ms so flags and seconds stay in agreement. */
+function nowBasedAge(measuredAt: string, secondsSinceMeasured: number): number {
+  return secondsSinceMeasured * 1000;
 }

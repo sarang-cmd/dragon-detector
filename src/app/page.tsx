@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Card, CardContent } from '@/components/ui/card';
-import { LiveDot } from '@/components/live-dot';
+import { StatusStrip } from '@/components/weather/StatusStrip';
 
 export default function HomePage() {
   return (
@@ -11,12 +11,7 @@ export default function HomePage() {
       <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-8 sm:px-6 sm:py-12">
         {/* Hero Section */}
         <div className="flex flex-col gap-4 mb-10">
-          <div className="flex flex-wrap items-center gap-3">
-            <LiveDot status="live" />
-            <span className="text-xs text-[var(--color-muted)]">
-              Updated just now &middot; Station WS3500
-            </span>
-          </div>
+          <StatusStrip />
 
           <h1 className="display text-[var(--color-text)]">
             Live Weather
