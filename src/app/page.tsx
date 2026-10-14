@@ -1,142 +1,153 @@
-import Link from 'next/link';
+'use client';
+
+import * as React from 'react';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
-import { Card, CardContent } from '@/components/ui/card';
-import { StatusStrip } from '@/components/weather/StatusStrip';
+import { useWeather } from '@/hooks/useWeather';
+import { useUnitSystem } from '@/context/unit-context';
+import { HeroReading } from '@/components/weather/HeroReading';
+import { WindCompass } from '@/components/weather/WindCompass';
+import { RainGauge } from '@/components/weather/RainGauge';
+import { HumidityTile } from '@/components/weather/HumidityTile';
+import { PressureTile, calculatePressureTrend } from '@/components/weather/PressureTile';
+import { UVTile } from '@/components/weather/UVTile';
+import { SolarTile } from '@/components/weather/SolarTile';
+import { MoonSunTile } from '@/components/weather/MoonSunTile';
+import { LearnHintStrip } from '@/components/weather/LearnHintStrip';
+import { HeroSkeleton, SkeletonTile } from '@/components/weather/SkeletonTile';
 
 export default function HomePage() {
+  const { reading, history, isLoading, isOffline } = useWeather();
+  const { unitSystem } = useUnitSystem();
+
+  // History series for 24-hour inline sparklines
+  const h24Points = history?.h24 ?? [];
+  const historyWind = h24Points.map((p) => p.windSpeedKmh);
+  const historyRain = h24Points.map((p) => p.rainRateMmH);
+  const historyHumidity = h24Points.map((p) => p.humidityPct);
+
+  // Derive barometric trend for Hero summary sentence & Pressure tile
+  const pressureTrendInfo = calculatePressureTrend(
+    reading?.pressureHpa,
+    h24Points
+  );
+
   return (
     <div className="flex min-h-screen flex-col bg-[var(--color-background)]">
       <Header />
-      <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-8 sm:px-6 sm:py-12">
-        {/* Hero Section */}
-        <div className="flex flex-col gap-4 mb-10">
-          <StatusStrip />
 
-          <h1 className="display text-[var(--color-text)]">
-            Live Weather
-          </h1>
+      <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:py-10">
+        <h1 className="sr-only">
+          DIS Weather Station &mdash; Dresden International School Live Meteorological Dashboard
+        </h1>
 
-          <p className="max-w-2xl text-base sm:text-lg leading-relaxed text-[var(--color-muted)]">
-            Continuous meteorological observations transmitted live from our rooftop station on the Dresden International School grounds.
-          </p>
-        </div>
+        {/* Core Bento Grid: 12 columns desktop, 2 columns tablet, 1 column mobile */}
+        {isLoading || !reading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6">
+            <HeroSkeleton className="col-span-1 md:col-span-2 lg:col-span-6 lg:row-span-2" />
+            <SkeletonTile
+              className="col-span-1 sm:col-span-1 lg:col-span-3 lg:row-span-2"
+              minHeightClass="min-h-[380px] lg:min-h-[460px]"
+            />
+            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
+            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
+            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
+            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
+            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
+            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch">
+            {/* 1. Hero Instrument Reading (2x2 bento: 6 cols x 2 rows on desktop) */}
+            <div className="col-span-1 md:col-span-2 lg:col-span-6 lg:row-span-2 flex flex-col">
+              <HeroReading
+                reading={reading}
+                unitSystem={unitSystem}
+                history={h24Points}
+                pressureTrend={pressureTrendInfo.trend}
+                isOffline={isOffline}
+              />
+            </div>
 
-        {/* Bento Instrument Grid Preview */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
-          {/* Main Hero Metric (spans 2 cols on tablet/desktop) */}
-          <Card className="sm:col-span-2 p-6 flex flex-col justify-between min-h-[220px]">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <span className="label">Air Temperature</span>
-                <span className="label text-[var(--accent)] font-semibold">Primary Sensor</span>
+            {/* 2. Wind Tile (1x2 bento: 3 cols x 2 rows on desktop) */}
+            <div className="col-span-1 md:col-span-1 lg:col-span-3 lg:row-span-2 flex flex-col">
+              <WindCompass
+                speedKmh={reading.windSpeedKmh}
+                gustKmh={reading.windGustKmh}
+                directionDeg={reading.windDirectionDeg}
+                unitSystem={unitSystem}
+                historySpeedKmh={historyWind}
+                isOffline={isOffline}
+              />
+            </div>
+
+            {/* 3. Rain Tile (1x1 bento: 3 cols x 1 row on desktop) */}
+            <div className="col-span-1 md:col-span-1 lg:col-span-3 flex flex-col">
+              <RainGauge
+                rateMmH={reading.rainRateMmH}
+                todayMm={reading.rainTodayMm}
+                hourMm={reading.rainHourMm}
+                weekMm={reading.rainWeekMm}
+                unitSystem={unitSystem}
+                historyRainMmH={historyRain}
+                isOffline={isOffline}
+              />
+            </div>
+
+            {/* 4. Humidity Tile (1x1 bento: 3 cols x 1 row on desktop) */}
+            <div className="col-span-1 md:col-span-1 lg:col-span-3 flex flex-col">
+              <HumidityTile
+                humidityPct={reading.humidityPct}
+                dewPointC={reading.dewPointC}
+                unitSystem={unitSystem}
+                historyHumidityPct={historyHumidity}
+                isOffline={isOffline}
+              />
+            </div>
+
+            {/* 5. Barometric Pressure Tile (3 cols on desktop) */}
+            {reading.pressureHpa != null && (
+              <div className="col-span-1 md:col-span-1 lg:col-span-3 flex flex-col">
+                <PressureTile
+                  pressureHpa={reading.pressureHpa}
+                  unitSystem={unitSystem}
+                  history={h24Points}
+                  isOffline={isOffline}
+                />
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="numeric text-6xl sm:text-7xl font-light tracking-tight text-[var(--color-text)]">
-                  --.-
-                </span>
-                <span className="text-2xl text-[var(--color-muted)]">&deg;C</span>
-              </div>
-            </div>
-            <div className="border-t border-[var(--color-border)] pt-4 mt-6 flex items-center justify-between text-xs text-[var(--color-muted)]">
-              <span>Full instrument reading pipeline in next stage</span>
-              <span className="numeric">0.1&deg;C resolution</span>
-            </div>
-          </Card>
+            )}
 
-          {/* Wind Tile */}
-          <Card className="p-6 flex flex-col justify-between min-h-[220px]">
-            <div>
-              <span className="label">Wind &amp; Gusts</span>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="numeric text-4xl font-light text-[var(--color-text)]">--</span>
-                <span className="text-sm text-[var(--color-muted)]">km/h</span>
+            {/* 6. UV Index Tile (3 cols on desktop) */}
+            {reading.uvIndex != null && (
+              <div className="col-span-1 md:col-span-1 lg:col-span-3 flex flex-col">
+                <UVTile
+                  uvIndex={reading.uvIndex}
+                  isOffline={isOffline}
+                />
               </div>
-              <p className="mt-2 text-xs text-[var(--color-muted)]">
-                Calibrated cup anemometer and wind vane
-              </p>
-            </div>
-            <div className="border-t border-[var(--color-border)] pt-3 text-[11px] text-[var(--color-muted)]">
-              Bearing &amp; Beaufort scale
-            </div>
-          </Card>
+            )}
 
-          {/* Precipitation Tile */}
-          <Card className="p-6 flex flex-col justify-between min-h-[220px]">
-            <div>
-              <span className="label">Precipitation</span>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="numeric text-4xl font-light text-[var(--color-text)]">0.0</span>
-                <span className="text-sm text-[var(--color-muted)]">mm</span>
+            {/* 7. Solar Radiation Tile (3 cols on desktop, hidden if absent) */}
+            {reading.solarWm2 != null && (
+              <div className="col-span-1 md:col-span-1 lg:col-span-3 flex flex-col">
+                <SolarTile
+                  solarWm2={reading.solarWm2}
+                  isOffline={isOffline}
+                />
               </div>
-              <p className="mt-2 text-xs text-[var(--color-muted)]">
-                Tipping-bucket self-emptying rain gauge
-              </p>
-            </div>
-            <div className="border-t border-[var(--color-border)] pt-3 text-[11px] text-[var(--color-muted)]">
-              Resets 00:00 Europe/Berlin
-            </div>
-          </Card>
+            )}
 
-          {/* Barometric Pressure */}
-          <Card className="p-6 flex flex-col justify-between min-h-[180px]">
-            <div>
-              <span className="label">Relative Pressure</span>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="numeric text-3xl font-light text-[var(--color-text)]">1013.2</span>
-                <span className="text-xs text-[var(--color-muted)]">hPa</span>
-              </div>
+            {/* 8. Moon Phase & Sun Ephemeris Tile (3 cols on desktop) */}
+            <div className="col-span-1 md:col-span-1 lg:col-span-3 flex flex-col">
+              <MoonSunTile isOffline={isOffline} />
             </div>
-            <div className="text-[11px] text-[var(--color-muted)]">
-              Trend: Steady (&plusmn;0.2 hPa / 3h)
-            </div>
-          </Card>
+          </div>
+        )}
 
-          {/* Relative Humidity */}
-          <Card className="p-6 flex flex-col justify-between min-h-[180px]">
-            <div>
-              <span className="label">Relative Humidity</span>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="numeric text-3xl font-light text-[var(--color-text)]">--</span>
-                <span className="text-xs text-[var(--color-muted)]">%</span>
-              </div>
-            </div>
-            <div className="text-[11px] text-[var(--color-muted)]">
-              Capacitive sensor &middot; Dew point derived
-            </div>
-          </Card>
-
-          {/* UV & Solar */}
-          <Card className="p-6 flex flex-col justify-between min-h-[180px]">
-            <div>
-              <span className="label">Solar Radiation</span>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="numeric text-3xl font-light text-[var(--color-text)]">--</span>
-                <span className="text-xs text-[var(--color-muted)]">W/m&sup2;</span>
-              </div>
-            </div>
-            <div className="text-[11px] text-[var(--color-muted)]">
-              UV Index: 0 (Night/Low)
-            </div>
-          </Card>
-
-          {/* Educational Note */}
-          <Card className="p-6 flex flex-col justify-between min-h-[180px] border-dashed">
-            <div>
-              <span className="label text-[var(--accent)]">Curriculum Link</span>
-              <p className="mt-2 text-sm text-[var(--color-text)]">
-                Explore science activities and understand how each sensor works.
-              </p>
-            </div>
-            <Link
-              href="/learn"
-              className="text-xs font-medium text-[var(--accent)] hover:underline inline-flex items-center gap-1"
-            >
-              Learn about our instruments &rarr;
-            </Link>
-          </Card>
-        </div>
+        {/* Educational Hint Strip */}
+        <LearnHintStrip />
       </main>
+
       <Footer />
     </div>
   );
