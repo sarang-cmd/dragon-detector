@@ -293,6 +293,27 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
         rain = pick(1, 4)
       }
 
+      // Magnus dew point approximation (mirrors buildReading).
+      const gamma =
+        (17.27 * temp) / (237.7 + temp) + Math.log(humidity / 100)
+      const dew = (237.7 * gamma) / (17.27 - gamma)
+      // Slowly drifting direction so wind charts have a real series.
+      const dir = ((210 + i * 2.5 + offsetRng() * 24) % 360 + 360) % 360
+      // Daytime bell curve for sun fields (0 at night).
+      const berlinHour = Number(
+        new Intl.DateTimeFormat('en-GB', {
+          timeZone: DEFAULT_TIME_ZONE,
+          hour: 'numeric',
+          hour12: false,
+        }).format(new Date(tMs))
+      )
+      const sunFactor =
+        berlinHour < 6 || berlinHour > 20
+          ? 0
+          : Math.max(0, Math.sin(((berlinHour - 6) / 14) * Math.PI))
+      const solar = Math.max(0, sunFactor * 600 + signedNoise(offsetRng, 30))
+      const uv = solar <= 0 ? 0 : clamp(solar / 120, 0, 11)
+
       points.push({
         timestamp: new Date(tMs).toISOString(),
         temperatureC: Math.round(temp * 10) / 10,
@@ -300,7 +321,34 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
         windSpeedKmh: Math.round(Math.max(0, speed) * 10) / 10,
         rainRateMmH: Math.round(rain * 100) / 100,
         pressureHpa: Math.round(pressure * 10) / 10,
+        dewPointC: Math.round(dew * 10) / 10,
+        windGustKmh: Math.round(Math.max(0, gust) * 10) / 10,
+        windDirectionDeg: Math.round(dir * 10) / 10,
+        rainTodayMm: 0, // filled cumulatively below
+        uvIndex: Math.round(uv * 10) / 10,
+        solarWm2: Math.round(Math.max(0, solar)),
       })
+    }
+
+    // Accumulate rainTodayMm across the returned window, resetting at
+    // Europe/Berlin midnight like the live reading does.
+    const dayFmt = new Intl.DateTimeFormat('en-CA', {
+      timeZone: DEFAULT_TIME_ZONE,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    let running = 0
+    let lastDay: string | null = null
+    const stepHours = resolutionMinutes / 60
+    for (const p of points) {
+      const day = dayFmt.format(new Date(p.timestamp))
+      if (lastDay !== day) {
+        running = 0
+        lastDay = day
+      }
+      running += (p.rainRateMmH ?? 0) * stepHours
+      p.rainTodayMm = Math.round(running * 100) / 100
     }
 
     return points
@@ -320,7 +368,8 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
     },
     getHistory(range: '24h' | '7d'): Promise<HistoryPoint[]> {
       if (range === '24h') return Promise.resolve(historyPoints(288, 5))
-      return Promise.resolve(historyPoints(96, 30))
+      // 336 points at 30 min resolution = 7 full days.
+      return Promise.resolve(historyPoints(336, 30))
     },
     // non-standard helper used by route layer / tests
     setScenario(scenario: Scenario) {

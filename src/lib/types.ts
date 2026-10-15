@@ -32,6 +32,20 @@ export const HistoryPointSchema = WeatherReadingSchema.pick({
   windSpeedKmh: true,
   rainRateMmH: true,
   pressureHpa: true,
+}).extend({
+  // Optional full-sensor fields so /data charts, stats and CSV can render
+  // dew point, gusts, direction, accumulations, UV and solar. Older payloads
+  // (and the Ecowitt history normalizer) may omit them; UI treats missing
+  // as empty cells / hidden secondary series.
+  dewPointC: z.number().optional(),
+  feelsLikeC: z.number().optional(),
+  windGustKmh: z.number().optional(),
+  windDirectionDeg: z.number().optional(),
+  rainTodayMm: z.number().optional(),
+  rainHourMm: z.number().optional(),
+  rainWeekMm: z.number().optional(),
+  uvIndex: z.number().optional(),
+  solarWm2: z.number().optional(),
 });
 
 export type HistoryPoint = z.infer<typeof HistoryPointSchema>;

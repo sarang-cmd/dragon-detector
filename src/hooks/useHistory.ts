@@ -25,6 +25,7 @@ export type HistoryQueryResult = {
   range: HistoryRange;
   isLoading: boolean;
   error: string | null;
+  retry: () => void;
 };
 
 export function useHistory(
@@ -35,7 +36,7 @@ export function useHistory(
     `/api/history?range=${range}` +
     (scenario ? `&scenario=${encodeURIComponent(scenario)}` : '');
 
-  const { data, error, isLoading } = useSWR<HistoryApiResponse>(
+  const { data, error, isLoading, mutate } = useSWR<HistoryApiResponse>(
     key,
     historyFetcher,
     {
@@ -54,5 +55,8 @@ export function useHistory(
     range: range,
     isLoading,
     error: error ? error.message : null,
+    retry: () => {
+      void mutate();
+    },
   };
 }
