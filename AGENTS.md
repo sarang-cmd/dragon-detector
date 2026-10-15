@@ -13,3 +13,13 @@ Rules:
 - Run `pnpm build` and `pnpm lint` before saying a task is done.
 - Make minimal changes; do not rewrite files you were not asked to touch.
 - After finishing, update `docs/PROGRESS.md`.
+
+# Session learnings
+
+- Vitest needs `@vitejs/plugin-react` plus `resolve.alias: { "@": path.resolve(__dirname, "src") }` in `vitest.config.js`; `.tsx` tests must be added to `include` — without these, hooks/tests crash with misleading import-resolution errors.
+- Wind/rain simulation in `src/lib/sources/mock.ts` must read the runtime `currentScenario`, not the constructor arg; `setScenario` only mutates the former, or the dev panel silently does nothing.
+- `src/lib/sources/index.ts` caches the mock singleton; runtime `setScenario` mutations persist across requests — no per-request isolation in dev.
+- SWR v2 has no `errorRetryFactor` option; backoff is `interval × 2^retryCount` off `errorRetryInterval` alone (the TS overload error on the unknown option cascades confusingly).
+- The Freebuff preview webview compositor sometimes fails (`no frames`); verify pages with accessibility snapshots and `preview_evaluate` instead of screenshots.
+- Windows: `Start-Process npm.cmd ... -PassThru` may print no pid when the shell waits; read the pid from `netstat` on the port shown in the log.
+

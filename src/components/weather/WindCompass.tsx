@@ -12,7 +12,7 @@ import {
   windDirectionLabel,
   windScreenReaderText,
 } from '@/lib/beaufort';
-import { formatSpeed, UnitSystem } from '@/lib/units';
+import { formatSpeed, UnitSystem, kmhToMph } from '@/lib/units';
 
 export interface WindCompassProps {
   speedKmh: number;
@@ -266,7 +266,11 @@ export function WindCompass({
       {/* Sparkline & Footer summary */}
       <div className="pt-3 border-t border-[var(--color-border)]">
         <Sparkline
-          data={historySpeedKmh}
+          data={
+            unitSystem === 'imperial'
+              ? historySpeedKmh.map(kmhToMph)
+              : historySpeedKmh
+          }
           unit={formattedSpeed.unit}
           label="24h Wind Speed"
           height={32}

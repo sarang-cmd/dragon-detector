@@ -54,6 +54,20 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 
 - Scaffold and shell by this agent; build + lint verified.
 
+## Session 3 — Home page (bento dashboard) finished — DONE
+
+- (other agent) built most of the bento: HeroReading (big temperature 12.5°C clamp, feels-like, min/max range bar with progressbar a11y, summary sentence + jacket advice, LiveDot/RelativeTime), WindCompass (SVG + cardinal/minor ticks, ghost gust needle, exact screen-reader sentence), RainGauge (0–10 mm scale, "No rain today."), HumidityTile (+dew point +comfort word), PressureTile (trend arrow + sparkline), UVTile (WHO segment bar), SolarTile (hidden if absent), MoonSunTile (math moon + sunrise/sunset from src/lib/site.ts), Metric primitive with Tooltip "What is this?" → /learn#<concept-id>, ValueCrossfade (300 ms, reduced-motion), Sparkline SkeletonTile, LearnHintStrip (→ /learn and /display).
+- This session finished the gaps:
+  1. `/learn#<concept-id>` anchors were broken (learn page had no ids). Fixed: ConceptCardShell now renders `id={card.id}` + `scroll-mt-28`; all 9 tile links and the hero link now land on the right card.
+  2. `/display` was linked but did not exist (404). Built minimal kiosk page per docs/04 §6: fullscreen, no nav, cycles Temp/Wind/Rain every 12 s, 6 px burn-in shift every 10 min, reuses HeroReading/WindCompass/RainGauge, LiveDot + RelativeTime header, typecheck-clean.
+  3. Humidity comfort word was misleading (72 % RH with 7.9 °C dew point read "Dry"). Rewrote comfortWord: RH bands lead (35–65 comfortable), dew point only escalates inside the middle band (dew >16 C = humid); 72 % now reads "Humid". Locked with 5 unit tests.
+  4. REAL BUG: mock scenario overrides did nothing for wind/rain — `getWind()`/`maybeRain()` read the constructor `scenario` while `setScenario` mutated `currentScenario` only. Fixed by switching all simulation branches to `currentScenario`; added regression tests (setScenario storm → 35+ km/h wind; back to calm → ≤10). Verified live via cookie: storm → wind 53, gust 72, rain 4.8 mm/h; rain → 2.8 mm/h; offline → 35-min-old timestamp driving isStale/isOffline.
+- Tests: 124 passing across 12 files (added HumidityTile.test.tsx, scenario regression tests). `vitest run` exit 0; typecheck exit 0; lint 0 warnings.
+- Self-review: overflow probe `scrollWidth > clientWidth+1` at 360/390/768/1024/1440 — clean at every width in dark; light theme accent verified #00529E flip and no overflow at 390. Console clean. Screenshots unavailable (preview compositor bug, ap-side); DOM/a11y-level checks used instead.
+- Preview: http://localhost:54772 (detached npm.cmd run dev, pid 31980, logs .freebuff/preview-c2f67de1-…log[.err]).
+- Final check additions: unit toggle verified end-to-end (hero °F, wind mph, rain in, pressure inHg). Found + fixed a real bug — sparklines under imperial showed hPa/km/h/mm values with converted unit labels; all three call sites (PressureTile, WindCompass, RainGauge) now convert data arrays per unit system (verified live: 29.8–30.0 inHg, 3.1–6.8 mph, 0.0–0.1 in/h). Fixed flaky `vitest run` cause: 12 parallel jsdom fork workers exhausted memory ("Failed to start forks worker"); maxWorkers: 4 in vitest.config — two consecutive 124/124 exit-0 runs.
+- Remaining: real Ecowitt sample JSON to replace mock.
+
 ## Session 2.5 — Client data layer + live-status components — DONE
 
 - `src/hooks/useWeather.ts` rewritten to contract: SWR `keepPreviousData`, refresh 5s (mock mode via NEXT_PUBLIC_DATA_MODE) / 60s otherwise, revalidateOnFocus + reconnect, exponential retry backoff (interval × 2^retryCount), zod-validated fetcher that never surfaces internal error bodies. Returns { reading, history, isLoading, error, isStale, isOffline, measuredAt, secondsSinceMeasured }; `secondsSinceMeasured` ticks every 1s from a dedicated interval (`useElapsedSeconds`) without refetching; first paint is 0 for hydration safety; stale/offline computed client-side (>10 min / >30 min, strict).

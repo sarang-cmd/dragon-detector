@@ -13,7 +13,10 @@ function ConceptCardShell({ card }: { card: (typeof conceptCards)[number] }) {
   const [mode, setMode] = useState<ConceptKind>('students');
 
   return (
-    <Card className="overflow-hidden">
+    <Card
+      id={card.id}
+      className="overflow-hidden scroll-mt-28"
+    >
       <CardContent className="p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[var(--color-border)] pb-4">
           <div className="flex items-center gap-3">

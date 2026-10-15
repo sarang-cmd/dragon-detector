@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import createMockSource from './mock'
-import { assertReading } from '../types'
+import { assertReading, WeatherReading } from '../types'
 
 describe('mock source determinism', () => {
   it('same seed yields identical current reading', async () => {
@@ -26,6 +26,25 @@ describe('mock scenario storm', () => {
     expect(rs.windSpeedKmh).toBeGreaterThanOrEqual(35)
     expect(rs.windGustKmh).toBeGreaterThanOrEqual(rs.windSpeedKmh)
     expect(rs.windGustKmh).toBeLessThanOrEqual(72)
+  })
+
+  it('setScenario at runtime switches wind behaviour (dev panel path)', async () => {
+    const src = createMockSource('default', 12345) as unknown as {
+      setScenario: (s: string) => void
+      getCurrent: () => Promise<WeatherReading>
+    }
+    const before = await src.getCurrent()
+    expect(before.windSpeedKmh).toBeLessThan(30)
+
+    src.setScenario('storm')
+    const after = await src.getCurrent()
+    assertReading(after)
+    expect(after.windSpeedKmh).toBeGreaterThanOrEqual(35)
+    expect(after.windGustKmh).toBeGreaterThanOrEqual(after.windSpeedKmh)
+
+    src.setScenario('calm')
+    const calm = await src.getCurrent()
+    expect(calm.windSpeedKmh).toBeLessThanOrEqual(10)
   })
 })
 

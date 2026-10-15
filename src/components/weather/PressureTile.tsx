@@ -148,7 +148,11 @@ export function PressureTile({
       {/* Sparkline */}
       <div className="pt-3 border-t border-[var(--color-border)]">
         <Sparkline
-          data={historyPressures}
+          data={
+            unitSystem === 'imperial'
+              ? historyPressures.map(hPaToInHg)
+              : historyPressures
+          }
           unit={formatted.unit}
           label="24h Barometric Pressure"
           height={28}

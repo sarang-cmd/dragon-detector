@@ -16,15 +16,16 @@ export interface HumidityTileProps {
   isOffline?: boolean;
 }
 
+/**
+ * Plain-language comfort word. Leads with relative humidity (what people
+ * read); dew point only escalates inside the neutral band, e.g. a
+ * muggy 60 % at 18 C dew point. Never calls 72 % "Dry" as before.
+ */
 export function comfortWord(humidityPct: number, dewPointC?: number): 'dry' | 'comfortable' | 'humid' {
-  if (dewPointC != null) {
-    if (dewPointC < 10) return 'dry';
-    if (dewPointC <= 16) return 'comfortable';
-    return 'humid';
-  }
   if (humidityPct < 35) return 'dry';
-  if (humidityPct <= 65) return 'comfortable';
-  return 'humid';
+  if (humidityPct > 65) return 'humid';
+  if (dewPointC != null && dewPointC > 16) return 'humid';
+  return 'comfortable';
 }
 
 /**

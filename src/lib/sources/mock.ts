@@ -94,6 +94,9 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
   let pressure = 1013
   const windState = { dirDeg: null as number | null }
 
+  // Active scenario; changeable at runtime via setScenario (dev panel/routes).
+  let currentScenario: Scenario = scenario
+
   function now() {
     return Date.now()
   }
@@ -123,12 +126,12 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
   }
 
   function maybeRain(): number {
-    if (scenario === 'offline') return 0
+    if (currentScenario === 'offline') return 0
 
-    if (scenario === 'storm') {
+    if (currentScenario === 'storm') {
       return pick(2, 8)
     }
-    if (scenario === 'rain') {
+    if (currentScenario === 'rain') {
       return pick(0.5, 3)
     }
 
@@ -149,7 +152,7 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
   }
 
   function getWind(): WindSample {
-    if (scenario === 'storm') {
+    if (currentScenario === 'storm') {
       // Strong sustained wind with real gusts above it (cap 72 km/h).
       const speed = pick(35, 55)
       return {
@@ -158,7 +161,7 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
         dir: pick(180, 270),
       }
     }
-    if (scenario === 'calm') {
+    if (currentScenario === 'calm') {
       return {
         speed: pick(2, 6),
         gust: 0,
@@ -280,7 +283,7 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
       const speed = 8 + signedNoise(offsetRng, 3)
       const gust = Math.max(speed, speed * (1.3 + offsetRng() * 0.9))
       const pressure = 1013 + signedNoise(offsetRng, 4)
-      const scenarioUsed = scenarioOverride ?? scenario
+      const scenarioUsed = scenarioOverride ?? currentScenario
       let rain = 0
       if (scenarioUsed === 'rain') {
         rain = i % 12 === 0 ? pick(0.2, 2.5) : 0
@@ -305,8 +308,6 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
 
   // Expose a scenario override so tests/routes can force a state without
   // recreating the source.
-  let currentScenario: Scenario = scenario
-
   return {
     getCurrent(): Promise<WeatherReading> {
       if (currentScenario === 'offline') {

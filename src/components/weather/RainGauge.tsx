@@ -150,7 +150,11 @@ export function RainGauge({
       {/* Sparkline */}
       <div className="pt-3 border-t border-[var(--color-border)]">
         <Sparkline
-          data={historyRainMmH}
+          data={
+            unitSystem === 'imperial'
+              ? historyRainMmH.map(mmToIn)
+              : historyRainMmH
+          }
           unit={`${formattedRate.unit}/h`}
           label="24h Rain Rate"
           height={28}
