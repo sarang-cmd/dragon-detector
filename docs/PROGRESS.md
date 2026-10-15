@@ -121,7 +121,23 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - `src/app/globals.css`: print stylesheet (black on white via token override, header/footer/chrome hidden with `print:hidden`, `.activity-sheet` one-per-page breaks).
 - Dashboard "What is this?" links: already present on all tiles; anchor ids preserved so all 7 existing deep links resolve.
 - Tests: 145/145 passing (14 files, incl. 11 new). `pnpm build` clean, `pnpm lint` 0 warnings.
-- Verification (headless Chrome, dev server): students + kids views at 1440 dark, kids at 390, uncertainty slider, teacher QR, activities + print emulation (white, chrome hidden, sheets only), anchor `#pressure` landing (card top=112px under sticky header), age filter (5 upper-secondary), localStorage persistence. Shots in `Temp\opencode\data-shots` (not committed).
+- Verification (headless Chrome, dev server): students + kids views at 1440 dark, kids at 390, uncertainty slider, teacher QR, activities + print emulation (white, chrome hidden, sheets only), anchor `#pressure` landing (card top=112px under sticky header), age filter (5 upper-secondary), localStorage persistence. Shots in `screenshots/learn/` (moved from Temp, see Session 6).
 - Header fix (user-reported overlap): sticky header used `bg-[var(--color-background)]/95`, which Tailwind v3 cannot apply to a `var()` color — the declaration was dropped, leaving the header transparent so page text scrolled through it. Replaced with solid `bg-[var(--color-background)]`; verified with scrolled CDP screenshots (text now hides cleanly under the header).
-- Tooling note: dev server wedged once (all routes + static chunks 404); fresh `next dev` on same port fixed it. Reusable CDP scripts kept in `Temp\opencode` (`scrolled-shot.mjs`, `scroll-to-shot.mjs`, `learn-check.mjs`).
-- Remaining: real Ecowitt sample JSON; German i18n strings (kept i18n-ready, English only).
+- Tooling note: dev server wedged once (all routes + static chunks 404); fresh `next dev` on same port fixed it. Reusable CDP scripts kept in `scripts/screenshots/` (`scrolled-shot.mjs`, `scroll-to-shot.mjs`, `learn-check.mjs`).
+## Session 6 — Implementation plan doc + screenshot housekeeping — DONE
+
+- Wrote `docs/11_Onboarding_Units_and_Polish_Plan.md`: full spec for site-wide
+  role onboarding (6 roles, `dis_role` key, kids/students mapping, teacher-only
+  activities + handout), subject-tag removal (programmes narrow to PYP/MYP/DP),
+  custom Selector listbox, YouTube-style top progress bar on `var(--accent)`,
+  units-everywhere audit table (station page hardcoded-metric root cause),
+  skeleton 1:1 geometry fix, mock rain accumulation root cause + "Trace" rule,
+  triple-press-D admin panel reveal. File allowlist included (§12).
+- Moved all of `Temp/opencode/` (37 PNGs + 2 DOM dumps + 3 CDP scripts) into
+  `screenshots/data/{temperature,wind,rain,pressure,humidity,sun,table}/`,
+  `screenshots/learn/`, `screenshots/header/`, `screenshots/dom/` and
+  `scripts/screenshots/`; Temp copy deleted. `screenshots/` gitignored (binaries),
+  scripts untracked and ready to commit. No implementation work done — plan only.
+- Verification: `pnpm lint` clean; `pnpm build` failed first on stale `.next`
+  cache (`/imprint` module error) — clean rebuild passes all 14 routes.
+- Next: implement `docs/11` package (file allowlist in §12).

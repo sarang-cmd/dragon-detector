@@ -29,3 +29,6 @@ Thumbs.db
 
 # Misc
 *.log
+
+# Local verification screenshots (large binaries, regenerated on demand)
+/screenshots/
