@@ -32,7 +32,10 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-[var(--color-background)]/95 backdrop-blur-none">
+    <header className="sticky top-0 z-40 w-full border-b border-[var(--color-border)] bg-[var(--color-background)]">
+      {/* Solid background (no opacity modifier): Tailwind cannot apply /opacity
+          to a var() color, which left the sticky header transparent and page
+          content scrolling visibly through it. */}
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6">
         {/* Left: Brand Logo & Title */}
         <div className="flex items-center gap-6">

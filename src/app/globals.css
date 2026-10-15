@@ -156,6 +156,58 @@
   }
 }
 
+/* Kids reading level: larger base type for learn card bodies. */
+.audience-kids .learn-body {
+  font-size: 1.125rem;
+  line-height: 1.75;
+}
+
+@media (min-width: 640px) {
+  .audience-kids .learn-body {
+    font-size: 1.25rem;
+  }
+}
+
+/* Printable activity sheets: black on white, one activity per page. */
+@media print {
+  :root,
+  .dark,
+  .light {
+    --color-background: #ffffff;
+    --color-surface: #ffffff;
+    --color-border: #999999;
+    --color-text: #000000;
+    --color-muted: #333333;
+    --accent: #000000;
+    --accent-foreground: #ffffff;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .activity-sheet {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    break-after: page;
+    page-break-after: always;
+    border-color: #999999;
+    box-shadow: none;
+  }
+
+  .activity-sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}
+
 /* Obey prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   *,
