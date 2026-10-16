@@ -6,10 +6,10 @@ import { RoleSwitcher } from '@/components/onboarding/RoleSwitcher';
 import { TourRestartButton } from '@/components/tour/TourRestartButton';
 
 export function Footer() {
-  // Server-rendered truth about the backend: unless DATA_SOURCE=ecowitt is
-  // set, every live reading on the site is simulated. Never claim Ecowitt.
-  const isMock =
-    (process.env.DATA_SOURCE || 'mock').toLowerCase() !== 'ecowitt';
+  // Server-rendered truth about the backend. DATA_SOURCE defaults to live
+  // Open-Meteo model data; explicit `mock` is the simulator; `ecowitt` is
+  // the real station link. Never claim a source we are not using.
+  const dataSource = (process.env.DATA_SOURCE || 'openmeteo').toLowerCase();
   return (
     <footer className="mt-auto w-full border-t border-[var(--color-border)] bg-[var(--color-background)]">
       {/* 4px blue/amber/green strip echoing the school banner per docs/03a section 4 */}
@@ -26,10 +26,12 @@ export function Footer() {
             <div className="flex flex-wrap items-center gap-x-2 text-sm font-medium text-[var(--color-text)]">
               <span>Sainlogic WS3500, Dresden</span>
               <span className="text-[var(--color-muted)]">&middot;</span>
-              {isMock ? (
+              {dataSource === 'mock' ? (
                 <span className="text-[var(--accent)]">Demo data: simulated readings</span>
-              ) : (
+              ) : dataSource === 'ecowitt' ? (
                 <span className="text-[var(--color-muted)]">Source: Ecowitt Cloud API</span>
+              ) : (
+                <span className="text-[var(--color-muted)]">Source: Open-Meteo (area model)</span>
               )}
             </div>
             <p className="text-xs text-[var(--color-muted)]">

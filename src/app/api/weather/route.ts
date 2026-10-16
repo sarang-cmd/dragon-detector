@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSource } from '@/lib/sources'
+import { recordCurrentReading } from '@/lib/sources/openmeteo'
 import { WeatherApiResponseSchema } from '@/lib/types'
 
 const STALE_MS = 10 * 60 * 1000
@@ -102,6 +103,11 @@ export async function GET(req: NextRequest) {
     }
 
     const validated = WeatherApiResponseSchema.parse(responseBody)
+
+    // Accumulate real history (mock data must never pollute the table).
+    if (readingResult.source === 'openmeteo') {
+      void recordCurrentReading(readingResult)
+    }
 
     const isMock = readingResult.source === 'mock'
     const cacheHeaders = isMock

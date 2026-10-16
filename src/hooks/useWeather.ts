@@ -110,7 +110,7 @@ export function useWeather(scenario?: string): WeatherQueryResult {
     secondsSinceMeasured,
     isStale,
     isOffline,
-    isMock: (data?.meta.source ?? 'mock') !== 'ecowitt',
+    isMock: (data?.meta.source ?? 'mock') === 'mock',
     isLoading: !data && !error,
     error: error ? error.message : null,
   };

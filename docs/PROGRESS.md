@@ -420,3 +420,24 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Station Dragons badge enlarged 96px to 144px, then white ring removed
   entirely (PNG has real transparency) so the badge sits directly on the
   card.
+
+## Session 20 — real data via Open-Meteo, honest labels — DONE
+
+- Question "is all of the data here real?" answered file-by-file; the site
+  was showing mock data while the footer claimed Ecowitt. Fixed everywhere:
+  footer + display footer + data-page intro now name the actual backend
+  (Demo vs Open-Meteo area model vs Ecowitt), driven by DATA_SOURCE.
+  `useWeather` exposes `isMock` from the API's `meta.source`.
+- `src/lib/sources/openmeteo.ts` (new, default source): live readings from
+  Open-Meteo (no key), rain-today from today's hourly sum, rain-week from
+  the archive API, 2-min server cache (free tier is 10k calls/day).
+- History: Supabase `readings` append (migration 0006, SECURITY DEFINER
+  upsert + 30-day trim, 10-min throttle) layered under forecast-API
+  `past_days` (closes the ERA5 5-day gap, real from day one) layered under
+  the ERA5 archive for older spans. DB rows win ties; mock never writes.
+- Coordinates unified to the user's on-site fix (51.04972603740881,
+  13.728412086540333) in `SITE_CONFIG`, footer, station page, outlook
+  route (via SITE_CONFIG), sun tests.
+- Verification: 198/198 tests, build + lint clean, live API checks
+  (11.3C matched Open-Meteo direct, 24h + 168-point 7d history), CDP shots
+  of hero + data page on real data.

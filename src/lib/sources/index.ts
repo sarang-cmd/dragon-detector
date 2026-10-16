@@ -1,5 +1,6 @@
 import { WeatherSource } from '@/lib/types'
 import createMockSource from './mock'
+import { createOpenMeteoSource, recordCurrentReading } from './openmeteo'
 
 function createEcowittSource(): WeatherSource {
   return {
@@ -16,7 +17,7 @@ let cachedSource: WeatherSource | null = null
 let cachedSourceKind: string | null = null
 
 export function getSource(): WeatherSource {
-  const dataSource = (process.env.DATA_SOURCE || 'mock').toLowerCase()
+  const dataSource = (process.env.DATA_SOURCE || 'openmeteo').toLowerCase()
 
   if (cachedSource && cachedSourceKind === dataSource) {
     return cachedSource
@@ -24,7 +25,7 @@ export function getSource(): WeatherSource {
 
   if (dataSource === 'ecowitt') {
     cachedSource = createEcowittSource()
-  } else {
+  } else if (dataSource === 'mock') {
     const scenario = (process.env.MOCK_SCENARIO || 'default').toLowerCase() as
       | 'default'
       | 'storm'
@@ -32,6 +33,9 @@ export function getSource(): WeatherSource {
       | 'rain'
       | 'offline'
     cachedSource = createMockSource(scenario)
+  } else {
+    // Default: live Open-Meteo model data, no key required.
+    cachedSource = createOpenMeteoSource()
   }
 
   cachedSourceKind = dataSource

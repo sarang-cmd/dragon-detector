@@ -7,11 +7,11 @@ Code work is done and pushed; nothing here requires editing source.
 
 | Item | State |
 |---|---|
-| Vercel builds from `main` | ✅ Green (effects files included since `3843ca7`) |
-| Mock data on the live site | ✅ Working |
+| Vercel builds from `main` | ✅ Green |
+| Live data (Open-Meteo, no key needed) | ✅ Working (default `DATA_SOURCE`) |
 | AI outlook sentence on the live site | ❌ Needs `GROQ_API_KEY` on Vercel (falls back to statistics until then) |
 | Login / progress sync | ❌ Needs Supabase setup below |
-| Real Ecowitt data | ❌ Not implemented yet (stub throws; see §4) |
+| Real Ecowitt station data | ❌ Not implemented yet (stub throws; see §4) |
 
 ## 1. Vercel environment variables (5 min)
 
@@ -24,7 +24,7 @@ Variables**. Add for **Production** (and Preview if you want previews to match):
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://mhbsnmtqzjehwglzcaay.supabase.co` | Already in local `.env.local`; Vercel needs its own copy. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `sb_publishable_…` (your key) | Publishable key: public-by-design, RLS enforced. |
 | `NEXT_PUBLIC_SITE_URL` | `https://dragon-detector.vercel.app` | Used for OAuth redirects. |
-| `DATA_SOURCE` | *(leave unset for now)* | `mock` is the default. Only set `ecowitt` after §4 is built. |
+| `DATA_SOURCE` | *(leave unset — defaults to `openmeteo`)* | Real Dresden model data, no key. `mock` = simulator, `ecowitt` only after §4 is built. |
 
 Then **Deployments → ⋯ → Redeploy** (without build cache the first time,
 to rule out the stale-cache failure we saw before).
@@ -51,18 +51,15 @@ Project: `mhbsnmtqzjehwglzcaay` ([dashboard](https://supabase.com/dashboard)).
 4. **SQL Editor → New query**: paste the full contents of
    `supabase/migrations/0001_track_progress.sql` in this repo and run it.
    It creates the progress table with owner-only row-level security.
-5. **Same place**: run `supabase/migrations/0002_outlook_cache.sql` too.
-   It creates the shared AI-outlook cache (one row per unit system, public
-   read, writes only via a locked-down function) so the whole site shares
-   a single forecast + AI call per 15 minutes on every server instance.
+5. **Same place**: run `0002_outlook_cache.sql`, `0004_outlook_history.sql`,
+   `0005_outlook_seed.sql`, then `0006_readings.sql` in order. Together they
+   give the site a shared AI-outlook cache + history, sample content until
+   the first real builds land, and the recorded-readings table that powers
+   real 24h/7d history.
 6. **Avatars**: run `supabase/migrations/0003_avatars.sql` to create the
    public `avatars` bucket with owner-only write policies. Profile photos
    then upload straight from the header account menu (2 MB limit).
-7. **Outlook history + samples**: run `0004_outlook_history.sql`, then
-   `0005_outlook_seed.sql`. This gives the hero a working outlook and the
-   admin panel a viewable history with zero external APIs; real builds
-   overwrite the samples automatically.
-6. **Brand the auth emails** (Authentication → Email Templates, unlocked by
+7. **Brand the auth emails** (Authentication → Email Templates, unlocked by
    the SMTP step above). Subject ideas live in
    `supabase/templates/SUBJECTS.md`; bodies:
    - **Confirm signup** ← `confirm-signup.html`
