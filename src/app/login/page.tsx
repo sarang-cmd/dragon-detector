@@ -27,6 +27,24 @@ export default function LoginPage() {
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
+  const [unconfirmedEmail, setUnconfirmedEmail] = React.useState<string | null>(null);
+
+  const resendConfirmation = async () => {
+    if (!unconfirmedEmail) return;
+    setError(null);
+    setBusy(true);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error } = await createClient().auth.resend({
+        type: 'signup',
+        email: unconfirmedEmail,
+      });
+      if (error) setError(error.message);
+      else setNotice('Confirmation email re-sent. Check your inbox and spam folder.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   React.useEffect(() => {
     if (!loading && user) router.replace('/learn');
@@ -54,8 +72,23 @@ export default function LoginPage() {
     try {
       if (mode === 'signin') {
         const { error: err } = await signInWithEmail(email.trim(), password);
-        if (err) setError(err);
-        else router.replace('/learn');
+        if (err) {
+          // Most common stuck state: account exists but the confirmation
+          // email never arrived (e.g. sender quota exhausted). Offer resend
+          // instead of a dead end.
+          if (/email not confirmed/i.test(err)) {
+            setUnconfirmedEmail(email.trim());
+            setError(
+              'This email is registered but not confirmed yet. The confirmation may still be on its way, or the daily email quota is used up, try again later.'
+            );
+          } else {
+            setUnconfirmedEmail(null);
+            setError(err);
+          }
+        } else {
+          setUnconfirmedEmail(null);
+          router.replace('/learn');
+        }
       } else {
         const { error: err, confirmEmail } = await signUpWithEmail(
           email.trim(),
@@ -155,9 +188,19 @@ export default function LoginPage() {
             />
           </div>
           {error && (
-            <p role="alert" className="text-xs leading-relaxed text-red-500">
-              {error}
-            </p>
+            <div role="alert" className="space-y-2">
+              <p className="text-xs leading-relaxed text-red-500">{error}</p>
+              {unconfirmedEmail && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void resendConfirmation()}
+                  className="inline-flex min-h-[44px] items-center rounded-[8px] border border-[var(--color-border)] px-3 text-xs text-[var(--color-text)] hover:border-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:opacity-60"
+                >
+                  {busy ? 'Sending…' : 'Re-send confirmation email'}
+                </button>
+              )}
+            </div>
           )}
           {notice && (
             <div role="status" className="space-y-2">
