@@ -1,7 +1,7 @@
 # DIS Weather Station
 
 <p align="center">
-  <img src="public/brand/dis-logo-horizontal.jpg" alt="Dresden International School" width="320" />
+  <img src="public/brand/dis-logo-horizontal.jpg" alt="Dresden International School" width="360" />
 </p>
 
 <p align="center">
@@ -17,29 +17,57 @@
   <img src="https://img.shields.io/badge/Vitest-5-6E9F18?logo=vitest&logoColor=white" alt="Vitest" />
   <img src="https://img.shields.io/badge/Supabase-auth-3FCF8E?logo=supabase&logoColor=black" alt="Supabase" />
   <img src="https://img.shields.io/badge/Groq-AI_outlook-FF4A4A" alt="Groq" />
+  <img src="https://img.shields.io/badge/Open--Meteo-forecast-FF8C00" alt="Open-Meteo" />
+</p>
+
+<p align="center">
+  <img src="public/brand/dis-tagline-banner.jpg" alt="Dresden International School tagline" width="640" />
 </p>
 
 Live school weather station for **Dresden International School** — a Sainlogic
-WS3500 on the campus roof, published as a fast, accessible, bilingual-ready
-dashboard for students, teachers and families.
+WS3500 on the campus roof, published as a fast, accessible dashboard for
+students, teachers and families.
 
 **Live:** https://dragon-detector.vercel.app
 
 ---
 
-## What it does
+## The station
 
-| Page | Content |
+A Sainlogic WS3500 all-in-one sensor array (thermistor, capacitive humidity,
+tipping-bucket rain, 3-cup anemometer, wind vane, piezoresistive barometer,
+photodiode + UV) mounted on a rooftop mast ~14 m above ground at
+51.0504° N, 13.7373° E (112 m elevation, Europe/Berlin). The console uploads
+via 868 MHz RF to an Ecowitt Cloud gateway; this site reads the Ecowitt API
+server-side (keys never reach the browser) and falls back to a deterministic
+mock simulator with rain, storm, calm and offline scenarios for development.
+
+Full hardware detail lives on the **Station** page and in
+`docs/07_Station_Hardware_WS3500.md`.
+
+## Pages
+
+| Page | What you get |
 |---|---|
-| **Live** (`/`) | Bento-grid instrument tiles: temperature, wind compass, rain gauge, humidity, pressure, UV, solar, sun & moon — with 24h sparklines, a 12-hour AI/statistical outlook with forecast graph, and print-friendly lobby display (`/display`) |
-| **Data** (`/data`) | Full history table + charts, metric/imperial toggle, CSV export |
-| **Learn** (`/learn`) | 12 measurement explainers (kids + students reading levels), classroom activities and a teacher handout with printable sheets |
-| **Station** (`/station`) | Hardware specs, siting, sensor tolerances, maintenance records |
+| **Live** (`/`) | Bento-grid instrument tiles — temperature hero with editorial summary + jacket advice, wind compass, rain gauge, humidity, pressure with trend, UV, solar, sun & moon. Every tile links into the student guide. |
+| **Coming up** (in hero) | 12-hour temperature curve + precipitation-probability bars from Open-Meteo model data fused with station readings, plus one plain-language sentence — AI-written via Groq when configured, station statistics otherwise. One shared 15-minute server cache serves every visitor. |
+| **Data** (`/data`) | 24h/7d history table and charts, metric/imperial toggle, CSV export (always metric). |
+| **Learn** (`/learn`) | 12 measurement explainers in two reading levels (kids / students), classroom activities and a printable teacher handout. Activities are teacher-only; everyone else sees a note. |
+| **Station** (`/station`) | Specs, siting geometry, sensor tolerances (unit-converted), maintenance records. |
+| **Lobby display** (`/display`) | Chromeless fullscreen view for campus screens. |
 
-Cross-cutting: **role onboarding** (Kindergarten, PYP, MYP, DP, Teacher, Family —
-persisted locally, teacher-only activities), **metric/imperial everywhere**,
-theme-aware UI (DIS Blue / DIS Amber), and a mock simulator with rain, storm,
-calm and offline scenarios for development.
+Cross-cutting features:
+
+- **Role onboarding** — first visit asks who you are (Kindergarten, PYP, MYP,
+  DP, Teacher, Family). The choice persists locally, drives the Learn reading
+  level, gates teacher content, and is changeable in the footer any time.
+- **Metric/imperial everywhere** — station tolerances, Learn unit rows, the
+  hero sentence and all tiles follow the toggle.
+- **Theme-aware brand system** — DIS Blue in light mode, DIS Amber in dark
+  mode, tabular numerals, 12px instrument tiles, no gradients or decorative
+  cards (see `docs/03`).
+- **Privacy-first** — no accounts needed for weather; roles and units live in
+  `localStorage`, nothing tracking.
 
 ## Getting started
 
@@ -50,42 +78,81 @@ pnpm dev        # http://localhost:3000
 
 ```bash
 pnpm build      # production build (required before calling work done)
-pnpm lint       # ESLint, zero warnings
-npx vitest run  # unit tests
+pnpm lint       # ESLint, zero warnings expected
+npx vitest run  # unit tests (engine, content, conversions, regressions)
 ```
 
-## Environment
+### Environment
 
-Copy `.env.example` to `.env.local` (gitignored — **never commit real keys**;
-keys are server-only and never reach the browser, except the Supabase
-publishable key which is public-by-design):
+Copy `.env.example` to `.env.local` (gitignored — **never commit real keys**):
 
 ```bash
 DATA_SOURCE=mock          # live data: switch to ecowitt + credentials when ready
+MOCK_SCENARIO=default     # dev only: storm | calm | rain | offline
+
 GROQ_API_KEY=             # optional: enables the AI outlook sentence
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+                          # (free tier; without it, statistics are used)
+                          # Get one at https://console.groq.com
+
+NEXT_PUBLIC_SUPABASE_URL=       # learning-track accounts (Google + email)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=  # publishable key: public-by-design, RLS enforced
 ```
 
-Without `GROQ_API_KEY` the outlook falls back to station statistics, so the
-hero still predicts. One shared server cache (15 min) serves every visitor —
-a whole school costs a single upstream call.
+Keys are server-only: the browser talks to our `/api/*` routes, never to
+Groq or Ecowitt directly. The Supabase publishable key is designed for
+browser use and is protected by row-level security; real secrets stay in
+`.env.local`.
 
 ## Project structure
 
 ```
-src/app/            # App Router pages + API routes (/api/weather, /api/history, /api/outlook)
-src/components/     # weather/* tiles, learn/* cards, onboarding/*, ui/* primitives
-src/context/        # unit-context (metric/imperial), role-context, theme/effects
-src/lib/            # units, summary, outlook engine, beaufort, sources (mock/ecowitt)
-src/hooks/          # useWeather (SWR data layer)
-docs/               # 00–11: brief, API model, design system, build spec, plans
-scripts/screenshots/# CDP capture helpers for visual verification
-screenshots/        # local verification shots (gitignored)
+src/app/              # App Router pages + API routes
+                      # (/api/weather, /api/history, /api/outlook)
+src/components/
+  weather/            # instrument tiles, hero, outlook graph, skeletons
+  learn/              # explainer cards, activities, teacher handout
+  onboarding/         # role picker, role switcher
+  ui/                 # selector listbox, tooltip (portal), buttons, cards
+src/context/          # unit (metric/imperial), role, theme, effects
+src/lib/              # units, summary + outlook engines, beaufort,
+                      # sources (mock/ecowitt), content (concepts/activities)
+src/hooks/            # useWeather (SWR data layer)
+docs/                 # 00–11: brief, API model, design system, build spec,
+                      # station hardware, education content, plans
+scripts/screenshots/  # CDP capture helpers for visual verification
+screenshots/          # local verification shots (gitignored, regenerable)
 ```
 
 `docs/` is the source of truth — read `docs/00`–`docs/07` before changing
-anything. House rules live in `AGENTS.md`.
+anything. Contributor house rules live in `AGENTS.md` (tests + build + lint
+before done, minimal diffs, update `docs/PROGRESS.md`).
+
+### Verification workflow
+
+Deterministic mock scenarios plus headless-Chrome captures:
+
+```bash
+node scripts/screenshots/verify-docs11.mjs http://localhost:3000 .
+```
+
+Shots land in `screenshots/` (never committed). Dev panels stay hidden —
+the scenario switcher appears only after pressing `D` three times.
+
+## Deployment
+
+Hosted on Vercel (`dragon-detector.vercel.app`), auto-deploying from `main`.
+Set `DATA_SOURCE=ecowitt` plus the Ecowitt and Groq keys in the Vercel project
+environment when going live with real data. If a deploy ever fails on a
+stale cache, redeploy with the build cache cleared.
+
+## School
+
+<p align="center">
+  <img src="public/brand/dis-30-years-logo.jpg" alt="Dresden International School — 30 Years (1996–2026)" width="220" />
+</p>
+
+Dresden International School has served Dresden's international community
+since 1996 — 30 years of learning on the Elbe.
 
 ## License
 
