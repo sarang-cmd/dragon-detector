@@ -189,12 +189,12 @@ export function StationClient() {
           {/* Dragon badge: restricted to /station per docs/03a */}
           <div className="shrink-0 flex flex-col items-center gap-2">
             <div className="rounded-full bg-white p-2 border border-neutral-200">
-                    <Image
-                      src="/brand/dis-dragons-badge.png"
-                      alt="DIS Dragons Athletic and Science Emblem"
-                width={110}
-                height={110}
-                className="h-24 w-24 object-contain rounded-full"
+              <Image
+                src="/brand/dis-dragons-badge.png"
+                alt="DIS Dragons Athletic and Science Emblem"
+                width={160}
+                height={160}
+                className="h-36 w-36 object-contain rounded-full"
               />
             </div>
             <span className="label text-[10px]">Dresden Dragons</span>

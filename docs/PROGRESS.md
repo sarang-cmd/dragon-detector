@@ -414,3 +414,7 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   (no email needed) plus a wait-and-retry path, instead of a dead end.
 - Repeated testing of the same address can also trip Supabase's built-in
   mail rate limits: use a fresh address or Google while testing.
+
+## Session 19 — misc polish — DONE
+
+- Station Dragons badge enlarged 96px to 144px.
