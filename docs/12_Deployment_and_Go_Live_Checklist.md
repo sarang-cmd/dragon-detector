@@ -55,6 +55,9 @@ Project: `mhbsnmtqzjehwglzcaay` ([dashboard](https://supabase.com/dashboard)).
    It creates the shared AI-outlook cache (one row per unit system, public
    read, writes only via a locked-down function) so the whole site shares
    a single forecast + AI call per 15 minutes on every server instance.
+6. **Avatars**: run `supabase/migrations/0003_avatars.sql` to create the
+   public `avatars` bucket with owner-only write policies. Profile photos
+   then upload straight from the header account menu (2 MB limit).
 6. **Brand the auth emails** (Authentication → Email Templates): replace the
    **Confirm signup** body with `supabase/templates/confirm-signup.html` and
    **Reset password** with `supabase/templates/recovery.html` from this repo
