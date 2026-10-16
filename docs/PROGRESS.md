@@ -405,3 +405,12 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   answer grounded in live numbers ("12 °C warmer… wind about 8 km/h").
 - House rules respected throughout: minimal diffs, shared files checked
   before each commit (parallel agent's files untouched).
+
+## Session 18 — signup mail-failure UX — DONE
+
+- "Error sending confirmation email" comes verbatim from Supabase's mailer
+  (SMTP/rate-limit side): the signup call itself is correct. The app now
+  detects mailer failures and offers "Continue with Google instead"
+  (no email needed) plus a wait-and-retry path, instead of a dead end.
+- Repeated testing of the same address can also trip Supabase's built-in
+  mail rate limits: use a fresh address or Google while testing.

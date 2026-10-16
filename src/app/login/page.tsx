@@ -29,6 +29,9 @@ function LoginForm() {
   const [notice, setNotice] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [unconfirmedEmail, setUnconfirmedEmail] = React.useState<string | null>(null);
+  // True when Supabase's mailer itself fails: email flows cannot work until
+  // the sender (SMTP / quota) is fixed, so point at Google instead.
+  const [mailServerDown, setMailServerDown] = React.useState(false);
 
   // Links from emails are single-use and expire fast (even opening a mail
   // preview can consume one). Explain instead of stranding the user.
@@ -126,8 +129,14 @@ function LoginForm() {
           email.trim(),
           password
         );
-        if (err) setError(err);
-        else if (confirmEmail)
+        if (err) {
+          if (/confirmation email|error sending|rate limit|over .*quota|too many|mail/i.test(err)) {
+            setMailServerDown(true);
+            setError(
+              'Our mail sender is not delivering right now, so email signup cannot finish. Use "Continue with Google" above instead (no email needed), or wait a bit and try again.'
+            );
+          } else setError(err);
+        } else if (confirmEmail)
           setNotice('Account created, check your inbox for the confirmation email, then sign in.');
         else router.replace('/learn');
       }
@@ -264,6 +273,16 @@ function LoginForm() {
           {error && (
             <div role="alert" className="space-y-2">
               <p className="text-xs leading-relaxed text-red-500">{error}</p>
+              {mailServerDown && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void google()}
+                  className="inline-flex min-h-[44px] items-center rounded-[8px] bg-[var(--accent)] px-3 text-xs font-medium text-[var(--accent-foreground)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:opacity-60"
+                >
+                  Continue with Google instead
+                </button>
+              )}
               {unconfirmedEmail && (
                 <button
                   type="button"
