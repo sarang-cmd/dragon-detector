@@ -158,14 +158,16 @@ since 1996.
 
 Application/site use is permitted; selling or redistributing the components
 themselves is restricted — see `src/components/canvasui/LICENSE.md`
-(MIT + Commons Clause Condition v1.0, © 2026 David Haz). Re-check with the
-school before launch.
+(MIT + Commons Clause Condition v1.0, © 2026 David Haz, used with
+attribution for the canvas effects).
 
 <p align="center">
   <img src="public/brand/dis-dragons-badge.jpg" alt="DIS Dragons" width="96" style="border-radius:50%" />
   <img src="public/dragon_detector_logo.jpeg" alt="DIS Weather Club" width="96" style="border-radius:50%" />
   <br />
-  <sub>Built by the DIS Weather Club · Dresden International School · Annenstraße 9, 01067 Dresden-Altstadt</sub>
-  <br />
-  <em>Inspire, move forward, and give back.</em>
+  <sub>Built by the DIS Weather Club · Maintained by Sarang Batra · Dresden International School · Annenstraße 9, 01067 Dresden-Altstadt</sub>
+</p>
+
+<p align="center">
+  <img src="public/brand/dis-tagline-banner.jpg" alt="Inspire, move forward, and give back" width="640" style="border-radius:12px" />
 </p>
