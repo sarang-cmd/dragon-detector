@@ -1,7 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { Printer } from 'lucide-react';
+import Link from 'next/link';
+import { Check, ChevronRight, Printer } from 'lucide-react';
 import { concepts } from '@/lib/content/concepts';
 import {
   activities,
@@ -14,11 +15,11 @@ import { Footer } from '@/components/footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Selector } from '@/components/ui/selector';
-import { ExplainerCard } from '@/components/learn/ExplainerCard';
 import { TeacherPanel } from '@/components/learn/TeacherPanel';
-import { useWeather } from '@/hooks/useWeather';
-import { useUnitSystem } from '@/context/unit-context';
+import { CONCEPT_ICONS_MAP } from '@/components/learn/ExplainerCard';
+import { LearningTrack } from '@/components/learn/LearningTrack';
 import { useRole, ROLE_LABELS } from '@/context/role-context';
+import { useTrackProgress } from '@/hooks/useTrackProgress';
 
 function ActivitySheet({ activity }: { activity: Activity }) {
   return (
@@ -72,9 +73,8 @@ function ActivitySheet({ activity }: { activity: Activity }) {
 
 export default function LearnPage() {
   const [ageBand, setAgeBand] = React.useState<'all' | AgeBand>('all');
-  const { reading } = useWeather();
-  const { unitSystem } = useUnitSystem();
   const { role, readingLevel, showTeachingContent } = useRole();
+  const { completedLessons, xp, loading, cloud } = useTrackProgress();
 
   const audience = readingLevel;
 
@@ -98,9 +98,9 @@ export default function LearnPage() {
           <span className="label">Educational resources</span>
           <h1 className="display text-[var(--color-text)]">Learn weather</h1>
           <p className="max-w-2xl text-base leading-relaxed text-[var(--color-muted)] sm:text-lg">
-            Plain-language explanations of every measurement
+            Follow the path, tap any lesson, earn XP
             {showTeachingContent
-              ? ', classroom investigations, and a handout for teachers — all from our own school station in Dresden.'
+              ? ' — plus classroom investigations and a handout for teachers, all from our own school station in Dresden.'
               : ' — all from our own school station in Dresden.'}
             {role && (
               <span className="mt-1 block text-sm">
@@ -110,21 +110,76 @@ export default function LearnPage() {
           </p>
         </div>
 
-        <section aria-labelledby="concepts-heading" className="print:hidden">
-          <h2 id="concepts-heading" className="sr-only">
-            Measurement concepts
-          </h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {concepts.map((concept) => (
-              <ExplainerCard
-                key={concept.id}
-                concept={concept}
-                audience={audience}
-                reading={reading}
-                unitSystem={unitSystem}
-              />
-            ))}
+        {/* Duolingo-style path */}
+        <section aria-labelledby="track-heading">
+          <div className="mb-4">
+            <span className="label print:hidden">Learning track</span>
+            <h2
+              id="track-heading"
+              className="mt-1 text-2xl font-medium tracking-tight text-[var(--color-text)]"
+            >
+              Your path
+            </h2>
           </div>
+          <LearningTrack
+            completedLessons={completedLessons}
+            xp={xp}
+            loading={loading}
+            cloud={cloud}
+          />
+        </section>
+
+        {/* Every measurement is a lesson — fully clickable list */}
+        <section aria-labelledby="lessons-heading" className="mt-16 print:hidden">
+          <div className="mb-4">
+            <span className="label">All lessons</span>
+            <h2
+              id="lessons-heading"
+              className="mt-1 text-2xl font-medium tracking-tight text-[var(--color-text)]"
+            >
+              Lessons
+            </h2>
+          </div>
+          <ol className="divide-y divide-[var(--color-border)] overflow-hidden rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)]">
+            {concepts.map((concept) => {
+              const Icon = CONCEPT_ICONS_MAP[concept.icon];
+              const done = completedLessons.includes(concept.id);
+              const text =
+                audience === 'kids' ? concept.kids.summary : concept.students.summary;
+              return (
+                <li key={concept.id}>
+                  <Link
+                    id={concept.id}
+                    href={`/learn/track/${concept.id}`}
+                    aria-label={`${concept.title} lesson${done ? ' (completed)' : ''}`}
+                      className="group flex min-h-[44px] items-center gap-4 px-4 py-4 transition-colors hover:bg-[var(--color-background)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] sm:px-5"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border border-[var(--color-border)] bg-[var(--color-background)]"
+                      >
+                        <Icon className="h-5 w-5 stroke-[1.5] text-[var(--color-text)]" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2 text-sm font-medium text-[var(--color-text)] sm:text-base">
+                          {concept.title}
+                          {done && (
+                            <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-[var(--accent)]" />
+                          )}
+                        </span>
+                        <span className="learn-body mt-0.5 block truncate text-xs text-[var(--color-muted)] sm:text-sm">
+                          {text}
+                        </span>
+                      </span>
+                      <ChevronRight
+                        aria-hidden="true"
+                        className="h-5 w-5 shrink-0 text-[var(--color-muted)] transition-transform group-hover:translate-x-0.5 group-hover:text-[var(--color-text)]"
+                      />
+                    </Link>
+                </li>
+              );
+            })}
+          </ol>
         </section>
 
         <section aria-labelledby="activities-heading" className="mt-16">

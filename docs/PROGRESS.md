@@ -280,3 +280,20 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Verification: `tsc` + lint clean, full build clean, `/login` CDP shot
   renders (Google button + email form behind the role modal on fresh
   profiles). Committed auth files + header/layout wiring + supabase deps.
+
+## Session 11 — Duolingo-style learning track — DONE
+
+- Track data: `src/lib/track/curriculum.ts` (12 nodes matching the concepts,
+  5 units, 36 questions with validated answers) + tests; `MAX 360 XP`.
+- `useTrackProgress` hook + `src/lib/track/progress.ts` (Supabase row with
+  localStorage mirror/merge; idempotent `completeLesson`, guests stay local).
+- `LearningTrack` path UI: XP bar with progress, sign-in nudge for guests,
+  snake-offset nodes (done/current/locked, locks only on the path).
+- Lesson pages `/learn/track/[nodeId]`: role-aware explainer + 3-question
+  check with instant feedback, +10 XP per correct answer, retry + next links.
+- Learn page: "Your path" on top, concepts as a fully clickable lesson list
+  (list always open for browsing; order enforced only on the path), activities
+  + handout unchanged below.
+- Verification: 184/184 tests, build (16 routes) + lint clean, CDP shots
+  `learn-track-1440.png` (path, XP bar, locks) and `lesson-rain-1440.png`
+  (explainer + quiz). Committed in two steps (data, then UI).
