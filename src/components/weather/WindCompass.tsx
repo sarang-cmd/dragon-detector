@@ -73,7 +73,7 @@ export function WindCompass({
 
   return (
     <div
-      className={`instrument-tile flex flex-col justify-between p-5 sm:p-6 min-h-[380px] lg:min-h-[460px] ${
+      className={`instrument-tile flex flex-col justify-between flex-1 p-5 sm:p-6 min-h-[380px] lg:min-h-[460px] ${
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >

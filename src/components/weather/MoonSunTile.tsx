@@ -72,7 +72,7 @@ export function MoonSunTile({ date = new Date(), isOffline = false }: MoonSunTil
 
   return (
     <div
-      className={`instrument-tile flex flex-col justify-between p-5 sm:p-6 min-h-[220px] ${
+      className={`instrument-tile flex flex-col justify-between flex-1 p-5 sm:p-6 min-h-[220px] ${
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >

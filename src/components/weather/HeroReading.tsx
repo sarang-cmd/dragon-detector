@@ -82,7 +82,7 @@ export function HeroReading({
 
   return (
     <div
-      className={`instrument-tile relative flex flex-col justify-between p-6 sm:p-8 min-h-[380px] lg:min-h-[460px] overflow-hidden ${
+      className={`instrument-tile relative flex flex-col justify-between flex-1 p-6 sm:p-8 min-h-[380px] lg:min-h-[460px] overflow-hidden ${
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
       style={{

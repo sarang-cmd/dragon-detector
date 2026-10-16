@@ -55,7 +55,7 @@ export function RainGauge({
 
   return (
     <div
-      className={`instrument-tile relative flex flex-col justify-between overflow-hidden p-5 sm:p-6 min-h-[220px] ${
+      className={`instrument-tile relative flex flex-col justify-between flex-1 overflow-hidden p-5 sm:p-6 min-h-[220px] ${
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >
