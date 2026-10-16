@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 
 function GoogleIcon() {
@@ -17,10 +17,11 @@ function GoogleIcon() {
 }
 
 /** Sign-in page: Google OAuth + email/password (sign in or create account). */
-export default function LoginPage() {
+function LoginForm() {
   const { user, loading, configured, signInWithGoogle, signInWithEmail, signUpWithEmail } =
     useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mode, setMode] = React.useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -28,6 +29,37 @@ export default function LoginPage() {
   const [notice, setNotice] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [unconfirmedEmail, setUnconfirmedEmail] = React.useState<string | null>(null);
+
+  // Links from emails are single-use and expire fast (even opening a mail
+  // preview can consume one). Explain instead of stranding the user.
+  React.useEffect(() => {
+    const err = searchParams.get('error');
+    if (err === 'link') {
+      const reason = searchParams.get('reason');
+      if (reason === 'missing') {
+        setError(
+          'That link was incomplete (some email apps cut long links). Open the newest email and tap the button itself, not a copied fragment.'
+        );
+      } else if (reason === 'expired') {
+        setNotice(
+          'That link expired. Links only live a short while: request a fresh one below and open it right away.'
+        );
+      } else if (reason === 'used') {
+        setNotice(
+          'That link was already used. Each link works exactly once: request a fresh one below.'
+        );
+      } else {
+        setNotice(
+          'That email link did not work. Type your email below, then use "Email me a sign-in link", "Forgot password?", or create a password instead: a fresh email will follow.'
+        );
+      }
+      router.replace('/login', { scroll: false });
+    } else if (err === 'oauth') {
+      setError('Google sign-in was cancelled or failed. Try again.');
+      router.replace('/login', { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const resendConfirmation = async () => {
     if (!unconfirmedEmail) return;
@@ -296,5 +328,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-[480px] px-4 py-12" aria-busy="true">
+          <span className="label">Accounts</span>
+          <h1 className="display mt-1 text-[var(--color-text)]">Sign in</h1>
+        </div>
+      }
+    >
+      <LoginForm />
+    </React.Suspense>
   );
 }
