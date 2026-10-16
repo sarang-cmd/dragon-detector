@@ -1,6 +1,8 @@
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { EffectsModeControl } from '@/components/effects/EffectsControls';
+import { RoleSwitcher } from '@/components/onboarding/RoleSwitcher';
 
 export function Footer() {
   return (
@@ -26,8 +28,9 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Right: 30 Years mark & Legal links */}
+          {/* Right: Role switcher, 30 Years mark & Legal links */}
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+            <RoleSwitcher />
             {/* 30 Years logo as small mark */}
             <div className="flex items-center gap-2">
               <div className="flex h-8 items-center justify-center rounded-[8px] bg-white px-2 py-0.5 border border-neutral-200">
@@ -57,6 +60,10 @@ export function Footer() {
               </Link>
             </nav>
           </div>
+        </div>
+
+        <div className="mt-6 border-t border-[var(--color-border)] pt-4">
+          <EffectsModeControl />
         </div>
 
         <div className="mt-6 border-t border-[var(--color-border)] pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[11px] text-[var(--color-muted)]">

@@ -154,6 +154,145 @@
   .instrument-tile:hover {
     border-color: color-mix(in srgb, var(--color-text) 30%, var(--color-border));
   }
+
+  /* Skeleton sweep: a single hard-edged translucent band travelling across
+     the tile (no color gradients, per the anti-AI-look rules). Static under
+     `prefers-reduced-motion` via the global motion rule below. */
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 35%;
+    background: color-mix(in srgb, var(--color-text) 7%, transparent);
+    transform: translateX(-120%) skewX(-12deg);
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-sweep {
+    to {
+      transform: translateX(400%) skewX(-12deg);
+    }
+  }
+
+  /* Staggered entrance for loaded bento tiles (max ~400ms total). */
+  .bento-enter > * {
+    animation: tile-in 300ms ease-out both;
+  }
+
+  .bento-enter > *:nth-child(2) { animation-delay: 40ms; }
+  .bento-enter > *:nth-child(3) { animation-delay: 80ms; }
+  .bento-enter > *:nth-child(4) { animation-delay: 120ms; }
+  .bento-enter > *:nth-child(5) { animation-delay: 160ms; }
+  .bento-enter > *:nth-child(6) { animation-delay: 200ms; }
+  .bento-enter > *:nth-child(7) { animation-delay: 240ms; }
+  .bento-enter > *:nth-child(8) { animation-delay: 280ms; }
+
+  @keyframes tile-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Theme-aware route progress indicator. */
+.top-progress-track {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  height: 2px;
+  pointer-events: none;
+}
+
+.top-progress-bar {
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.top-progress-track[data-visible='true'] .top-progress-bar {
+  opacity: 1;
+}
+
+/* CanvasUI canvas layers are decorative only; weather HTML remains authoritative. */
+.weather-effect-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 1;
+}
+
+.weather-effect-layer > div {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+}
+
+.weather-effect-layer canvas {
+  pointer-events: none !important;
+}
+
+.instrument-tile > .weather-effect-host {
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.weather-effect-host > .weather-effect-layer {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden;
+}
+
+.hero-effect-layer {
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.instrument-tile > :not(.weather-effect-host) {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-effect-layer > * {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+}
+
+.instrument-tile:has(> .weather-effect-host) {
+  isolation: isolate;
+}
+
+@media print {
+  .weather-effect-layer,
+  .dashboard-data-sweep,
+  .top-progress-track,
+  .effects-status-slot {
+    display: none !important;
+  }
 }
 
 /* Kids reading level: larger base type for learn card bodies. */

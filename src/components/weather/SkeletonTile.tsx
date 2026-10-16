@@ -5,20 +5,24 @@ import * as React from 'react';
 export interface SkeletonTileProps {
   className?: string;
   minHeightClass?: string;
+  label?: string;
 }
 
 /**
- * Skeleton placeholder that strictly matches final tile geometry to prevent layout shift.
+ * Skeleton placeholder that matches final tile geometry (same min-heights as
+ * the real tiles) to prevent layout shift on load. Uses a monochrome sweep
+ * instead of a generic pulse; static under `prefers-reduced-motion`.
  */
 export function SkeletonTile({
   className = '',
   minHeightClass = 'min-h-[220px]',
+  label = 'Loading meteorological observations...',
 }: SkeletonTileProps) {
   return (
     <div
-      className={`instrument-tile p-5 sm:p-6 flex flex-col justify-between ${minHeightClass} ${className} animate-pulse motion-reduce:animate-none`}
+      className={`instrument-tile skeleton-shimmer p-5 sm:p-6 flex flex-col justify-between ${minHeightClass} ${className}`}
       role="status"
-      aria-label="Loading meteorological observations..."
+      aria-label={label}
     >
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -39,7 +43,7 @@ export function SkeletonTile({
 export function HeroSkeleton({ className = '' }: { className?: string }) {
   return (
     <div
-      className={`instrument-tile p-6 sm:p-8 flex flex-col justify-between min-h-[380px] lg:min-h-[460px] ${className} animate-pulse motion-reduce:animate-none`}
+      className={`instrument-tile skeleton-shimmer p-6 sm:p-8 flex flex-col justify-between min-h-[380px] lg:min-h-[460px] ${className}`}
       role="status"
       aria-label="Loading hero observations..."
     >

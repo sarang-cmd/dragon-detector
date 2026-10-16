@@ -15,7 +15,7 @@ export const AGE_BAND_LABELS: Record<AgeBand, string> = {
   'upper-secondary': 'Upper secondary (about 14–18)',
 };
 
-export const PROGRAMMES = ['PYP', 'MYP', 'DP', 'TOK'] as const;
+export const PROGRAMMES = ['PYP', 'MYP', 'DP'] as const;
 export type Programme = (typeof PROGRAMMES)[number];
 
 export const ActivitySchema = z.object({
@@ -32,7 +32,6 @@ export const ActivitySchema = z.object({
   extension: z.string().min(1),
   curriculum: z.object({
     programme: z.enum(PROGRAMMES),
-    subjects: z.array(z.string().min(1)).min(1),
   }),
 });
 
@@ -61,7 +60,7 @@ export const activities: Activity[] = [
     expectedResult:
       'Pupils practise using a trend, not a single reading, to predict weather.',
     extension: 'Keep a week-long prediction ledger and crown the best forecaster.',
-    curriculum: { programme: 'PYP', subjects: ['Science'] },
+    curriculum: { programme: 'PYP' },
   }),
   activity({
     id: 'rain-per-roof',
@@ -81,7 +80,7 @@ export const activities: Activity[] = [
     expectedResult:
       'Pupils connect millimetres of rain to real volumes of water.',
     extension: 'Estimate how much rain lands on the whole school grounds in a year.',
-    curriculum: { programme: 'PYP', subjects: ['Science', 'Maths'] },
+    curriculum: { programme: 'PYP' },
   }),
   activity({
     id: 'wind-and-gusts',
@@ -105,12 +104,12 @@ export const activities: Activity[] = [
       'Students see that a gust is a peak over an interval, and compute a simple ratio from real data.',
     extension:
       'Compare the gust factor on a calm, a breezy and a stormy day.',
-    curriculum: { programme: 'MYP', subjects: ['Science', 'Physics'] },
+    curriculum: { programme: 'MYP' },
   }),
   activity({
     id: 'dew-point-and-fog',
     title: 'Dew point and fog',
-    ageLabel: 'Ages 14–18, Physics',
+    ageLabel: 'Ages 14–18',
     ageBand: 'upper-secondary',
     ageMin: 14,
     ageMax: 18,
@@ -125,12 +124,12 @@ export const activities: Activity[] = [
     expectedResult:
       'Students link dew point to condensation and fog formation.',
     extension: 'Track overnight cooling toward the dew point across a full week.',
-    curriculum: { programme: 'DP', subjects: ['Physics'] },
+    curriculum: { programme: 'DP' },
   }),
   activity({
     id: 'urban-heat',
     title: 'Urban heat',
-    ageLabel: 'DP Geography / ESS, ages 16–18',
+    ageLabel: 'DP, ages 16–18',
     ageBand: 'upper-secondary',
     ageMin: 16,
     ageMax: 18,
@@ -146,12 +145,12 @@ export const activities: Activity[] = [
       'Students learn why a school station can honestly differ from an official one.',
     extension:
       'Investigate how roofs, walls and pavement near the sensor change readings.',
-    curriculum: { programme: 'DP', subjects: ['Geography', 'ESS'] },
+    curriculum: { programme: 'DP' },
   }),
   activity({
     id: 'solar-potential',
     title: 'Solar potential',
-    ageLabel: 'DP Physics, ages 16–18',
+    ageLabel: 'DP, ages 16–18',
     ageBand: 'upper-secondary',
     ageMin: 16,
     ageMax: 18,
@@ -165,12 +164,12 @@ export const activities: Activity[] = [
     ],
     expectedResult: 'Students connect irradiance readings to electrical output.',
     extension: 'Model a full day’s energy from a 1 m² panel, hour by hour.',
-    curriculum: { programme: 'DP', subjects: ['Physics'] },
+    curriculum: { programme: 'DP' },
   }),
   activity({
     id: 'data-science',
     title: 'Data science with CSV',
-    ageLabel: 'Maths / CS, ages 14–18',
+    ageLabel: 'Ages 14–18',
     ageBand: 'upper-secondary',
     ageMin: 14,
     ageMax: 18,
@@ -186,12 +185,12 @@ export const activities: Activity[] = [
       'Students practise summary statistics and basic regression on real local data.',
     extension:
       'Fit a line to temperature vs humidity and interpret what the slope means.',
-    curriculum: { programme: 'MYP', subjects: ['Maths', 'Computer Science'] },
+    curriculum: { programme: 'MYP' },
   }),
   activity({
     id: 'sensor-accuracy',
     title: 'Sensor accuracy debate',
-    ageLabel: 'TOK / Physics, ages 16–18',
+    ageLabel: 'Ages 16–18',
     ageBand: 'upper-secondary',
     ageMin: 16,
     ageMax: 18,
@@ -209,17 +208,10 @@ export const activities: Activity[] = [
     expectedResult:
       'Students practise thinking about uncertainty, calibration and truth in measurement.',
     extension: 'Design a simple check for one sensor using two nearby thermometers.',
-    curriculum: { programme: 'TOK', subjects: ['TOK', 'Physics'] },
+    curriculum: { programme: 'DP' },
   }),
 ];
 
 export function activityById(id: string): Activity | undefined {
   return activities.find((a) => a.id === id);
-}
-
-/** Subjects offered across all activities, for the filter dropdown. */
-export function allSubjects(): string[] {
-  const set = new Set<string>();
-  for (const a of activities) for (const s of a.curriculum.subjects) set.add(s);
-  return Array.from(set).sort();
 }

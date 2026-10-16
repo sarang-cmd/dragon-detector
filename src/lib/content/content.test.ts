@@ -107,10 +107,31 @@ describe('activity content schema', () => {
       expect(a.materials.length).toBeGreaterThanOrEqual(1);
       expect(a.expectedResult.length).toBeGreaterThan(0);
       expect(a.extension.length).toBeGreaterThan(0);
-      expect(a.curriculum.subjects.length).toBeGreaterThanOrEqual(1);
-      expect(a.curriculum.programme.length).toBeGreaterThan(0);
+      expect(['PYP', 'MYP', 'DP']).toContain(a.curriculum.programme);
       expect(a.ageMin).toBeLessThanOrEqual(a.ageMax);
       expect(a.minutes).toBeGreaterThan(0);
+    }
+  });
+
+  it('no activity references removed subjects or programmes', () => {
+    const forbidden = ['Computer Science', 'ESS', 'TOK'];
+    const haystack = (a: (typeof activities)[number]) =>
+      [
+        a.title,
+        a.ageLabel,
+        ...a.materials,
+        ...a.steps,
+        a.expectedResult,
+        a.extension,
+        a.curriculum.programme,
+      ].join('\n');
+    for (const a of activities) {
+      for (const word of forbidden) {
+        expect(
+          haystack(a).includes(word),
+          `"${word}" found in activity "${a.id}"`
+        ).toBe(false);
+      }
     }
   });
 });

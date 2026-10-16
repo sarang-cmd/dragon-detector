@@ -296,4 +296,42 @@ describe('compass word helper and screen reader text', () => {
       })
     ).toBe('Wind from the east, 15 kilometres per hour.');
   });
+
+  it('imperial: converts temperature, wind and rain display', () => {
+    const res = summarySentence({
+      temperatureC: 20,
+      feelsLikeC: 23,
+      windSpeedKmh: 16.09344, // exactly 10 mph
+      windGustKmh: 32.18688, // exactly 20 mph
+      windDirectionDeg: 225,
+      rainRateMmH: 0,
+      rainTodayMm: 2.54, // exactly 0.10 in
+      humidityPct: 60,
+      pressureHpa: 1013,
+      pressureTrend: 'steady',
+      unitSystem: 'imperial',
+    });
+    expect(res.sentence).toContain('68 degrees and mild.');
+    expect(res.sentence).toContain('Feels like 73 degrees.');
+    expect(res.sentence).toContain('at 10 mph.');
+    expect(res.sentence).toContain('Gusts to 20 mph.');
+    expect(res.sentence).toContain('0.10 in of rain today.');
+    expect(res.sentence).not.toContain('km/h');
+    expect(res.sentence).not.toContain('mm of rain');
+  });
+
+  it('imperial: band logic still uses Celsius thresholds', () => {
+    const res = summarySentence({
+      temperatureC: -2, // below freezing in C = 28 F
+      windSpeedKmh: 0,
+      windGustKmh: 0,
+      windDirectionDeg: 0,
+      rainRateMmH: 0,
+      rainTodayMm: 0,
+      humidityPct: 45,
+      unitSystem: 'imperial',
+    });
+    expect(res.sentence).toContain('28 degrees and freezing.');
+    expect(res.jacket).toBe('Coat, scarf and gloves.');
+  });
 });

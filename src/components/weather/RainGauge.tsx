@@ -7,6 +7,12 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { Sparkline } from './Sparkline';
 import { ValueCrossfade } from './ValueCrossfade';
 import { formatRain, UnitSystem, mmToIn } from '@/lib/units';
+import dynamic from 'next/dynamic';
+
+const RainWeatherEffect = dynamic(
+  () => import('@/components/effects/WeatherEffects').then((module) => module.RainWeatherEffect),
+  { ssr: false }
+);
 
 export interface RainGaugeProps {
   rateMmH: number;
@@ -16,6 +22,7 @@ export interface RainGaugeProps {
   unitSystem: UnitSystem;
   historyRainMmH?: number[];
   isOffline?: boolean;
+  isStale?: boolean;
 }
 
 /**
@@ -31,6 +38,7 @@ export function RainGauge({
   unitSystem,
   historyRainMmH = [],
   isOffline = false,
+  isStale = false,
 }: RainGaugeProps) {
   const formattedToday = formatRain(todayMm, unitSystem);
   const formattedRate = formatRain(rateMmH, unitSystem);
@@ -43,13 +51,17 @@ export function RainGauge({
   const fillPct = Math.min(100, Math.max(0, (todayMm / maxScaleMm) * 100));
 
   const isDry = todayMm === 0 && rateMmH === 0;
+  const isTrace = !isDry && rateMmH === 0 && todayMm > 0 && todayMm < 0.05;
 
   return (
     <div
-      className={`instrument-tile flex flex-col justify-between p-5 sm:p-6 min-h-[220px] ${
+      className={`instrument-tile relative flex flex-col justify-between overflow-hidden p-5 sm:p-6 min-h-[220px] ${
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >
+      <div className="weather-effect-host pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-[inherit]" aria-hidden="true">
+        <RainWeatherEffect rateMmH={rateMmH} isStale={isStale || isOffline} />
+      </div>
       {/* Header */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -90,6 +102,10 @@ export function RainGauge({
         <p className="mt-1 text-xs text-[var(--color-muted)]">
           {isDry ? (
             <span className="text-[var(--color-muted)]">No rain today.</span>
+          ) : isTrace ? (
+            <span className="text-[var(--color-muted)]">
+              Trace of rain today ({formattedToday.value} {formattedToday.unit}).
+            </span>
           ) : (
             <span>
               Rate: <span className="numeric font-medium text-[var(--color-text)]">{formattedRate.value}</span> {formattedRate.unit}/h

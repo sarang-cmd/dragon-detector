@@ -144,7 +144,10 @@ function createMockSource(scenario: Scenario = 'default', seed = 12345): Weather
       currentRainAccum = 0
       return 0
     }
-    if (rng() < 0.02) {
+    // Demo-friendly: rain events start often enough that "today" visibly
+    // moves within a short demo session (about one event every ~2 min at
+    // the 5 s sample cadence). Real totals stay plausible for Dresden.
+    if (rng() < 0.08) {
       startRainEvent()
       return pick(1, 4)
     }

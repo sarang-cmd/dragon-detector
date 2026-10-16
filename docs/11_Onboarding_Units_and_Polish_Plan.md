@@ -144,9 +144,18 @@ export type Role = 'kindergarten' | 'pyp' | 'myp' | 'dp' | 'teacher' | 'family';
 - Used in exactly two places: Learn age-band filter, footer role switcher.
 - The data-page range/metric controls are already custom buttons — untouched.
 
-## 6. Top loading bar
+## 6. Top loading bar (already existed — kept, not rebuilt)
 
-- New `src/components/navigation/TopProgressBar.tsx`, mounted in `RootLayout`.
+During implementation a `TopProgressBar` was found already live at
+`src/components/effects/TopProgressBar.tsx` (wired in
+`DashboardEffectsProvider`), implementing this spec: `var(--accent)` color,
+ease-out trickle toward 90%, completion + fade, reduced-motion + print
+handling. Verified live via CDP polling (bar `data-visible="true"` during a
+client-side link transition, hidden after settle). A duplicate
+`src/components/navigation/TopProgressBar.tsx` was written, then deleted —
+no new file was needed.
+
+- New `src/components/navigation/TopProgressBar.tsx` — SUPERSEDED, see heading above.
 - Mechanism: watches `usePathname()` + `useSearchParams()`. On change, bar
   appears at ~10% width and a `requestAnimationFrame` trickle eases it toward
   90% (fast start, slow approach — that easing curve is the "satisfying" part).
@@ -274,27 +283,35 @@ it just never sees rain.
 
 New: `src/context/role-context.tsx`,
 `src/components/onboarding/RoleOnboarding.tsx`,
-`src/components/ui/selector.tsx`,
-`src/components/navigation/TopProgressBar.tsx`, this doc.
-Edit: `src/app/layout.tsx`, `src/app/learn/page.tsx`, `src/app/station/page.tsx`,
-`src/components/learn/ExplainerCard.tsx`,
-`src/components/learn/UncertaintyDemo.tsx` (labels only),
+`src/components/onboarding/RoleSwitcher.tsx`, `src/components/ui/selector.tsx`,
+`src/components/station/StationClient.tsx` (+ test), `src/lib/summary.test.ts`
+(imperial cases), `src/context/role-context.test.ts`,
+`src/components/learn/ExplainerCard.test.tsx`, `scripts/screenshots/verify-docs11.mjs`, this doc.
+Edit: `src/app/layout.tsx`, `src/app/learn/page.tsx`, `src/app/station/page.tsx`
+(server wrapper), `src/components/learn/ExplainerCard.tsx`,
 `src/components/weather/ScenarioDebugPanel.tsx`,
-`src/components/footer.tsx`, `src/components/weather/SkeletonTile.tsx`
-(skeleton geometry/animation only), `src/app/page.tsx` (skeleton slots only),
+`src/components/footer.tsx`, `src/components/weather/SkeletonTile.tsx`,
+`src/app/globals.css` (skeleton sweep + entrance only), `src/app/page.tsx`
+(skeleton slots + missing `AsciiSweepTransition` opening tag),
+`src/components/weather/HeroReading.tsx` (pass `unitSystem` to summary),
+`src/components/weather/RainGauge.tsx` (Trace display),
 `src/lib/content/activities.ts`, `src/lib/content/content.test.ts`,
-`src/lib/summary.ts` (only if imperial leaks are found), `.gitignore` (only if
-new ignore entries are needed), `docs/PROGRESS.md`.
+`src/lib/sources/mock.ts` (demo rain frequency), `src/lib/sources/mock.test.ts`
+(rain + consistency notes), `src/lib/summary.ts` (imperial display),
+`docs/PROGRESS.md`.
 Do not rewrite files outside this list.
 
-## 13. Verification checklist
+## 13. Verification checklist (done 2026-10-16, Session 7)
 
-- [ ] `vitest run`: new tests — role mapping + gating matrix, Selector
-      keyboard behavior, station conversion table, ExplainerCard imperial unit
-      row, rain regression (event → non-zero today, `isDry === false`).
-- [ ] `pnpm build` clean, `pnpm lint` zero warnings.
-- [ ] CDP screenshots into `screenshots/`: onboarding modal (first-visit),
-      Learn as PYP vs Teacher (activities hidden/shown), station page in
-      imperial at 390 + 1440, rain tile with non-zero today, top bar
-      mid-transition frame, loading→loaded grid swap. Console clean.
-- [ ] `docs/PROGRESS.md` updated with session notes.
+- [x] `vitest run`: 173/173 — role mapping/gating, station conversion table,
+      ExplainerCard imperial unit rows, summary imperial sentences, rain
+      regression (sustained rain → non-zero today). Selector keyboard behavior
+      verified by code review (roving `activeIndex`, Esc refocus); no
+      testing-library in repo, so no DOM test added.
+- [x] `pnpm build` clean (14 routes), `pnpm lint` zero warnings, `tsc` clean.
+- [x] CDP screenshots into `screenshots/`: onboarding modal (6 cards),
+      Learn teacher (8 activities + handout) vs PYP (kids copy, gate note),
+      station imperial table, rain tile with non-zero rate, top bar confirmed
+      `data-visible="true"` mid-transition via polling, admin panel after
+      triple-D. Console clean. Script: `scripts/screenshots/verify-docs11.mjs`.
+- [x] `docs/PROGRESS.md` updated with session notes.

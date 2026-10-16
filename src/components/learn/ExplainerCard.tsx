@@ -45,6 +45,49 @@ export const CONCEPT_ICONS_MAP: Record<ConceptIcon, LucideIcon> = {
   ruler: Ruler,
 };
 
+/**
+ * Unit labels honouring the unit toggle. Concepts whose units are identical
+ * in both systems repeat the same string; temperature/wind/rain/pressure
+ * and the uncertainty band convert.
+ */
+export const CONCEPT_UNITS: Record<
+  Concept['id'],
+  { metric: string; imperial: string }
+> = {
+  temperature: { metric: '°C', imperial: '°F' },
+  'feels-like': { metric: '°C', imperial: '°F' },
+  humidity: { metric: '% relative humidity', imperial: '% relative humidity' },
+  'dew-point': { metric: '°C', imperial: '°F' },
+  'wind-speed': {
+    metric: 'km/h, Beaufort 0–12',
+    imperial: 'mph, Beaufort 0–12',
+  },
+  'wind-gust': { metric: 'km/h', imperial: 'mph' },
+  'wind-direction': {
+    metric: 'degrees from north, compass label',
+    imperial: 'degrees from north, compass label',
+  },
+  rain: { metric: 'mm, mm/h', imperial: 'in, in/h' },
+  pressure: {
+    metric: 'hPa (relative, sea-level corrected)',
+    imperial: 'inHg (relative, sea-level corrected)',
+  },
+  'uv-index': { metric: 'UV index (0–11+)', imperial: 'UV index (0–11+)' },
+  solar: { metric: 'W/m²', imperial: 'W/m²' },
+  'measurement-uncertainty': {
+    metric: '± °C, ± %, ± mm',
+    imperial: '± °F, ± %, ± in',
+  },
+};
+
+export function unitLabelFor(
+  id: Concept['id'],
+  unitSystem: UnitSystem
+): string {
+  const entry = CONCEPT_UNITS[id];
+  return unitSystem === 'metric' ? entry.metric : entry.imperial;
+}
+
 /** Current station value for a concept, honouring the unit toggle. Null = hide. */
 export function liveValueFor(
   id: Concept['id'],
@@ -166,11 +209,11 @@ export function ExplainerCard({
                   {concept.students.howMeasured}
                 </dd>
               </div>
-              <div>
-                <dt className="label text-[10px]">Unit</dt>
-                <dd className="numeric mt-1 text-[var(--color-text)]">
-                  {concept.students.unit}
-                </dd>
+                <div>
+                  <dt className="label text-[10px]">Unit</dt>
+                  <dd className="numeric mt-1 text-[var(--color-text)]">
+                    {unitLabelFor(concept.id, unitSystem)}
+                  </dd>
                 {concept.students.formula && (
                   <dd className="numeric mt-2 text-[var(--color-muted)]">
                     {concept.students.formula}

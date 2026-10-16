@@ -1,4 +1,5 @@
 import { beaufort, windDirectionLabel, compassWord } from './beaufort';
+import { cToF, kmhToMph, formatRain, type UnitSystem } from './units';
 
 export type Band = 'freezing' | 'cold' | 'cool' | 'mild' | 'warm' | 'hot';
 
@@ -32,6 +33,7 @@ export interface SummaryReadingInput {
   pressureHpa?: number;
   pressureTrend?: PressureTrend;
   isOffline?: boolean;
+  unitSystem?: UnitSystem;
 }
 
 /**
@@ -58,33 +60,43 @@ export function summarySentence(r: SummaryReadingInput): {
   const bIndex = beaufort(wind).scale;
   const gustIndex = beaufort(gust).scale;
   const dirWord = compassWord(dirDeg).toLowerCase();
+  const imperial = r.unitSystem === 'imperial';
+
+  // Display values honour the unit toggle; thresholds and band logic stay
+  // in metric (physics doesn't change with the label).
+  const dispTemp = (c: number) =>
+    imperial ? Math.round(cToF(c)) : Math.round(c);
+  const dispSpeed = (kmh: number) =>
+    imperial ? `${Math.round(kmhToMph(kmh))} mph` : `${Math.round(kmh)} km/h`;
+  const tempUnitWord = 'degrees';
+  const rainToday = formatRain(r.rainTodayMm, r.unitSystem ?? 'metric');
 
   const parts: string[] = [];
 
   // 1. Temperature & general state opening
   if (band === 'freezing') {
-    parts.push(`${Math.round(t)} degrees and freezing.`);
+    parts.push(`${dispTemp(t)} ${tempUnitWord} and freezing.`);
   } else if (r.rainRateMmH > 0) {
-    parts.push(`${Math.round(t)} degrees and ${band}.`);
+    parts.push(`${dispTemp(t)} ${tempUnitWord} and ${band}.`);
   } else if (r.humidityPct >= 75 && t >= 21) {
-    parts.push(`${Math.round(t)} degrees and humid.`);
+    parts.push(`${dispTemp(t)} ${tempUnitWord} and humid.`);
   } else if (r.rainTodayMm === 0) {
-    parts.push(`${Math.round(t)} degrees and dry.`);
+    parts.push(`${dispTemp(t)} ${tempUnitWord} and dry.`);
   } else {
-    parts.push(`${Math.round(t)} degrees and ${band}.`);
+    parts.push(`${dispTemp(t)} ${tempUnitWord} and ${band}.`);
   }
 
   // 2. Feels like note if distinct by >= 2 degrees
   if (feels != null && Math.abs(feels - t) >= 2) {
-    parts.push(`Feels like ${Math.round(feels)} degrees.`);
+    parts.push(`Feels like ${dispTemp(feels)} ${tempUnitWord}.`);
   }
 
   // 3. Wind sentence
   if (wind >= 1) {
     const bName = beaufort(wind).name;
-    parts.push(`${bName} from the ${dirWord} at ${Math.round(wind)} km/h.`);
+    parts.push(`${bName} from the ${dirWord} at ${dispSpeed(wind)}.`);
     if (Math.round(gust) > Math.round(wind) && gustIndex > bIndex) {
-      parts.push(`Gusts to ${Math.round(gust)} km/h.`);
+      parts.push(`Gusts to ${dispSpeed(gust)}.`);
     }
   } else {
     parts.push('Calm.');
@@ -98,7 +110,7 @@ export function summarySentence(r: SummaryReadingInput): {
   } else if (r.rainRateMmH > 0) {
     parts.push('Drizzle.');
   } else if (r.rainTodayMm > 0) {
-    parts.push(`${r.rainTodayMm} mm of rain today.`);
+    parts.push(`${rainToday.value} ${rainToday.unit} of rain today.`);
   }
 
   // 5. Pressure trend

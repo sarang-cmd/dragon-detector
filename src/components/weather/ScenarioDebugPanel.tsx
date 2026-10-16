@@ -15,6 +15,8 @@ const SCENARIO_LABELS: Record<Scenario, string> = {
 };
 
 const COOKIE_NAME = 'weather_scenario';
+const UNLOCK_KEY = 'weather_scenario_unlocked';
+const TRIPLE_WINDOW_MS = 800;
 
 function readScenarioCookie(): string | null {
   const match = document.cookie
@@ -29,14 +31,24 @@ function writeScenarioCookie(scenario: Scenario) {
   }; samesite=lax`;
 }
 
+function readUnlocked(): boolean {
+  try {
+    return sessionStorage.getItem(UNLOCK_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Dev-only. Lets developers flip the mock source scenario by setting a
- * cookie that the API route reads in non-production. Rendered as a small
- * floating button with a keyboard-accessible popover.
+ * Dev-only mock scenario switcher. There is intentionally no visible button:
+ * press the `d` key three times within 800ms to reveal the panel for this
+ * session (sessionStorage flag, so it survives page views but not visits).
+ * Esc hides it again. Still fully disabled in production.
  */
 export function ScenarioDebugPanel() {
   const { mutate } = useSWRConfig();
   const [open, setOpen] = React.useState(false);
+  const [unlocked, setUnlocked] = React.useState(false);
   const [active, setActive] = React.useState<Scenario>('default');
 
   React.useEffect(() => {
@@ -44,9 +56,46 @@ export function ScenarioDebugPanel() {
     if (current && (SCENARIOS as readonly string[]).includes(current)) {
       setActive(current as Scenario);
     }
+    if (readUnlocked()) setUnlocked(true);
+
+    let presses: number[] = [];
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        return;
+      }
+      const target = e.target as HTMLElement | null;
+      // Don't hijack typing in inputs, textareas or contenteditable.
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key.toLowerCase() !== 'd' || e.metaKey || e.ctrlKey || e.altKey) {
+        return;
+      }
+      const now = Date.now();
+      presses = [...presses, now].filter((t) => now - t <= TRIPLE_WINDOW_MS);
+      if (presses.length >= 3) {
+        presses = [];
+        setUnlocked(true);
+        setOpen(true);
+        try {
+          sessionStorage.setItem(UNLOCK_KEY, '1');
+        } catch {
+          // ignore write errors
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   if (process.env.NODE_ENV === 'production') return null;
+  if (!unlocked) return null;
 
   const choose = (scenario: Scenario) => {
     writeScenarioCookie(scenario);
@@ -56,31 +105,21 @@ export function ScenarioDebugPanel() {
     void mutate(() => true, undefined, { revalidate: true });
   };
 
+  if (!open) return null;
+
   return (
     <section
+      aria-label="Mock scenario selector"
       className="fixed bottom-5 right-5 z-50 print:hidden"
       onKeyDown={(e) => {
         if (e.key === 'Escape') setOpen(false);
       }}
     >
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls="scenario-panel"
-        onClick={() => setOpen((o) => !o)}
-        className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-xs font-medium text-[var(--color-text)] shadow-sm hover:border-[var(--accent)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
-      >
-        Scenario: {SCENARIO_LABELS[active]}
-      </button>
       <div
         id="scenario-panel"
         role="group"
         aria-label="Mock scenario selector"
-        className={
-          open
-            ? 'absolute bottom-full right-0 mb-2 flex min-w-[220px] flex-col gap-1 rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-sm'
-            : 'hidden'
-        }
+        className="flex min-w-[220px] flex-col gap-1 rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-sm"
       >
         {SCENARIOS.map((scenario) => (
           <button

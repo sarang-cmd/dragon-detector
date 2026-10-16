@@ -15,9 +15,10 @@ import { SolarTile } from '@/components/weather/SolarTile';
 import { MoonSunTile } from '@/components/weather/MoonSunTile';
 import { LearnHintStrip } from '@/components/weather/LearnHintStrip';
 import { HeroSkeleton, SkeletonTile } from '@/components/weather/SkeletonTile';
+import { AsciiSweepTransition } from '@/components/effects/AsciiSweepTransition';
 
 export default function HomePage() {
-  const { reading, history, isLoading, isOffline } = useWeather();
+  const { reading, history, isLoading, isStale, isOffline } = useWeather();
   const { unitSystem } = useUnitSystem();
 
   // History series for 24-hour inline sparklines
@@ -46,18 +47,38 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6">
             <HeroSkeleton className="col-span-1 md:col-span-2 lg:col-span-6 lg:row-span-2" />
             <SkeletonTile
+              label="Loading wind observations..."
               className="col-span-1 sm:col-span-1 lg:col-span-3 lg:row-span-2"
               minHeightClass="min-h-[380px] lg:min-h-[460px]"
             />
-            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
-            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
-            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
-            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
-            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
-            <SkeletonTile className="col-span-1 sm:col-span-1 lg:col-span-3" />
+            <SkeletonTile
+              label="Loading precipitation observations..."
+              className="col-span-1 sm:col-span-1 lg:col-span-3"
+            />
+            <SkeletonTile
+              label="Loading humidity observations..."
+              className="col-span-1 sm:col-span-1 lg:col-span-3"
+            />
+            <SkeletonTile
+              label="Loading pressure observations..."
+              className="col-span-1 sm:col-span-1 lg:col-span-3"
+            />
+            <SkeletonTile
+              label="Loading UV observations..."
+              className="col-span-1 sm:col-span-1 lg:col-span-3"
+            />
+            <SkeletonTile
+              label="Loading solar observations..."
+              className="col-span-1 sm:col-span-1 lg:col-span-3"
+            />
+            <SkeletonTile
+              label="Loading moon and sun observations..."
+              className="col-span-1 sm:col-span-1 lg:col-span-3"
+            />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch">
+          <AsciiSweepTransition unitSystem={unitSystem}>
+          <div className="bento-enter grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch">
             {/* 1. Hero Instrument Reading (2x2 bento: 6 cols x 2 rows on desktop) */}
             <div className="col-span-1 md:col-span-2 lg:col-span-6 lg:row-span-2 flex flex-col">
               <HeroReading
@@ -66,6 +87,7 @@ export default function HomePage() {
                 history={h24Points}
                 pressureTrend={pressureTrendInfo.trend}
                 isOffline={isOffline}
+                isStale={isStale || isOffline}
               />
             </div>
 
@@ -91,6 +113,7 @@ export default function HomePage() {
                 unitSystem={unitSystem}
                 historyRainMmH={historyRain}
                 isOffline={isOffline}
+                isStale={isStale}
               />
             </div>
 
@@ -142,6 +165,7 @@ export default function HomePage() {
               <MoonSunTile isOffline={isOffline} />
             </div>
           </div>
+          </AsciiSweepTransition>
         )}
 
         {/* Educational Hint Strip */}

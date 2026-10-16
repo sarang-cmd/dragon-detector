@@ -124,6 +124,37 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Verification (headless Chrome, dev server): students + kids views at 1440 dark, kids at 390, uncertainty slider, teacher QR, activities + print emulation (white, chrome hidden, sheets only), anchor `#pressure` landing (card top=112px under sticky header), age filter (5 upper-secondary), localStorage persistence. Shots in `screenshots/learn/` (moved from Temp, see Session 6).
 - Header fix (user-reported overlap): sticky header used `bg-[var(--color-background)]/95`, which Tailwind v3 cannot apply to a `var()` color — the declaration was dropped, leaving the header transparent so page text scrolled through it. Replaced with solid `bg-[var(--color-background)]`; verified with scrolled CDP screenshots (text now hides cleanly under the header).
 - Tooling note: dev server wedged once (all routes + static chunks 404); fresh `next dev` on same port fixed it. Reusable CDP scripts kept in `scripts/screenshots/` (`scrolled-shot.mjs`, `scroll-to-shot.mjs`, `learn-check.mjs`).
+## Session 7 — CanvasUI effects — IMPLEMENTED
+
+- Added the actual Canvas UI React sources for ASCII Sweep, Clouds, Droplets,
+  Frost, and VHS under `src/components/canvasui/` (from the supplied component
+  prompts), plus dynamic, client-only mounts in the weather/effects layer.
+- Added a device-tier detector (reduced motion and missing WebGL force off;
+  constrained devices use lite settings), persisted Auto/On/Off preference,
+  reference-counted ambient registration, and an FPS guard that persists a
+  trip and offers re-enable. Kiosk effects are forced off. Toggle controls are
+  available in header, footer and Learn; the Learn copy is audience-aware.
+- Wired clouds to the hero, frost only below 0 °C, droplets only during positive
+  rain rate, weak-signal treatment only in stale/offline banner, and a one-shot
+  unit-change sweep over the dashboard data area. Values remain normal DOM;
+  reduced-motion/effects-off retain the ordinary page. Canvas layers and the
+  sweep are hidden in print.
+- Preserved the upstream Canvas UI license text in
+  `src/components/canvasui/LICENSE.md`. The repository license is MIT + Commons
+  Clause Condition v1.0 (Copyright (c) 2026 David Haz); application/site use is
+  permitted, while selling or redistributing the components themselves is
+  restricted. Re-check with the school before launch.
+- Verification: `pnpm test:run` (157 passing), `pnpm lint`, `pnpm typecheck`,
+  and isolated `CI=1 NEXT_TELEMETRY_DISABLED=1 pnpm build` pass. Preview served
+  `/`, `/learn`, `/display`, and `/api/health` with HTTP 200; accessibility tree
+  showed normal weather values and controls; at 360 px the page had no horizontal
+  overflow and the mobile nav exposed keyboard-focusable unit/effects controls.
+  Cloud and rain canvas dimensions were checked after mounting.
+- Still unverified on actual school hardware: Chromebook throttling, FPS-trip
+  persistence/re-enable interaction, reduced-motion, no-GPU, Save-Data, full
+  keyboard-only journey, print output, and effect visual screenshots. The
+  implementation plan now marks these as remaining rather than claiming pass.
+
 ## Session 6 — Implementation plan doc + screenshot housekeeping — DONE
 
 - Wrote `docs/11_Onboarding_Units_and_Polish_Plan.md`: full spec for site-wide
@@ -141,3 +172,56 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Verification: `pnpm lint` clean; `pnpm build` failed first on stale `.next`
   cache (`/imprint` module error) — clean rebuild passes all 14 routes.
 - Next: implement `docs/11` package (file allowlist in §12).
+
+## Session 7 — docs/11 implementation — DONE
+
+- Roles + onboarding: `src/context/role-context.tsx` (`dis_role` + `dis_role_set`,
+  legacy `dis_learn_audience` migration, kids/students mapping, teacher-only
+  gating), `RoleOnboarding` modal (6 cards, focus trap, no dismiss without a
+  choice, `ready` gate against first-paint flash), footer `RoleSwitcher`
+  (custom Selector, immediate apply + persist). Deviated from plan §3.3: footer
+  switcher changes role directly instead of reopening the picker (same outcome,
+  fewer steps).
+- `src/components/ui/selector.tsx`: custom listbox (arrows/Home/End/Enter/Esc,
+  outside-click close, checkmark, accent focus ring). Used by Learn age filter
+  and footer role switcher.
+- Learn: role-driven reading level, Activities + TeacherPanel rendered only for
+  Teacher (others get the gate note), subject filter + `allSubjects()` deleted,
+  age filter rebuilt on Selector, header line now `{age} · {min} · {programme}`.
+- Content: `curriculum.subjects` removed from schema + all 8 activities;
+  programmes narrowed to PYP/MYP/DP (`sensor-accuracy` TOK→DP); age labels
+  scrubbed of CS/ESS/TOK/Physics qualifiers. Tests assert the programme set
+  and forbid the removed words.
+- Loading bar: found pre-existing `src/components/effects/TopProgressBar.tsx`
+  meeting the spec — kept and verified live (polling CDP: `data-visible=true`
+  mid-transition). Duplicate `navigation/` version written then deleted.
+  Plan doc §6 + §12 corrected.
+- Units: station page split into server wrapper + `StationClient` (every
+  range/accuracy/resolution converts; footnote states active system);
+  `ExplainerCard` unit rows via `CONCEPT_UNITS` map; `summarySentence` takes
+  `unitSystem` (bands/thresholds stay metric, display converts: °F, mph, in);
+  `UncertaintyDemo` already honored the toggle — untouched.
+- Grid/skeleton: loading grid now 8 slots mirroring the real tiles 1:1
+  (hero + tall wind + 6 small, same min-heights), `skeleton-shimmer` sweep
+  (hard-edged translucent band, no color gradients), `bento-enter` 40ms
+  stagger (≤280ms), motion-reduce safe.
+- Rain: default-scenario event probability 2%→8% (demo-visible totals);
+  `RainGauge` shows "Trace of rain today" for 0<today<0.05; regression test
+  forces sustained rain → non-zero today. Consistency test narrowed: rain is
+  event-driven per sample, so closeness no longer asserted (temp/humidity/wind
+  contract kept, rain plausibility kept).
+- Admin panel: floating button removed; triple-press D within 800ms reveals it
+  (sessionStorage unlock, Esc hides, input-focus guard, prod null-guard kept).
+- Incidental (parallel agent's tree): added the missing
+  `<AsciiSweepTransition unitSystem={unitSystem}>` opening tag in
+  `src/app/page.tsx` — import + closing tag existed without it, breaking
+  `tsc`/build. No other foreign files touched.
+- Tests: 173/173 (role 3, station 6, ExplainerCard 3, summary imperial 2,
+  mock rain + consistency, content schema updates). `pnpm build` clean
+  (14 routes), `pnpm lint` 0 warnings, `tsc` clean.
+- Verification: `scripts/screenshots/verify-docs11.mjs` — onboarding (6 cards,
+  pick persists, modal closes), teacher (8 activities + handout) vs PYP
+  (kids copy, 0 activities, gate note), station imperial (footnote + converted
+  table), rain tile non-zero rate, top bar mid-transition, triple-D panel with
+  no prior button. Shots in `screenshots/{onboarding,learn,station,home}/`.
+  Dev server left running at http://127.0.0.1:3100 (pid 3912).

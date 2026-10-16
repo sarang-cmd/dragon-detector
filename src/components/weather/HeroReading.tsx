@@ -9,6 +9,12 @@ import { StatusStrip } from './StatusStrip';
 import { formatTemp, UnitSystem } from '@/lib/units';
 import { summarySentence, PressureTrend } from '@/lib/summary';
 import { HistoryPoint, WeatherReading } from '@/lib/types';
+import dynamic from 'next/dynamic';
+
+const HeroWeatherEffects = dynamic(
+  () => import('@/components/effects/WeatherEffects').then((module) => module.HeroWeatherEffects),
+  { ssr: false }
+);
 
 export interface HeroReadingProps {
   reading: WeatherReading;
@@ -16,6 +22,7 @@ export interface HeroReadingProps {
   history?: HistoryPoint[];
   pressureTrend?: PressureTrend;
   isOffline?: boolean;
+  isStale?: boolean;
 }
 
 /**
@@ -31,6 +38,7 @@ export function HeroReading({
   history = [],
   pressureTrend = 'steady',
   isOffline = false,
+  isStale = false,
 }: HeroReadingProps) {
   const currentTemp = reading.temperatureC;
   const formattedTemp = formatTemp(currentTemp, unitSystem);
@@ -69,6 +77,7 @@ export function HeroReading({
     pressureHpa: reading.pressureHpa,
     pressureTrend,
     isOffline,
+    unitSystem,
   });
 
   return (
@@ -82,8 +91,15 @@ export function HeroReading({
           'radial-gradient(circle at 12% 16%, color-mix(in srgb, var(--accent) 7%, transparent) 0%, transparent 60%)',
       }}
     >
+      <div className="weather-effect-host absolute inset-0 z-0 overflow-hidden rounded-[inherit]" aria-hidden="true">
+        <HeroWeatherEffects
+          temperatureC={reading.temperatureC}
+          humidityPct={reading.humidityPct}
+          isStale={isStale || isOffline}
+        />
+      </div>
       {/* Top Bar: StatusStrip & "What is this?" */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="relative z-10 flex items-start justify-between gap-4">
         <StatusStrip />
 
         <Tooltip
