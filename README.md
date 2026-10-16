@@ -2,7 +2,15 @@
 
 <p align="center">
   <img src="public/brand/dis-logo-horizontal.jpg" alt="Dresden International School" width="360" style="border-radius:12px" />
+  <img src="public/dragon_detector_logo.jpeg" alt="DIS Weather Club" width="180" style="border-radius:50%" />
+  <br />
 </p>
+
+<p align="center">
+  <img src="public/brand/dis-tagline-banner.jpg" alt="Dresden International School tagline" width="640" style="border-radius:12px" />
+</p>
+
+<hr>
 
 <p align="center">
   <a href="https://dragon-detector.vercel.app"><img src="https://img.shields.io/badge/live-dragon--detector.vercel.app-00529E?style=for-the-badge" alt="Live deployment" /></a>
@@ -18,10 +26,6 @@
   <img src="https://img.shields.io/badge/Supabase-auth-3FCF8E?logo=supabase&logoColor=black" alt="Supabase" />
   <img src="https://img.shields.io/badge/Groq-AI_outlook-FF4A4A" alt="Groq" />
   <img src="https://img.shields.io/badge/Open--Meteo-forecast-FF8C00" alt="Open-Meteo" />
-</p>
-
-<p align="center">
-  <img src="public/brand/dis-tagline-banner.jpg" alt="Dresden International School tagline" width="640" style="border-radius:12px" />
 </p>
 
 Live school weather station for **Dresden International School** — a Sainlogic
