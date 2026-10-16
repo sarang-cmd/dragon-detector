@@ -63,9 +63,30 @@ Project: `mhbsnmtqzjehwglzcaay` ([dashboard](https://supabase.com/dashboard)).
    **Reset password** with `supabase/templates/recovery.html` from this repo
    (dark DIS card, amber button, correct school address). Also set
    **Mail → From name** to `DIS Weather Station` so inboxes show the brand
-   instead of a generic sender. Note: Gmail groups these under
-   `noreply@mail.app.supabase.io`; the app's signup screen links users
-   straight to that Gmail search.
+   instead of a generic sender. Note: the **template editor stays locked
+   until custom SMTP is set up** (Supabase shows "Set up custom SMTP to edit
+   templates"), and Supabase's built-in sender is rate-limited, so a whole
+   class signing up at once would see failures. Set up SMTP first:
+
+   **Option A — Resend (recommended, free 100 emails/day):**
+   1. Sign up at [resend.com](https://resend.com), verify your email,
+      create an API key (Sending access) and copy it.
+   2. Supabase → **Project Settings → Auth → SMTP Settings**, enable
+      custom SMTP: host `smtp.resend.com`, port `465`, username `resend`,
+      password = the Resend API key, sender email `onboarding@resend.dev`
+      (works immediately; switch to a school address after verifying the
+      domain in Resend), sender name `DIS Weather Station`.
+   3. Send the test email from the SMTP page, then the template editor
+      unlocks — paste the two HTML files.
+
+   **Option B — Gmail (no new account, ~500/day):** Google Account with
+   2-step verification → App Passwords → generate one for "Mail". SMTP:
+   host `smtp.gmail.com`, port `587` (STARTTLS), username = the Gmail
+   address, password = the 16-letter app password. Sender will be that
+   Gmail address with name `DIS Weather Station`.
+
+   The app's "Open in Gmail" button searches for `DIS Weather Station`,
+   so it keeps working whichever sender you use.
 5. Sanity check: open `/login` on the live site → **Continue with Google**
    should go to Google and land back on `/learn` signed in. Sign out via the
    avatar menu in the header.

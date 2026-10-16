@@ -166,7 +166,7 @@ export default function LoginPage() {
               </p>
               <div className="flex flex-wrap gap-2">
                 <a
-                  href="https://mail.google.com/mail/u/0/#search/from%3A%28noreply%40mail.app.supabase.io%29"
+                  href="https://mail.google.com/mail/u/0/#search/%22DIS%20Weather%20Station%22"
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex min-h-[44px] items-center rounded-[8px] border border-[var(--color-border)] px-3 text-xs text-[var(--color-text)] hover:border-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
