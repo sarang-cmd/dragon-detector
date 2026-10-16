@@ -110,6 +110,48 @@ export default function LoginPage() {
     if (err) setError(err);
   };
 
+  const forgotPassword = async () => {
+    if (!email.includes('@')) {
+      setError('Type your email above first, then use this button.');
+      return;
+    }
+    setError(null);
+    setNotice(null);
+    setBusy(true);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error: err } = await createClient().auth.resetPasswordForEmail(
+        email.trim(),
+        { redirectTo: `${window.location.origin}/auth/confirm` }
+      );
+      if (err) setError(err.message);
+      else setNotice('Password reset email sent. Check your inbox (and spam), then follow the link to choose a new password.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const magicLink = async () => {
+    if (!email.includes('@')) {
+      setError('Type your email above first, then use this button.');
+      return;
+    }
+    setError(null);
+    setNotice(null);
+    setBusy(true);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error: err } = await createClient().auth.signInWithOtp({
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+      });
+      if (err) setError(err.message);
+      else setNotice('Sign-in link sent. Check your inbox (and spam), then tap the link — no password needed.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-[480px] px-4 py-12 sm:py-16">
       <span className="label">Accounts</span>
@@ -233,6 +275,25 @@ export default function LoginPage() {
             {busy ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
         </form>
+
+        <div className="flex flex-wrap gap-2 pt-1">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void forgotPassword()}
+            className="inline-flex min-h-[44px] items-center rounded-[8px] px-2 text-xs text-[var(--color-muted)] underline decoration-[var(--accent)] underline-offset-4 hover:text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:opacity-60"
+          >
+            Forgot password?
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void magicLink()}
+            className="inline-flex min-h-[44px] items-center rounded-[8px] px-2 text-xs text-[var(--color-muted)] underline decoration-[var(--accent)] underline-offset-4 hover:text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:opacity-60"
+          >
+            Email me a sign-in link instead
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -2,37 +2,61 @@
 
 import * as React from 'react';
 
+export type MascotChoice = 'sid' | 'classic';
+
+const STORAGE_KEY = 'dis_mascot';
+const EVENT_NAME = 'dis:mascot-change';
+
+function readChoice(): MascotChoice {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === 'classic' ? 'classic' : 'sid';
+  } catch {
+    return 'sid';
+  }
+}
+
+export function setMascotChoice(next: MascotChoice): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, next);
+  } catch {
+    // ignore write errors
+  }
+  window.dispatchEvent(new CustomEvent<MascotChoice>(EVENT_NAME, { detail: next }));
+}
+
+function subscribe(onChange: () => void): () => void {
+  window.addEventListener(EVENT_NAME, onChange);
+  window.addEventListener('storage', onChange);
+  return () => {
+    window.removeEventListener(EVENT_NAME, onChange);
+    window.removeEventListener('storage', onChange);
+  };
+}
+
+export function useMascotChoice(): MascotChoice {
+  return React.useSyncExternalStore(subscribe, readChoice, () => 'sid' as const);
+}
+
 /**
- * Track mascot. Uses `/mascot.png` when the club drops one into `public/`
- * (no code change needed); otherwise renders a small procedural dragon face.
- * Flat shapes only, brand amber + neutrals, no gradients.
+ * Sid, the official DIS Dragons mascot (default), with the procedural dragon
+ * as the "classic" alternative. The admin panel (triple-press D) toggles
+ * between them; the choice persists per browser. Falls back to procedural
+ * art if the image file is ever missing.
  */
 export function Mascot({ size = 56, mood = 'happy' }: { size?: number; mood?: 'happy' | 'thinking' | 'celebrate' }) {
-  // Default to the procedural dragon; upgrade to /mascot.png only after it
-  // provably loads. This way a missing file never flashes a broken image.
-  const [useFile, setUseFile] = React.useState(false);
+  const choice = useMascotChoice();
+  const [broken, setBroken] = React.useState(false);
 
-  React.useEffect(() => {
-    let cancelled = false;
-    const probe = new Image();
-    probe.onload = () => {
-      if (!cancelled) setUseFile(true);
-    };
-    probe.src = '/mascot.png';
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (useFile) {
+  if (choice === 'sid' && !broken) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src="/mascot.png"
-        alt="Weather dragon mascot"
+        src="/brand/dis-dragons-mascot-512.png"
+        alt="Sid, the DIS Dragons mascot"
         width={size}
         height={size}
         style={{ width: size, height: size, objectFit: 'contain' }}
+        onError={() => setBroken(true)}
       />
     );
   }
@@ -59,14 +83,10 @@ export function Mascot({ size = 56, mood = 'happy' }: { size?: number; mood?: 'h
       role="img"
       aria-label="Weather dragon mascot"
     >
-      {/* horns */}
       <path d="M28 26 L22 8 L40 20 Z" fill="var(--color-muted)" />
       <path d="M72 26 L78 8 L60 20 Z" fill="var(--color-muted)" />
-      {/* face */}
       <rect x="18" y="18" width="64" height="64" rx="22" fill="var(--accent)" />
-      {/* belly patch */}
       <ellipse cx="50" cy="66" rx="16" ry="12" fill="var(--color-surface)" opacity="0.85" />
-      {/* eyes */}
       <circle cx="38" cy="50" r="6" fill="var(--color-background)" />
       <circle cx="62" cy="50" r="6" fill="var(--color-background)" />
       <circle cx="39.5" cy="48.5" r="2" fill="var(--color-text)" />
