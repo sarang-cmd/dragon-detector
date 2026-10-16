@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip } from '@/components/ui/tooltip';
 import { ValueCrossfade } from './ValueCrossfade';
+import { Outlook } from './Outlook';
 import { StatusStrip } from './StatusStrip';
 import { formatTemp, UnitSystem } from '@/lib/units';
 import { summarySentence, PressureTrend } from '@/lib/summary';
@@ -184,6 +185,11 @@ export function HeroReading({
             <span className="text-[var(--accent)] font-medium">Jacket advice:</span>{' '}
             {jacket}
           </p>
+        </div>
+
+        {/* 12-hour outlook: forecast graph + AI/statistical sentence */}
+        <div className="border-t border-[var(--color-border)] pt-3">
+          <Outlook unitSystem={unitSystem} />
         </div>
       </div>
     </div>
