@@ -94,5 +94,5 @@ To go live for real:
 1. Read the **full** log tail, the real error is at the end
    (`Module not found` = a file was never pushed; commit it).
 2. Redeploy **without** the build cache once before debugging further.
-3. `themeColor`-style Next warnings are fixed via the `viewport` export —
+3. `themeColor`-style Next warnings are fixed via the `viewport` export,
    don't chase those.

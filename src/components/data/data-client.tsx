@@ -77,7 +77,7 @@ function ChartTooltip({
             <span className="numeric ml-auto pl-4 font-medium text-[var(--color-text)]">
               {typeof entry.value === 'number'
                 ? entry.value
-                : (entry.value ?? '—')}
+                : (entry.value ?? '-')}
             </span>
           </div>
         ))}
@@ -372,8 +372,8 @@ export function DataClient() {
           head: ['Time (Berlin)', `Temp (${conv.tempUnit})`, `Dew point (${conv.tempUnit})`],
           rows: rows.map((r) => [
             formatTooltipTime(r.timestamp),
-            r.temp == null ? '—' : fmt1(r.temp),
-            r.dew == null ? '—' : fmt1(r.dew),
+            r.temp == null ? '-' : fmt1(r.temp),
+            r.dew == null ? '-' : fmt1(r.dew),
           ]),
         };
       case 'wind':
@@ -381,9 +381,9 @@ export function DataClient() {
           head: ['Time (Berlin)', `Speed (${conv.speedUnit})`, `Gust (${conv.speedUnit})`, 'Dir (°)'],
           rows: rows.map((r) => [
             formatTooltipTime(r.timestamp),
-            r.speed == null ? '—' : fmtInt(r.speed),
-            r.gust == null ? '—' : fmtInt(r.gust),
-            r.dir == null ? '—' : fmtInt(r.dir),
+            r.speed == null ? '-' : fmtInt(r.speed),
+            r.gust == null ? '-' : fmtInt(r.gust),
+            r.dir == null ? '-' : fmtInt(r.dir),
           ]),
         };
       case 'rain':
@@ -396,9 +396,9 @@ export function DataClient() {
           ],
           rows: rows.map((r) => [
             formatTooltipTime(r.timestamp),
-            r.rainRate == null ? '—' : fmtRainBound(r.rainRate),
-            r.rainToday == null ? '—' : fmtRainBound(r.rainToday),
-            r.cumulative == null ? '—' : fmtRainBound(r.cumulative),
+            r.rainRate == null ? '-' : fmtRainBound(r.rainRate),
+            r.rainToday == null ? '-' : fmtRainBound(r.rainToday),
+            r.cumulative == null ? '-' : fmtRainBound(r.cumulative),
           ]),
         };
       case 'pressure':
@@ -406,7 +406,7 @@ export function DataClient() {
           head: ['Time (Berlin)', `Pressure (${conv.pressureUnit})`],
           rows: rows.map((r) => [
             formatTooltipTime(r.timestamp),
-            r.pressure == null ? '—' : fmtPressureBound(r.pressure),
+            r.pressure == null ? '-' : fmtPressureBound(r.pressure),
           ]),
         };
       case 'humidity':
@@ -414,7 +414,7 @@ export function DataClient() {
           head: ['Time (Berlin)', 'Humidity (%)'],
           rows: rows.map((r) => [
             formatTooltipTime(r.timestamp),
-            r.humidity == null ? '—' : fmtInt(r.humidity),
+            r.humidity == null ? '-' : fmtInt(r.humidity),
           ]),
         };
       case 'sun':
@@ -422,8 +422,8 @@ export function DataClient() {
           head: ['Time (Berlin)', 'UV index', 'Solar (W/m²)'],
           rows: rows.map((r) => [
             formatTooltipTime(r.timestamp),
-            r.uv == null ? '—' : fmt1(r.uv),
-            r.solar == null ? '—' : fmtInt(r.solar),
+            r.uv == null ? '-' : fmt1(r.uv),
+            r.solar == null ? '-' : fmtInt(r.solar),
           ]),
         };
     }

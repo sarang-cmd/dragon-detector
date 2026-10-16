@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 
 /**
  * Server-side Supabase client (route handlers / server components).
- * Still uses the publishable key — RLS applies. Never uses a service key.
+ * Still uses the publishable key, RLS applies. Never uses a service key.
  */
 export function createClient() {
   const cookieStore = cookies();

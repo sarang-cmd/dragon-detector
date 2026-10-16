@@ -160,7 +160,7 @@ export const activities: Activity[] = [
       'Read solar irradiance at several times of day from /data.',
       'Pick a panel efficiency, for example 15 % (0.15).',
       'Estimate the energy per square metre for one hour at each time.',
-      'Discuss when panels would produce most — and when nothing at all.',
+      'Discuss when panels would produce most, and when nothing at all.',
     ],
     expectedResult: 'Students connect irradiance readings to electrical output.',
     extension: 'Model a full day’s energy from a 1 m² panel, hour by hour.',

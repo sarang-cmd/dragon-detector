@@ -35,13 +35,13 @@ const ROLE_META: Record<Role, { icon: LucideIcon; blurb: string }> = {
   },
   family: {
     icon: Users,
-    blurb: 'Plain words — is it raining, do we need jackets?',
+    blurb: 'Plain words, is it raining, do we need jackets?',
   },
 };
 
 /**
  * First-visit role picker. Rendered from the root layout; appears only when
- * no role has been confirmed yet. Picking a card commits immediately —
+ * no role has been confirmed yet. Picking a card commits immediately,
  * there is intentionally no dismiss without a choice.
  */
 export function RoleOnboarding() {

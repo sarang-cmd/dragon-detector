@@ -54,21 +54,21 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 
 - Scaffold and shell by this agent; build + lint verified.
 
-## Session 3 — Home page (bento dashboard) finished — DONE
+## Session 3, Home page (bento dashboard) finished, DONE
 
 - (other agent) built most of the bento: HeroReading (big temperature 12.5°C clamp, feels-like, min/max range bar with progressbar a11y, summary sentence + jacket advice, LiveDot/RelativeTime), WindCompass (SVG + cardinal/minor ticks, ghost gust needle, exact screen-reader sentence), RainGauge (0–10 mm scale, "No rain today."), HumidityTile (+dew point +comfort word), PressureTile (trend arrow + sparkline), UVTile (WHO segment bar), SolarTile (hidden if absent), MoonSunTile (math moon + sunrise/sunset from src/lib/site.ts), Metric primitive with Tooltip "What is this?" → /learn#<concept-id>, ValueCrossfade (300 ms, reduced-motion), Sparkline SkeletonTile, LearnHintStrip (→ /learn and /display).
 - This session finished the gaps:
   1. `/learn#<concept-id>` anchors were broken (learn page had no ids). Fixed: ConceptCardShell now renders `id={card.id}` + `scroll-mt-28`; all 9 tile links and the hero link now land on the right card.
   2. `/display` was linked but did not exist (404). Built minimal kiosk page per docs/04 §6: fullscreen, no nav, cycles Temp/Wind/Rain every 12 s, 6 px burn-in shift every 10 min, reuses HeroReading/WindCompass/RainGauge, LiveDot + RelativeTime header, typecheck-clean.
   3. Humidity comfort word was misleading (72 % RH with 7.9 °C dew point read "Dry"). Rewrote comfortWord: RH bands lead (35–65 comfortable), dew point only escalates inside the middle band (dew >16 C = humid); 72 % now reads "Humid". Locked with 5 unit tests.
-  4. REAL BUG: mock scenario overrides did nothing for wind/rain — `getWind()`/`maybeRain()` read the constructor `scenario` while `setScenario` mutated `currentScenario` only. Fixed by switching all simulation branches to `currentScenario`; added regression tests (setScenario storm → 35+ km/h wind; back to calm → ≤10). Verified live via cookie: storm → wind 53, gust 72, rain 4.8 mm/h; rain → 2.8 mm/h; offline → 35-min-old timestamp driving isStale/isOffline.
+  4. REAL BUG: mock scenario overrides did nothing for wind/rain, `getWind()`/`maybeRain()` read the constructor `scenario` while `setScenario` mutated `currentScenario` only. Fixed by switching all simulation branches to `currentScenario`; added regression tests (setScenario storm → 35+ km/h wind; back to calm → ≤10). Verified live via cookie: storm → wind 53, gust 72, rain 4.8 mm/h; rain → 2.8 mm/h; offline → 35-min-old timestamp driving isStale/isOffline.
 - Tests: 124 passing across 12 files (added HumidityTile.test.tsx, scenario regression tests). `vitest run` exit 0; typecheck exit 0; lint 0 warnings.
-- Self-review: overflow probe `scrollWidth > clientWidth+1` at 360/390/768/1024/1440 — clean at every width in dark; light theme accent verified #00529E flip and no overflow at 390. Console clean. Screenshots unavailable (preview compositor bug, ap-side); DOM/a11y-level checks used instead.
+- Self-review: overflow probe `scrollWidth > clientWidth+1` at 360/390/768/1024/1440, clean at every width in dark; light theme accent verified #00529E flip and no overflow at 390. Console clean. Screenshots unavailable (preview compositor bug, ap-side); DOM/a11y-level checks used instead.
 - Preview: http://localhost:54772 (detached npm.cmd run dev, pid 31980, logs .freebuff/preview-c2f67de1-…log[.err]).
-- Final check additions: unit toggle verified end-to-end (hero °F, wind mph, rain in, pressure inHg). Found + fixed a real bug — sparklines under imperial showed hPa/km/h/mm values with converted unit labels; all three call sites (PressureTile, WindCompass, RainGauge) now convert data arrays per unit system (verified live: 29.8–30.0 inHg, 3.1–6.8 mph, 0.0–0.1 in/h). Fixed flaky `vitest run` cause: 12 parallel jsdom fork workers exhausted memory ("Failed to start forks worker"); maxWorkers: 4 in vitest.config — two consecutive 124/124 exit-0 runs.
+- Final check additions: unit toggle verified end-to-end (hero °F, wind mph, rain in, pressure inHg). Found + fixed a real bug, sparklines under imperial showed hPa/km/h/mm values with converted unit labels; all three call sites (PressureTile, WindCompass, RainGauge) now convert data arrays per unit system (verified live: 29.8–30.0 inHg, 3.1–6.8 mph, 0.0–0.1 in/h). Fixed flaky `vitest run` cause: 12 parallel jsdom fork workers exhausted memory ("Failed to start forks worker"); maxWorkers: 4 in vitest.config, two consecutive 124/124 exit-0 runs.
 - Remaining: real Ecowitt sample JSON to replace mock.
 
-## Session 2.5 — Client data layer + live-status components — DONE
+## Session 2.5, Client data layer + live-status components, DONE
 
 - `src/hooks/useWeather.ts` rewritten to contract: SWR `keepPreviousData`, refresh 5s (mock mode via NEXT_PUBLIC_DATA_MODE) / 60s otherwise, revalidateOnFocus + reconnect, exponential retry backoff (interval × 2^retryCount), zod-validated fetcher that never surfaces internal error bodies. Returns { reading, history, isLoading, error, isStale, isOffline, measuredAt, secondsSinceMeasured }; `secondsSinceMeasured` ticks every 1s from a dedicated interval (`useElapsedSeconds`) without refetching; first paint is 0 for hydration safety; stale/offline computed client-side (>10 min / >30 min, strict).
 - `src/hooks/useHistory.ts` (new): own SWR key `/api/history?range=…`, 5-minute refresh, zod-validated.
@@ -79,16 +79,16 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Route updates: /api/weather reads `weather_scenario` cookie fallback in non-production (query param still wins, 403 in prod); /api/history honors the same cookie.
 - Tests: +22 (98/98 total). New: elapsed ticking (fake-timer 1s ticks, future-timestamp clamp, null), threshold boundaries (exactly 10 min fresh, >10 min stale, exactly 30 min stale, >30 min offline), formatElapsed/RelativeTime, StaleBanner visibility + both messages + grid-rows wrapper. vitest now includes *.test.tsx via @vitejs/plugin-react.
 - Fixes during verification: errorRetryFactor removed from SWR options (SWR v2 does exponential backoff internally off errorRetryInterval).
-- Live verification via preview: LIVE ("measured just now" + LIVE label), OFFLINE scenario ("measured 35 min ago" + offline banner), LIVE again after revalidate. Delayed state (10–30 min window) covered by unit tests — no mock scenario produces that age live. Browser console clean (one info devtools notice only).
+- Live verification via preview: LIVE ("measured just now" + LIVE label), OFFLINE scenario ("measured 35 min ago" + offline banner), LIVE again after revalidate. Delayed state (10–30 min window) covered by unit tests, no mock scenario produces that age live. Browser console clean (one info devtools notice only).
 - Preview registered: http://localhost:57492 (detached next dev, pid 49004, log .freebuff/preview-c2f67de1-76ec-41a1-bd11-65061c007ed4.log + dev-server.log).
 
-## Session 2 — Data layer (mock, per docs/02 and docs/04) — DONE
+## Session 2, Data layer (mock, per docs/02 and docs/04), DONE
 
 - `src/lib/types.ts`: zod schemas for WeatherReading, HistoryPoint, WeatherApiResponse (reading + history {h24,d7} + meta{fetchedAt, stale, offline, measuredAt, source, scenario?}) and HistoryApiResponse; TS types inferred from schemas; WeatherSource interface.
 - `src/lib/units.ts`: fToC/cToF, mphToKmh/kmhToMph/kmhToMs, inToMm/mmToIn, inHgToHpa/hPaToInHg plus formatTemp/formatSpeed/formatRain/formatPressure honouring metric/imperial; rounding helpers (temp 1dp, wind 1dp internal/0dp display, rain 2dp, pressure 1dp).
 - `src/lib/beaufort.ts`: beaufort(kmh) -> {scale 0-12, name, kidName}, wind compass labels, wrapDeg and circular averageWindDirection.
 - `src/lib/moon.ts`: mean-synodic moon phase + illumination (epoch 2000-01-06T18:14Z, 29.53058867-day month, no network).
-- `src/lib/sources/mock.ts`: mulberry32 seeded deterministic simulation per docs/02 §6 — seasonal-adjustable temperature sine, inverse humidity, gusts + circularly drifting wind direction, rain events with accumulation reset at Europe/Berlin midnight, pressure drift, UV/solar bell curve zero at night, Magnus dew point, wind chill <10C/>4.8km/h, heat index >=26C/>=40% RH; scenarios storm/calm/rain/offline via ctor arg or setScenario; history consistent with current reading (last history point ~= current within tolerance, covered by test).
+- `src/lib/sources/mock.ts`: mulberry32 seeded deterministic simulation per docs/02 §6, seasonal-adjustable temperature sine, inverse humidity, gusts + circularly drifting wind direction, rain events with accumulation reset at Europe/Berlin midnight, pressure drift, UV/solar bell curve zero at night, Magnus dew point, wind chill <10C/>4.8km/h, heat index >=26C/>=40% RH; scenarios storm/calm/rain/offline via ctor arg or setScenario; history consistent with current reading (last history point ~= current within tolerance, covered by test).
 - `src/lib/sources/index.ts`: getSource() by DATA_SOURCE (default mock), ecowitt stub throws "not implemented".
 - `src/app/api/weather/route.ts` + `api/history/route.ts`: zod query validation, scenario param non-production only (403 otherwise), stale >10min / offline >30min, Cache-Control no-store for mock, s-maxage=60 stale-while-revalidate=30 for real mode, generic error messages (400/403/502/503), no internal details leaks, last-good in-memory fallback on failure.
 - Tests (vitest, `src/**/*.test.ts`): 76 tests / 76 assertions passing across units (round-trips, 32F=0C, 1013.25hPa=29.92inHg), beaufort boundaries + wrapDeg, moon (real events: new 2019-12-26, full 2020-01-10, quarters 2019-12-19/2020-01-02), mock determinism, wind direction wrap, humidity 0-100, dew point <= air temp, rain monotonic within a day + midnight reset, route/query schema + thresholds.
@@ -96,7 +96,7 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - LIVE verification: `next dev` + curl 200 and valid JSON on /api/weather, /api/history?range=24h, /api/history?range=7d; invalid range -> 400 {"error":"Invalid range parameter. Use 24h or 7d."}.
 - Remaining: UI wiring (Prompt 4), unit toggle, real Ecowitt sample for normalizer.
 
-## Session 4 — /data page (Prompt 6) — DONE
+## Session 4, /data page (Prompt 6), DONE
 
 - `src/lib/types.ts`: `HistoryPointSchema` extended with optional full-sensor fields (`dewPointC`, `feelsLikeC`, `windGustKmh`, `windDirectionDeg`, `rainTodayMm`, `rainHourMm`, `rainWeekMm`, `uvIndex`, `solarWm2`); old payloads without them still validate (missing = empty CSV cells / hidden secondary series).
 - `src/lib/sources/mock.ts`: history points now populate dew point (Magnus), gust, drifting direction, Berlin-midnight-resetting `rainTodayMm`, UV/solar bell curve; **7d fixed from 96 pts (48 h) to 336 pts at 30 min = 7 full days** (live-verified: 336 pts spanning 167.5 h).
@@ -106,10 +106,10 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - `src/components/data/data-client.tsx` (new): shareable `?range=24h|7d&metric=<tab>` (+ `?view=table`), 6 tabs, Recharts with 1.5px lines / no fills / horizontal-only 6%-opacity grid / muted axes / Berlin ticks (HH:mm 24h, weekday+date 7d), temp+dashed-dew, wind+gust-dots, rain bars+cumulative line, padded pressure domain, humidity line, dual sun charts + UV peak note; custom design-system tooltip; min/max/avg/change chips; accessible sticky-header scrollable table; client-side CSV download (always metric); skeletons, "No data for this period yet" empty state, error+retry. Animations disabled (`isAnimationActive={false}`) so headless screenshots and reduced-motion stay deterministic. Accent only on active series, greys elsewhere; display values honour the unit toggle.
 - `src/app/data/page.tsx`: server wrapper keeps `metadata`, renders `DataClient` in Suspense.
 - Tests: 134/134 passing (13 files, incl. 10 new). `pnpm build` clean, `pnpm lint` 0 warnings.
-- Verification: headless Chrome screenshots at 390 px (light) and 1440 px (forced dark) for all six tabs at 24h, plus 7d temperature at both widths and table view at both widths — lines/bars render, amber (dark) / DIS blue (light) accent only on active series, no overflow, console clean (one benign React DevTools notice in dev). Shots in `Temp\opencode\data-shots` (not committed). Imperial display and tooltip hover verified by code review only (no session capable of those interactions headless).
+- Verification: headless Chrome screenshots at 390 px (light) and 1440 px (forced dark) for all six tabs at 24h, plus 7d temperature at both widths and table view at both widths, lines/bars render, amber (dark) / DIS blue (light) accent only on active series, no overflow, console clean (one benign React DevTools notice in dev). Shots in `Temp\opencode\data-shots` (not committed). Imperial display and tooltip hover verified by code review only (no session capable of those interactions headless).
 - Remaining: real Ecowitt sample JSON for the history normalizer; Ecowitt history returns fewer fields (secondary series hide gracefully by design).
 
-## Session 5 — /learn rebuild (Prompt 7) + header overlap fix — DONE
+## Session 5, /learn rebuild (Prompt 7) + header overlap fix, DONE
 
 - `src/lib/content/concepts.ts` rewritten: zod `ConceptSchema` (id enum, lucide-icon enum, kids {summary, example}, students {summary, howMeasured, formula?, unit, typicalDresden {winter, summer}}, tryThis, relatedMetricKey, accuracyNote). 12 concepts from docs/06; kids sentences unit-tested to ≤14 words; Dresden figures are rounded labelled typical ranges (about 600 mm/year, UVI 5–7 summer midday, solar ~700–900 W/m²); undocumented accuracies honestly marked "manual states no figure".
 - `src/lib/content/activities.ts` rewritten: zod `ActivitySchema` with the 8 docs/06 activities (ageLabel + ageBand + ageMin/Max, minutes, materials, ≥3 numbered steps, expectedResult, extension, curriculum {programme, subjects}); `allSubjects()` feeds the subject filter.
@@ -122,9 +122,9 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Dashboard "What is this?" links: already present on all tiles; anchor ids preserved so all 7 existing deep links resolve.
 - Tests: 145/145 passing (14 files, incl. 11 new). `pnpm build` clean, `pnpm lint` 0 warnings.
 - Verification (headless Chrome, dev server): students + kids views at 1440 dark, kids at 390, uncertainty slider, teacher QR, activities + print emulation (white, chrome hidden, sheets only), anchor `#pressure` landing (card top=112px under sticky header), age filter (5 upper-secondary), localStorage persistence. Shots in `screenshots/learn/` (moved from Temp, see Session 6).
-- Header fix (user-reported overlap): sticky header used `bg-[var(--color-background)]/95`, which Tailwind v3 cannot apply to a `var()` color — the declaration was dropped, leaving the header transparent so page text scrolled through it. Replaced with solid `bg-[var(--color-background)]`; verified with scrolled CDP screenshots (text now hides cleanly under the header).
+- Header fix (user-reported overlap): sticky header used `bg-[var(--color-background)]/95`, which Tailwind v3 cannot apply to a `var()` color, the declaration was dropped, leaving the header transparent so page text scrolled through it. Replaced with solid `bg-[var(--color-background)]`; verified with scrolled CDP screenshots (text now hides cleanly under the header).
 - Tooling note: dev server wedged once (all routes + static chunks 404); fresh `next dev` on same port fixed it. Reusable CDP scripts kept in `scripts/screenshots/` (`scrolled-shot.mjs`, `scroll-to-shot.mjs`, `learn-check.mjs`).
-## Session 7 — CanvasUI effects — IMPLEMENTED
+## Session 7, CanvasUI effects, IMPLEMENTED
 
 - Added the actual Canvas UI React sources for ASCII Sweep, Clouds, Droplets,
   Frost, and VHS under `src/components/canvasui/` (from the supplied component
@@ -155,7 +155,7 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   keyboard-only journey, print output, and effect visual screenshots. The
   implementation plan now marks these as remaining rather than claiming pass.
 
-## Session 6 — Implementation plan doc + screenshot housekeeping — DONE
+## Session 6, Implementation plan doc + screenshot housekeeping, DONE
 
 - Wrote `docs/11_Onboarding_Units_and_Polish_Plan.md`: full spec for site-wide
   role onboarding (6 roles, `dis_role` key, kids/students mapping, teacher-only
@@ -168,12 +168,12 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   `screenshots/data/{temperature,wind,rain,pressure,humidity,sun,table}/`,
   `screenshots/learn/`, `screenshots/header/`, `screenshots/dom/` and
   `scripts/screenshots/`; Temp copy deleted. `screenshots/` gitignored (binaries),
-  scripts untracked and ready to commit. No implementation work done — plan only.
+  scripts untracked and ready to commit. No implementation work done, plan only.
 - Verification: `pnpm lint` clean; `pnpm build` failed first on stale `.next`
-  cache (`/imprint` module error) — clean rebuild passes all 14 routes.
+  cache (`/imprint` module error), clean rebuild passes all 14 routes.
 - Next: implement `docs/11` package (file allowlist in §12).
 
-## Session 7 — docs/11 implementation — DONE
+## Session 7, docs/11 implementation, DONE
 
 - Roles + onboarding: `src/context/role-context.tsx` (`dis_role` + `dis_role_set`,
   legacy `dis_learn_audience` migration, kids/students mapping, teacher-only
@@ -193,14 +193,14 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   scrubbed of CS/ESS/TOK/Physics qualifiers. Tests assert the programme set
   and forbid the removed words.
 - Loading bar: found pre-existing `src/components/effects/TopProgressBar.tsx`
-  meeting the spec — kept and verified live (polling CDP: `data-visible=true`
+  meeting the spec, kept and verified live (polling CDP: `data-visible=true`
   mid-transition). Duplicate `navigation/` version written then deleted.
   Plan doc §6 + §12 corrected.
 - Units: station page split into server wrapper + `StationClient` (every
   range/accuracy/resolution converts; footnote states active system);
   `ExplainerCard` unit rows via `CONCEPT_UNITS` map; `summarySentence` takes
   `unitSystem` (bands/thresholds stay metric, display converts: °F, mph, in);
-  `UncertaintyDemo` already honored the toggle — untouched.
+  `UncertaintyDemo` already honored the toggle, untouched.
 - Grid/skeleton: loading grid now 8 slots mirroring the real tiles 1:1
   (hero + tall wind + 6 small, same min-heights), `skeleton-shimmer` sweep
   (hard-edged translucent band, no color gradients), `bento-enter` 40ms
@@ -214,19 +214,19 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   (sessionStorage unlock, Esc hides, input-focus guard, prod null-guard kept).
 - Incidental (parallel agent's tree): added the missing
   `<AsciiSweepTransition unitSystem={unitSystem}>` opening tag in
-  `src/app/page.tsx` — import + closing tag existed without it, breaking
+  `src/app/page.tsx`, import + closing tag existed without it, breaking
   `tsc`/build. No other foreign files touched.
 - Tests: 173/173 (role 3, station 6, ExplainerCard 3, summary imperial 2,
   mock rain + consistency, content schema updates). `pnpm build` clean
   (14 routes), `pnpm lint` 0 warnings, `tsc` clean.
-- Verification: `scripts/screenshots/verify-docs11.mjs` — onboarding (6 cards,
+- Verification: `scripts/screenshots/verify-docs11.mjs`, onboarding (6 cards,
   pick persists, modal closes), teacher (8 activities + handout) vs PYP
   (kids copy, 0 activities, gate note), station imperial (footnote + converted
   table), rain tile non-zero rate, top bar mid-transition, triple-D panel with
   no prior button. Shots in `screenshots/{onboarding,learn,station,home}/`.
   Dev server left running at http://127.0.0.1:3201 (pid 3912).
 
-## Session 8 — grid fill, tooltip portal, README — DONE
+## Session 8, grid fill, tooltip portal, README, DONE
 
 - Grid: tile roots gained `flex-1` so all 8 tiles fill their bento cells
   (hero/wind span two rows; row-3 tiles equalize to the tallest). CDP rect
@@ -241,15 +241,15 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   badges, env + deploy guide. Committed + pushed (`4f46296`). Also moved
   `themeColor` from `metadata` to the `viewport` export (Vercel flags it).
 - Debugging note: the :3100 dev server was a FOREIGN tree (no "Viewing as",
-  no role modal) — port had been reclaimed after a reboot. Own server now
+  no role modal), port had been reclaimed after a reboot. Own server now
   on :3201; always verify "Viewing as" before trusting a screenshot run.
 
-## Session 9 — hero outlook (Open-Meteo + Groq) — DONE
+## Session 9, hero outlook (Open-Meteo + Groq), DONE
 
 - `src/lib/outlook.ts`: pure statistical engine (station trend + model
   output, unit-aware headlines) + 6 tests.
 - `src/app/api/outlook`: Open-Meteo Dresden hourly (no key) + Groq
-  `openai/gpt-oss-120b` (reasoning_effort low, max_tokens 300 — a small
+  `openai/gpt-oss-120b` (reasoning_effort low, max_tokens 300, a small
   budget starves the answer because reasoning shares it). One shared
   15-min in-memory cache keyed by units for all visitors; statistical
   fallback; key never leaves the server.
@@ -261,7 +261,7 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   `screenshots/home/hero-outlook-1440.png` shows curve + AI sentence.
   Committed (outlook files + `.env.example` placeholders).
 
-## Session 10 — Supabase auth + progress store — DONE
+## Session 10, Supabase auth + progress store, DONE
 
 - Auth: `AuthProvider` + `useAuth` (Google OAuth, email sign-in/sign-up with
   confirm-email handling), `/login` page, `/auth/callback` code exchange,
@@ -281,7 +281,7 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   renders (Google button + email form behind the role modal on fresh
   profiles). Committed auth files + header/layout wiring + supabase deps.
 
-## Session 11 — Duolingo-style learning track — DONE
+## Session 11, Duolingo-style learning track, DONE
 
 - Track data: `src/lib/track/curriculum.ts` (12 nodes matching the concepts,
   5 units, 36 questions with validated answers) + tests; `MAX 360 XP`.

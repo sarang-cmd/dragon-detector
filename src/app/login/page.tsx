@@ -63,7 +63,7 @@ export default function LoginPage() {
         );
         if (err) setError(err);
         else if (confirmEmail)
-          setNotice('Account created — check your inbox for the confirmation email, then sign in.');
+          setNotice('Account created, check your inbox for the confirmation email, then sign in.');
         else router.replace('/learn');
       }
     } finally {

@@ -28,7 +28,7 @@
   <img src="https://img.shields.io/badge/Open--Meteo-forecast-FF8C00" alt="Open-Meteo" />
 </p>
 
-Live school weather station for **Dresden International School** — a Sainlogic
+Live school weather station for **Dresden International School**, a Sainlogic
 WS3500 on the campus roof, published as a fast, accessible dashboard for
 students, teachers and families.
 
@@ -53,8 +53,8 @@ Full hardware detail lives on the **Station** page and in
 
 | Page | What you get |
 |---|---|
-| **Live** (`/`) | Bento-grid instrument tiles — temperature hero with editorial summary + jacket advice, wind compass, rain gauge, humidity, pressure with trend, UV, solar, sun & moon. Every tile links into the student guide. |
-| **Coming up** (in hero) | 12-hour temperature curve + precipitation-probability bars from Open-Meteo model data fused with station readings, plus one plain-language sentence — AI-written via Groq when configured, station statistics otherwise. One shared 15-minute server cache serves every visitor. |
+| **Live** (`/`) | Bento-grid instrument tiles, temperature hero with editorial summary + jacket advice, wind compass, rain gauge, humidity, pressure with trend, UV, solar, sun & moon. Every tile links into the student guide. |
+| **Coming up** (in hero) | 12-hour temperature curve + precipitation-probability bars from Open-Meteo model data fused with station readings, plus one plain-language sentence, AI-written via Groq when configured, station statistics otherwise. One shared 15-minute server cache serves every visitor. |
 | **Data** (`/data`) | 24h/7d history table and charts, metric/imperial toggle, CSV export (always metric). |
 | **Learn** (`/learn`) | 12 measurement explainers in two reading levels (kids / students), classroom activities and a printable teacher handout. Activities are teacher-only; everyone else sees a note. |
 | **Station** (`/station`) | Specs, siting geometry, sensor tolerances (unit-converted), maintenance records. |
@@ -62,15 +62,15 @@ Full hardware detail lives on the **Station** page and in
 
 Cross-cutting features:
 
-- **Role onboarding** — first visit asks who you are (Kindergarten, PYP, MYP,
+- **Role onboarding**, first visit asks who you are (Kindergarten, PYP, MYP,
   DP, Teacher, Family). The choice persists locally, drives the Learn reading
   level, gates teacher content, and is changeable in the footer any time.
-- **Metric/imperial everywhere** — station tolerances, Learn unit rows, the
+- **Metric/imperial everywhere**, station tolerances, Learn unit rows, the
   hero sentence and all tiles follow the toggle.
-- **Theme-aware brand system** — DIS Blue in light mode, DIS Amber in dark
+- **Theme-aware brand system**, DIS Blue in light mode, DIS Amber in dark
   mode, tabular numerals, 12px instrument tiles, no gradients or decorative
   cards (see `docs/03`).
-- **Privacy-first** — no accounts needed for weather; roles and units live in
+- **Privacy-first**, no accounts needed for weather; roles and units live in
   `localStorage`, nothing tracking.
 
 ## Getting started
@@ -88,7 +88,7 @@ npx vitest run  # unit tests (engine, content, conversions, regressions)
 
 ### Environment
 
-Copy `.env.example` to `.env.local` (gitignored — **never commit real keys**):
+Copy `.env.example` to `.env.local` (gitignored, **never commit real keys**):
 
 ```bash
 DATA_SOURCE=mock          # live data: switch to ecowitt + credentials when ready
@@ -127,7 +127,7 @@ scripts/screenshots/  # CDP capture helpers for visual verification
 screenshots/          # local verification shots (gitignored, regenerable)
 ```
 
-`docs/` is the source of truth — read `docs/00`–`docs/07` before changing
+`docs/` is the source of truth, read `docs/00`–`docs/07` before changing
 anything. Contributor house rules live in `AGENTS.md` (tests + build + lint
 before done, minimal diffs, update `docs/PROGRESS.md`).
 
@@ -139,7 +139,7 @@ Deterministic mock scenarios plus headless-Chrome captures:
 node scripts/screenshots/verify-docs11.mjs http://localhost:3000 .
 ```
 
-Shots land in `screenshots/` (never committed). Dev panels stay hidden —
+Shots land in `screenshots/` (never committed). Dev panels stay hidden,
 the scenario switcher appears only after pressing `D` three times.
 
 ## Deployment
@@ -152,7 +152,7 @@ stale cache, redeploy with the build cache cleared.
 ## School
 
 <p align="center">
-  <img src="public/brand/dis-30-years-logo.jpg" alt="Dresden International School — 30 Years (1996–2026)" width="220" style="border-radius:12px" />
+  <img src="public/brand/dis-30-years-logo.jpg" alt="Dresden International School, 30 Years (1996–2026)" width="220" style="border-radius:12px" />
 </p>
 
 Dresden International School has served Dresden's international community
@@ -161,7 +161,7 @@ since 1996.
 ## License
 
 Application/site use is permitted; selling or redistributing the components
-themselves is restricted — see `src/components/canvasui/LICENSE.md`
+themselves is restricted, see `src/components/canvasui/LICENSE.md`
 (MIT + Commons Clause Condition v1.0, © 2026 David Haz, used with
 attribution for the canvas effects).
 

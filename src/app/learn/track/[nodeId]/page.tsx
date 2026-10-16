@@ -183,7 +183,7 @@ export default function LessonPage() {
                   <p role="status" className="text-sm text-[var(--color-text)]">
                     {picked === question.answer
                       ? `Correct! +${XP_PER_CORRECT} XP.`
-                      : 'Not quite — the highlighted answer is right.'}
+                      : 'Not quite, the highlighted answer is right.'}
                   </p>
                   <Button size="sm" onClick={advance} className="gap-1">
                     {qIndex + 1 >= node.quiz.length ? 'Finish' : 'Next'}
@@ -197,7 +197,7 @@ export default function LessonPage() {
               <p className="display text-[var(--color-text)]">+{earned} XP</p>
               <p className="mt-2 text-sm text-[var(--color-muted)]">
                 {alreadyDone
-                  ? 'Replay banked — XP only counts the first time through.'
+                  ? 'Replay banked, XP only counts the first time through.'
                   : loading
                     ? 'Saving progress…'
                     : 'Progress saved. Nice work.'}

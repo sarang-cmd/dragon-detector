@@ -130,13 +130,13 @@ export function LearningTrack({
                 return (
                   <li key={node.id}>
                     {locked ? (
-                      <span className={cls} aria-label={`${node.id} (locked — finish the previous lesson first)`} role="img">
+                      <span className={cls} aria-label={`${node.id} (locked, finish the previous lesson first)`} role="img">
                         {inner}
                       </span>
                     ) : (
                       <Link
                         href={`/learn/track/${node.id}`}
-                        aria-label={`${node.id} lesson${done ? ' (completed — replay)' : current ? ' (up next)' : ''}`}
+                        aria-label={`${node.id} lesson${done ? ' (completed, replay)' : current ? ' (up next)' : ''}`}
                         className={`${cls} min-h-[44px] min-w-[44px] hover:scale-105`}
                       >
                         {inner}

@@ -35,7 +35,7 @@ function minutesAgo(iso: string): number | null {
 /**
  * "Coming up" block for the hero tile: 12-hour temperature curve with
  * precipitation-probability bars, plus one AI or statistical sentence.
- * Silent on error — the hero stays useful without it.
+ * Silent on error, the hero stays useful without it.
  */
 export function Outlook({ unitSystem }: { unitSystem: UnitSystem }) {
   const { data, isLoading } = useSWR<OutlookPayload>(

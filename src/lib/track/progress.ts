@@ -160,7 +160,7 @@ export async function resetProgress(userId: string | null): Promise<void> {
       const supabase = createClient();
       await supabase.from('track_progress').delete().eq('user_id', userId);
     } catch {
-      // ignore — local state is already cleared
+      // ignore, local state is already cleared
     }
   }
 }
