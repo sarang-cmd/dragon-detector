@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useRole, ROLES, ROLE_LABELS, type Role } from '@/context/role-context';
+import { useTour, hasTakenTour } from '@/components/tour/TourProvider';
 
 const ROLE_META: Record<Role, { icon: LucideIcon; blurb: string }> = {
   kindergarten: {
@@ -46,6 +47,7 @@ const ROLE_META: Record<Role, { icon: LucideIcon; blurb: string }> = {
  */
 export function RoleOnboarding() {
   const { role, hasOnboarded, ready, setRole } = useRole();
+  const { startTour } = useTour();
   const [selected, setSelected] = React.useState<Role>(role ?? 'myp');
   const dialogRef = React.useRef<HTMLDivElement>(null);
 
@@ -128,12 +130,16 @@ export function RoleOnboarding() {
                 type="button"
                 data-role={r}
                 aria-pressed={active}
-                onClick={() => {
-                  setSelected(r);
-                  setRole(r);
-                }}
-                onMouseEnter={() => setSelected(r)}
-                onFocus={() => setSelected(r)}
+                    onClick={() => {
+                      setSelected(r);
+                      setRole(r);
+                      // First visit only: roll straight into Sid's guided tour.
+                      if (!hasTakenTour()) {
+                        window.setTimeout(() => startTour(), 600);
+                      }
+                    }}
+                    onMouseEnter={() => setSelected(r)}
+                    onFocus={() => setSelected(r)}
                 className={`flex min-h-[44px] items-center gap-3 rounded-[12px] border p-3 text-left transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${
                   active
                     ? 'border-[var(--accent)] bg-[var(--color-background)]'

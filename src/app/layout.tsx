@@ -6,8 +6,10 @@ import { Analytics } from '@vercel/analytics/next';
 import { ThemeProviderWrapper } from '@/components/theme-provider';
 import { UnitProvider } from '@/context/unit-context';
 import { RoleProvider } from '@/context/role-context';
+import { TourProvider } from '@/components/tour/TourProvider';
 import { AuthProvider } from '@/context/auth-context';
 import { RoleOnboarding } from '@/components/onboarding/RoleOnboarding';
+import { SidChat } from '@/components/sid/SidChat';
 import { DashboardEffectsProvider } from '@/components/effects/DashboardEffectsProvider';
 import './globals.css';
 
@@ -40,12 +42,15 @@ export default function RootLayout({
         <ThemeProviderWrapper>
           <UnitProvider>
             <RoleProvider>
-              <AuthProvider>
+              <TourProvider>
+                <AuthProvider>
                 <DashboardEffectsProvider>
                   {children}
                   <RoleOnboarding />
+                  <SidChat />
                 </DashboardEffectsProvider>
-              </AuthProvider>
+                </AuthProvider>
+              </TourProvider>
             </RoleProvider>
           </UnitProvider>
         </ThemeProviderWrapper>

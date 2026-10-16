@@ -126,7 +126,7 @@ export function StationClient() {
           </p>
         </div>
 
-        <div className="overflow-x-auto rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div data-tour="station-table" className="overflow-x-auto rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)]">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-[var(--color-border)] bg-[var(--color-background)]/50 text-[var(--color-muted)]">
               <tr>

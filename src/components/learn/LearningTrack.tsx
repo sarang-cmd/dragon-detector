@@ -38,7 +38,7 @@ export function LearningTrack({
   const nextIndex = TRACK_NODES.findIndex((n) => !isDone(n.id));
 
   return (
-    <div>
+    <div data-tour="track">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
         <div className="flex items-center gap-3">
           <Mascot size={48} mood={xp > 0 ? 'happy' : 'thinking'} />

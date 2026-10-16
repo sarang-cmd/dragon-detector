@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { EffectsModeControl } from '@/components/effects/EffectsControls';
 import { RoleSwitcher } from '@/components/onboarding/RoleSwitcher';
+import { TourRestartButton } from '@/components/tour/TourRestartButton';
 
 export function Footer() {
   return (
@@ -45,6 +46,8 @@ export function Footer() {
             </div>
 
             <nav aria-label="Footer Legal Links" className="flex items-center gap-2 text-xs">
+              <TourRestartButton />
+              <span className="text-[var(--color-border)]" aria-hidden="true">|</span>
               <Link
                 href="/privacy"
                 className="min-h-[44px] px-2 inline-flex items-center text-[var(--color-muted)] hover:text-[var(--color-text)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--accent)] rounded-[6px]"

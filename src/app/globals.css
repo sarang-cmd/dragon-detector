@@ -281,6 +281,29 @@
   animation: confetti-fall 1.6s ease-in forwards;
 }
 
+/* Sid's wave + tour target ring. Static under prefers-reduced-motion via
+   the global motion rule (animations) and instant scroll (see provider). */
+.sid-wave {
+  animation: sid-wave 1.6s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+
+@keyframes sid-wave {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+.tour-ring {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
 @keyframes confetti-fall {
   to {
     transform: translateY(320px) rotate(300deg);
