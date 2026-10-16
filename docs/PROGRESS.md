@@ -417,4 +417,6 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 
 ## Session 19 — misc polish — DONE
 
-- Station Dragons badge enlarged 96px to 144px.
+- Station Dragons badge enlarged 96px to 144px, then white ring removed
+  entirely (PNG has real transparency) so the badge sits directly on the
+  card.
