@@ -66,6 +66,8 @@ export type WeatherQueryResult = {
   secondsSinceMeasured: number;
   isStale: boolean;
   isOffline: boolean;
+  /** True unless the API served a real Ecowitt reading. */
+  isMock: boolean;
   isLoading: boolean;
   error: string | null;
 };
@@ -108,6 +110,7 @@ export function useWeather(scenario?: string): WeatherQueryResult {
     secondsSinceMeasured,
     isStale,
     isOffline,
+    isMock: (data?.meta.source ?? 'mock') !== 'ecowitt',
     isLoading: !data && !error,
     error: error ? error.message : null,
   };

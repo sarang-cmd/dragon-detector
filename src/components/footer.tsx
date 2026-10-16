@@ -6,6 +6,10 @@ import { RoleSwitcher } from '@/components/onboarding/RoleSwitcher';
 import { TourRestartButton } from '@/components/tour/TourRestartButton';
 
 export function Footer() {
+  // Server-rendered truth about the backend: unless DATA_SOURCE=ecowitt is
+  // set, every live reading on the site is simulated. Never claim Ecowitt.
+  const isMock =
+    (process.env.DATA_SOURCE || 'mock').toLowerCase() !== 'ecowitt';
   return (
     <footer className="mt-auto w-full border-t border-[var(--color-border)] bg-[var(--color-background)]">
       {/* 4px blue/amber/green strip echoing the school banner per docs/03a section 4 */}
@@ -22,7 +26,11 @@ export function Footer() {
             <div className="flex flex-wrap items-center gap-x-2 text-sm font-medium text-[var(--color-text)]">
               <span>Sainlogic WS3500, Dresden</span>
               <span className="text-[var(--color-muted)]">&middot;</span>
-              <span className="text-[var(--color-muted)]">Source: Ecowitt Cloud API</span>
+              {isMock ? (
+                <span className="text-[var(--accent)]">Demo data: simulated readings</span>
+              ) : (
+                <span className="text-[var(--color-muted)]">Source: Ecowitt Cloud API</span>
+              )}
             </div>
             <p className="text-xs text-[var(--color-muted)]">
               Built by the DIS Weather Club

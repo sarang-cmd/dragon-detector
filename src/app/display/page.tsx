@@ -28,7 +28,7 @@ const VIEW_LABELS: Record<DisplayView, string> = {
  * 12 s, Nudges content position every 10 minutes against OLED burn-in.
  */
 export default function DisplayPage() {
-  const { reading, history, isLoading, isStale, isOffline, secondsSinceMeasured } =
+  const { reading, history, isLoading, isStale, isOffline, secondsSinceMeasured, isMock } =
     useWeather();
   const { unitSystem } = useUnitSystem();
   const [viewIndex, setViewIndex] = React.useState(0);
@@ -140,8 +140,9 @@ export default function DisplayPage() {
 
       <footer className="text-xs text-[var(--color-muted)]">
         <span className="label">
-          Built by the DIS Weather Club &middot; measured on our school
-          grounds, Dresden
+          {isMock
+            ? 'Built by the DIS Weather Club · Demo data: simulated readings'
+            : 'Built by the DIS Weather Club · measured on our school grounds, Dresden'}
         </span>
       </footer>
     </main>
