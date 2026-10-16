@@ -381,6 +381,14 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   read as bars, not floating dashes.
 - Verified via CDP at 1920x1080 (no "Coming up" in DOM) + screenshot.
 
+## Session 17 — misc fixes (badge path, link reasons) — DONE
+
+- Station badge pointed at a deleted `.jpg`; the real file is the full-color
+  `dis-dragons-badge.png`. Fixed the `src`, verified via CDP (badge renders
+  in its white ring, "Dresden Dragons" label below).
+- Email-link failures now carry reason codes (`missing|expired|used|invalid`)
+  and /login translates each into a specific recovery message.
+
 ## Session 16 — Sid tour + chatbot + email-link forensics — DONE
 
 - Email links: `/auth/confirm` now returns reason codes
