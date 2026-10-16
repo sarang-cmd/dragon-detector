@@ -166,12 +166,12 @@ themselves is restricted, see `src/components/canvasui/LICENSE.md`
 attribution for the canvas effects).
 
 <p align="center">
-  <img src="public/brand/dis-dragons-badge.jpg" alt="DIS Dragons" width="96" style="border-radius:50%" />
+  <img src="public/brand/dis-dragons-badge.png" alt="DIS Dragons" width="96" style="border-radius:50%" />
   <img src="public/dragon_detector_logo.rounded.png" alt="DIS Weather Club" width="96" />
   <br />
   <sub>Built by the DIS Weather Club · Maintained by Sarang Batra · Dresden International School · Annenstraße 9, 01067 Dresden-Altstadt</sub>
 </p>
 
 <p align="center">
-  <img src="public/brand/dis-tagline-banner.png" alt="Inspire, move forward, and give back" width="640" style="border-radius:12px" />
+  <img src="public/brand/dis-tagline-banner.jpg" alt="Inspire, move forward, and give back" width="640" style="border-radius:12px" />
 </p>
