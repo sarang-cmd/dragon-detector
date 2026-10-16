@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, Check, RotateCcw, X } from 'lucide-react';
 import { concepts } from '@/lib/content/concepts';
 import { nodeById, TRACK_NODES, XP_PER_CORRECT } from '@/lib/track/curriculum';
 import { ExplainerCard } from '@/components/learn/ExplainerCard';
+import { Mascot, Confetti } from '@/components/learn/Mascot';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { Button } from '@/components/ui/button';
@@ -120,6 +121,11 @@ export default function LessonPage() {
           <h2 id="quiz-heading" className="text-xl font-medium text-[var(--color-text)]">
             Quick check
           </h2>
+          <p className="mt-1 text-xs text-[var(--color-muted)]">
+            {node && TRACK_NODES[TRACK_NODES.findIndex((n) => n.id === node.id) + 1]
+              ? `Finish this quiz to unlock ${TRACK_NODES[TRACK_NODES.findIndex((n) => n.id === node.id) + 1].id.replace(/-/g, ' ')}. XP counts once.`
+              : 'Last lesson of the track. XP counts once.'}
+          </p>
           {!finished ? (
             <div className="mt-4 rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6">
               <div className="flex items-center justify-between gap-2">
@@ -180,12 +186,18 @@ export default function LessonPage() {
 
               {picked != null && (
                 <div className="mt-4 flex items-center justify-between gap-3">
-                  <p role="status" className="text-sm text-[var(--color-text)]">
-                    {picked === question.answer
-                      ? `Correct! +${XP_PER_CORRECT} XP.`
-                      : 'Not quite, the highlighted answer is right.'}
+                  <p role="status" className="flex items-center gap-2 text-sm text-[var(--color-text)]">
+                    <Mascot
+                      size={32}
+                      mood={picked === question.answer ? 'happy' : 'thinking'}
+                    />
+                    <span>
+                      {picked === question.answer
+                        ? `Nice! +${XP_PER_CORRECT} XP.`
+                        : 'Good try. The highlighted answer is right, you will get the next one.'}
+                    </span>
                   </p>
-                  <Button size="sm" onClick={advance} className="gap-1">
+                  <Button size="sm" onClick={advance} className="gap-1 shrink-0">
                     {qIndex + 1 >= node.quiz.length ? 'Finish' : 'Next'}
                     <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
                   </Button>
@@ -193,14 +205,20 @@ export default function LessonPage() {
               )}
             </div>
           ) : (
-            <div className="mt-4 rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
-              <p className="display text-[var(--color-text)]">+{earned} XP</p>
+            <div className="relative mt-4 overflow-hidden rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 text-center">
+              {earned >= XP_PER_CORRECT && <Confetti />}
+              <div className="flex justify-center">
+                <Mascot size={64} mood="celebrate" />
+              </div>
+              <p className="display mt-2 text-[var(--color-text)]">+{earned} XP</p>
               <p className="mt-2 text-sm text-[var(--color-muted)]">
                 {alreadyDone
-                  ? 'Replay banked, XP only counts the first time through.'
+                  ? 'Replay banked. XP only counts the first time through.'
                   : loading
                     ? 'Saving progress…'
-                    : 'Progress saved. Nice work.'}
+                    : nextNode
+                      ? `Nice work. This unlocked ${nextNode.id.replace(/-/g, ' ')}.`
+                      : 'Nice work. Track complete, you weather expert.'}
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {nextNode && (

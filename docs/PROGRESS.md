@@ -297,3 +297,30 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Verification: 184/184 tests, build (16 routes) + lint clean, CDP shots
   `learn-track-1440.png` (path, XP bar, locks) and `lesson-rain-1440.png`
   (explainer + quiz). Committed in two steps (data, then UI).
+
+## Session 12 — shared cache, auth extras, track fun — DONE
+
+- Outlook cache is now two-tier: in-memory L1 + Supabase `outlook_cache`
+  table (migration 0002, SECURITY DEFINER refresh, public read) so every
+  server instance shares one 15-min outlook. Verified live: repeat requests
+  return the identical `generatedAt` with zero upstream calls; missing table
+  degrades gracefully to memory-only with a 60 s backoff. `isFresh` tested.
+  Groq model moved to `openai/gpt-oss-120b` (3.1/3.3 retired; listed via
+  `/models`); `reasoning_effort: low` + 300 tokens so reasoning does not
+  starve the answer.
+- Progress bleed fixed: per-user localStorage keys, guest quarantine, adopt
+  once on first sign-in, reset button; `resolveProgress` unit-tested.
+- Em dashes removed site-wide (copy, comments, placeholders, docs).
+- Signup: Gmail deep-link + "open email app" buttons; branded
+  `confirm-signup` + `recovery` templates in `supabase/templates/` with
+  dashboard paste instructions in the deployment guide.
+- Avatars: `0003_avatars.sql` bucket + owner-only policies, header menu
+  upload (2 MB, image-only, RLS-hint on failure), `avatar_url` in metadata.
+- Favicons + touch icons rounded (PowerShell System.Drawing), ICO rebuilt
+  as PNG-compressed 32px; backups in Temp (deleted after verify).
+- Track fun: procedural dragon `Mascot` (auto-upgrades to `/mascot.png`
+  when the club drops the file in), node labels + UP NEXT badge + gating
+  copy on the path, unlocked browsing list, mascot quiz reactions, finish
+  confetti (motion-safe), unlock messaging ("This unlocked X").
+- Verification: 191/191 tests, build + lint clean, CDP shots (track labels,
+  lesson, login, hero outlook, tooltips). Committed per step, pushed.

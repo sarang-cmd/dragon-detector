@@ -269,6 +269,25 @@
   border-radius: inherit;
 }
 
+/* Lesson confetti: small solid dots falling once (static under
+   prefers-reduced-motion via the global motion rule + component gate). */
+.confetti-host {
+  position: absolute;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -8px;
+  animation: confetti-fall 1.6s ease-in forwards;
+}
+
+@keyframes confetti-fall {
+  to {
+    transform: translateY(320px) rotate(300deg);
+    opacity: 0;
+  }
+}
+
 .instrument-tile > :not(.weather-effect-host) {
   position: relative;
   z-index: 1;
