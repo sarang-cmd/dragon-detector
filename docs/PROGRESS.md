@@ -323,4 +323,28 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   copy on the path, unlocked browsing list, mascot quiz reactions, finish
   confetti (motion-safe), unlock messaging ("This unlocked X").
 - Verification: 191/191 tests, build + lint clean, CDP shots (track labels,
-  lesson, login, hero outlook, tooltips). Committed per step, pushed.
+  lesson, login, hero outlook, tooltips). Committed per step, pushed straight
+  through (remote `ac43d4f` at the time).
+
+## Session 13 — brand emails, rounded logos, lesson titles — DONE
+
+- NOTE: commit `23ed19c` is titled "fix: lesson buttons…" but contains the
+  whole batch below (staging swept it in one go; history not rewritten
+  because main is shared — contents verified correct in HEAD).
+- Rounded brand PNGs generated in-repo (`dis-logo-horizontal.rounded.png`
+  on white matte, `dragon_detector_logo.rounded.png` with real transparency);
+  header + README now reference them. Emails keep the already-uploaded
+  storage JPGs inside rounded containers (no re-upload needed). Favicon ICO
+  rebuilt as PNG-compressed 32px (done earlier, session 11 follow-up).
+- Lesson buttons/headers now show concept titles ("Wind direction"), not raw
+  ids (`titleOf` helper).
+- Email suite rewritten, light 3-color theme (blue band/headlines, amber CTA,
+  green security callouts, tagline banner at the bottom, both badges in the
+  footer): confirm-signup, invite-user, magic-link, change-email,
+  reset-password (replaces recovery.html), password-changed, email-changed,
+  reauthentication + `SUBJECTS.md` with per-template subject options.
+- Deployment guide: exact template map, SMTP options (Resend/Gmail),
+  provider-agnostic Gmail search note.
+- Q&A answered live: custom SMTP has NO fallback on quota exhaustion
+  (signups stall silently); added a resend-confirmation path that detects
+  "Email not confirmed" and offers a re-send.
