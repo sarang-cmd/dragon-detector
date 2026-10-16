@@ -371,3 +371,12 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Env note: two dev servers kept dying/corrupting `.next` in this shared
   tree (parallel builds); fix is kill + wipe `.next` + restart. Do not run
   builds while the other agent is building.
+
+## Session 15 — lobby outlook fix — DONE
+
+- `/display` kiosk no longer renders the "Coming up" outlook block
+  (`HeroReading showOutlook`, default true; display passes false). The lobby
+  cycles current conditions; forecast + AI stay on Live.
+- Outlook graph: added a baseline at the bars' feet so small probabilities
+  read as bars, not floating dashes.
+- Verified via CDP at 1920x1080 (no "Coming up" in DOM) + screenshot.

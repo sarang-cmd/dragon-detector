@@ -103,6 +103,16 @@ export function Outlook({ unitSystem }: { unitSystem: UnitSystem }) {
               aria-label={`12-hour forecast: ${displayTemp(data.tempMinNext12h, unitSystem)} to ${displayTemp(data.tempMaxNext12h, unitSystem)}${data.rainExpected ? ', rain likely' : ', staying dry'}`}
               preserveAspectRatio="none"
             >
+              {/* Baseline grounding the precipitation bars */}
+              <line
+                x1={PAD}
+                x2={W - PAD}
+                y1={132}
+                y2={132}
+                stroke="var(--color-border)"
+                strokeWidth={1}
+                vectorEffect="non-scaling-stroke"
+              />
               {/* Precipitation probability bars */}
               {hours.map((h, i) => (
                 <rect

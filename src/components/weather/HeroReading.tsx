@@ -20,10 +20,12 @@ const HeroWeatherEffects = dynamic(
 export interface HeroReadingProps {
   reading: WeatherReading;
   unitSystem: UnitSystem;
-  history?: HistoryPoint[];
-  pressureTrend?: PressureTrend;
+  history: HistoryPoint[];
+  pressureTrend: PressureTrend;
   isOffline?: boolean;
   isStale?: boolean;
+  /** Kiosk views show current conditions only; the outlook stays on Live. */
+  showOutlook?: boolean;
 }
 
 /**
@@ -36,10 +38,11 @@ export interface HeroReadingProps {
 export function HeroReading({
   reading,
   unitSystem,
-  history = [],
-  pressureTrend = 'steady',
+  history,
+  pressureTrend,
   isOffline = false,
   isStale = false,
+  showOutlook = true,
 }: HeroReadingProps) {
   const currentTemp = reading.temperatureC;
   const formattedTemp = formatTemp(currentTemp, unitSystem);
@@ -187,10 +190,13 @@ export function HeroReading({
           </p>
         </div>
 
-        {/* 12-hour outlook: forecast graph + AI/statistical sentence */}
-        <div className="border-t border-[var(--color-border)] pt-3">
-          <Outlook unitSystem={unitSystem} />
-        </div>
+        {/* 12-hour outlook: forecast graph + AI/statistical sentence.
+            Hidden on kiosk views, which show current conditions only. */}
+        {showOutlook && (
+          <div className="border-t border-[var(--color-border)] pt-3">
+            <Outlook unitSystem={unitSystem} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -28,7 +28,7 @@ const VIEW_LABELS: Record<DisplayView, string> = {
  * 12 s, Nudges content position every 10 minutes against OLED burn-in.
  */
 export default function DisplayPage() {
-  const { reading, history, isLoading, isOffline, secondsSinceMeasured } =
+  const { reading, history, isLoading, isStale, isOffline, secondsSinceMeasured } =
     useWeather();
   const { unitSystem } = useUnitSystem();
   const [viewIndex, setViewIndex] = React.useState(0);
@@ -105,6 +105,8 @@ export default function DisplayPage() {
               history={h24Points}
               pressureTrend={pressureTrend}
               isOffline={isOffline}
+              isStale={isStale}
+              showOutlook={false}
             />
           </div>
         )}
@@ -130,6 +132,7 @@ export default function DisplayPage() {
               unitSystem={unitSystem}
               historyRainMmH={h24Points.map((p) => p.rainRateMmH)}
               isOffline={isOffline}
+              isStale={isStale}
             />
           </div>
         )}
