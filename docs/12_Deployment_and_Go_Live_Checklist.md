@@ -20,7 +20,7 @@ Variables**. Add for **Production** (and Preview if you want previews to match):
 
 | Name | Value | Notes |
 |---|---|---|
-| `GROQ_API_KEY` | `gsk_…` (your key) | Enables the AI outlook sentence. Redeploy after adding — env changes need a new deployment. |
+| `GROQ_API_KEY` | `gsk_…` (your key) | Enables the AI outlook sentence. Redeploy after adding, env changes need a new deployment. |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://mhbsnmtqzjehwglzcaay.supabase.co` | Already in local `.env.local`; Vercel needs its own copy. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `sb_publishable_…` (your key) | Publishable key: public-by-design, RLS enforced. |
 | `NEXT_PUBLIC_SITE_URL` | `https://dragon-detector.vercel.app` | Used for OAuth redirects. |
@@ -51,21 +51,25 @@ Project: `mhbsnmtqzjehwglzcaay` ([dashboard](https://supabase.com/dashboard)).
 4. **SQL Editor → New query**: paste the full contents of
    `supabase/migrations/0001_track_progress.sql` in this repo and run it.
    It creates the progress table with owner-only row-level security.
+5. **Same place**: run `supabase/migrations/0002_outlook_cache.sql` too.
+   It creates the shared AI-outlook cache (one row per unit system, public
+   read, writes only via a locked-down function) so the whole site shares
+   a single forecast + AI call per 15 minutes on every server instance.
 5. Sanity check: open `/login` on the live site → **Continue with Google**
    should go to Google and land back on `/learn` signed in. Sign out via the
    avatar menu in the header.
 
 ## 3. Verify the live site (5 min)
 
-- `/` — hero shows the 12-hour graph; the sentence carries an
+- `/`, hero shows the 12-hour graph; the sentence carries an
   **“AI outlook · N min ago”** badge (not “Station trends”).
   If it says “Station trends”: the Groq key is missing/mis-set on Vercel.
-- `/learn` — path, XP bar, lessons, quizzes; complete a lesson signed in,
-  reload — XP persists (cloud). Signed out — XP persists per browser.
-- `/station` — toggle metric/imperial, table converts.
-- First visit in a private window — role picker appears, choice persists.
+- `/learn`, path, XP bar, lessons, quizzes; complete a lesson signed in,
+  reload, XP persists (cloud). Signed out, XP persists per browser.
+- `/station`, toggle metric/imperial, table converts.
+- First visit in a private window, role picker appears, choice persists.
 
-## 4. Real Ecowitt data (later — dev work, not dashboard work)
+## 4. Real Ecowitt data (later, dev work, not dashboard work)
 
 `DATA_SOURCE=ecowitt` currently throws (`createEcowittSource` is a stub).
 To go live for real:
@@ -78,16 +82,16 @@ To go live for real:
 
 ## 5. Before telling the school
 
-- [ ] Imprint + privacy show **Annenstraße 9, 01067 Dresden-Altstadt** (done in code — eyeball it live).
+- [ ] Imprint + privacy show **Annenstraße 9, 01067 Dresden-Altstadt** (done in code, eyeball it live).
 - [ ] `/login` works end-to-end (Google + one email account).
-- [ ] Run the track once as Teacher and as PYP — activities hidden for PYP, handout for Teacher.
+- [ ] Run the track once as Teacher and as PYP, activities hidden for PYP, handout for Teacher.
 - [ ] Re-check with the school before launch: the canvas components are
-      MIT + Commons Clause (no resale/redistribution) — see
+      MIT + Commons Clause (no resale/redistribution), see
       `src/components/canvasui/LICENSE.md`.
 
 ## If a deploy fails
 
-1. Read the **full** log tail — the real error is at the end
+1. Read the **full** log tail, the real error is at the end
    (`Module not found` = a file was never pushed; commit it).
 2. Redeploy **without** the build cache once before debugging further.
 3. `themeColor`-style Next warnings are fixed via the `viewport` export —

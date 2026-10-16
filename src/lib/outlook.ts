@@ -35,7 +35,7 @@ function mean(values: number[]): number | null {
 
 /**
  * Short-term statistical outlook from station data + forecast model output.
- * Pure function — no network, no keys — so the hero always has something to
+ * Pure function, no network, no keys, so the hero always has something to
  * say even when the AI provider is unavailable.
  */
 export function buildStatisticalOutlook(
@@ -116,4 +116,19 @@ export function displayTemp(c: number | null, unitSystem: UnitSystem): string | 
   if (c == null) return null;
   const v = unitSystem === 'imperial' ? cToF(c) : c;
   return `${Math.round(v)}°`;
+}
+
+/**
+ * Shared-cache freshness check (used by the outlook API route for the
+ * Supabase tier). Pure for testability.
+ */
+export function isFresh(
+  updatedAt: string | null | undefined,
+  nowMs: number,
+  ttlMs = 15 * 60 * 1000
+): boolean {
+  if (!updatedAt) return false;
+  const t = new Date(updatedAt).getTime();
+  if (Number.isNaN(t)) return false;
+  return nowMs - t < ttlMs;
 }

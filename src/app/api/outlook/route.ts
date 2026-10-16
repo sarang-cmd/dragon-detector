@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getSource } from '@/lib/sources';
 import {
   buildStatisticalOutlook,
+  isFresh,
   type ForecastHour,
 } from '@/lib/outlook';
 import type { UnitSystem } from '@/lib/units';
@@ -11,20 +12,25 @@ import type { UnitSystem } from '@/lib/units';
 const LAT = 51.0504;
 const LON = 13.7373;
 
-// One shared outlook for everyone; refreshed at most every 15 minutes so a
-// whole school of visitors costs a single upstream call (free-tier safe).
+// One shared outlook for everyone, refreshed at most every 15 minutes.
+// Two tiers: (1) in-memory per instance, (2) Supabase `outlook_cache` shared
+// across all instances. A school of visitors on any number of server
+// instances still costs a single upstream call per 15 minutes (free-tier
+// safe). If Supabase is unconfigured or its table missing, tier 1 alone
+// applies and a 60s negative-cache avoids hammering a dead backend.
 const CACHE_TTL_MS = 15 * 60 * 1000;
+const SUPABASE_DOWN_COOLDOWN_MS = 60 * 1000;
 
 interface CachedOutlook {
   expiresAt: number;
   payload: Record<string, unknown>;
-  // Keyed by units so metric/imperial visitors share correctly.
   units: UnitSystem;
 }
 
 let cache: CachedOutlook | null = null;
 let inFlight: { units: UnitSystem; promise: Promise<Record<string, unknown>> } | null =
   null;
+let supabaseDownUntil = 0;
 
 const querySchema = z.object({
   units: z.enum(['metric', 'imperial']).optional(),
@@ -118,7 +124,7 @@ async function fetchAiOutlook(
       body: JSON.stringify({
         model: 'openai/gpt-oss-120b',
         // Low reasoning effort: this task needs a short answer, not a proof.
-        // (Reasoning tokens share the completion budget — a deep think with
+        // (Reasoning tokens share the completion budget, a deep think with
         // a small max_tokens starves the actual answer.)
         reasoning_effort: 'low',
         messages: [
@@ -143,6 +149,65 @@ async function fetchAiOutlook(
   } catch {
     console.error('[outlook-api] Groq call failed, using statistics');
     return null;
+  }
+}
+
+/**
+ * Tier 2: shared Supabase cache. Returns the cached payload when fresh,
+ * null when stale/missing/unavailable (never throws).
+ */
+async function readSharedCache(
+  units: UnitSystem
+): Promise<{ payload: Record<string, unknown>; generatedAt: string } | null> {
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    Date.now() < supabaseDownUntil
+  ) {
+    return null;
+  }
+  try {
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('outlook_cache')
+      .select('payload, updated_at')
+      .eq('units', units)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data || !isFresh(data.updated_at, Date.now())) return null;
+    return {
+      payload: data.payload as Record<string, unknown>,
+      generatedAt: data.updated_at as string,
+    };
+  } catch {
+    // Table missing, RLS, or network: back off briefly, stay memory-only.
+    supabaseDownUntil = Date.now() + SUPABASE_DOWN_COOLDOWN_MS;
+    return null;
+  }
+}
+
+/** Persist via SECURITY DEFINER rpc (anon key has no raw write access). */
+async function writeSharedCache(
+  units: UnitSystem,
+  payload: Record<string, unknown>
+): Promise<void> {
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return;
+  }
+  try {
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = createClient();
+    const { error } = await supabase.rpc('refresh_outlook_cache', {
+      p_units: units,
+      p_payload: payload,
+    });
+    if (error) throw error;
+  } catch {
+    supabaseDownUntil = Date.now() + SUPABASE_DOWN_COOLDOWN_MS;
   }
 }
 
@@ -205,11 +270,23 @@ export async function GET(req: NextRequest) {
 
   try {
     if (!inFlight || inFlight.units !== units) {
-      const promise = buildOutlook(units)
-        .then((payload) => {
-          cache = { expiresAt: Date.now() + CACHE_TTL_MS, payload, units };
-          return payload;
-        })
+      const promise = (async () => {
+        // Tier 2 first: another instance may have refreshed already.
+        const shared = await readSharedCache(units);
+        if (shared) {
+          cache = {
+            expiresAt: Date.now() + CACHE_TTL_MS,
+            payload: shared.payload,
+            units,
+          };
+          return shared.payload;
+        }
+        const payload = await buildOutlook(units);
+        cache = { expiresAt: Date.now() + CACHE_TTL_MS, payload, units };
+        // Share with every other instance; failure only costs one instance.
+        await writeSharedCache(units, payload);
+        return payload;
+      })()
         .finally(() => {
           if (inFlight?.units === units) inFlight = null;
         });
