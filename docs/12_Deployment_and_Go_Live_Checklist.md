@@ -55,6 +55,14 @@ Project: `mhbsnmtqzjehwglzcaay` ([dashboard](https://supabase.com/dashboard)).
    It creates the shared AI-outlook cache (one row per unit system, public
    read, writes only via a locked-down function) so the whole site shares
    a single forecast + AI call per 15 minutes on every server instance.
+6. **Brand the auth emails** (Authentication → Email Templates): replace the
+   **Confirm signup** body with `supabase/templates/confirm-signup.html` and
+   **Reset password** with `supabase/templates/recovery.html` from this repo
+   (dark DIS card, amber button, correct school address). Also set
+   **Mail → From name** to `DIS Weather Station` so inboxes show the brand
+   instead of a generic sender. Note: Gmail groups these under
+   `noreply@mail.app.supabase.io`; the app's signup screen links users
+   straight to that Gmail search.
 5. Sanity check: open `/login` on the live site → **Continue with Google**
    should go to Google and land back on `/learn` signed in. Sign out via the
    avatar menu in the header.

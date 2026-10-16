@@ -160,9 +160,27 @@ export default function LoginPage() {
             </p>
           )}
           {notice && (
-            <p role="status" className="text-xs leading-relaxed text-[var(--color-text)]">
-              {notice}
-            </p>
+            <div role="status" className="space-y-2">
+              <p className="text-xs leading-relaxed text-[var(--color-text)]">
+                {notice}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href="https://mail.google.com/mail/u/0/#search/from%3A%28noreply%40mail.app.supabase.io%29"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-[44px] items-center rounded-[8px] border border-[var(--color-border)] px-3 text-xs text-[var(--color-text)] hover:border-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+                >
+                  Open in Gmail
+                </a>
+                <a
+                  href="mailto:"
+                  className="inline-flex min-h-[44px] items-center rounded-[8px] border border-[var(--color-border)] px-3 text-xs text-[var(--color-text)] hover:border-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+                >
+                  Open email app
+                </a>
+              </div>
+            </div>
           )}
           <button
             type="submit"
