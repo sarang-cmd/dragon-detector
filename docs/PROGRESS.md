@@ -225,3 +225,38 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   table), rain tile non-zero rate, top bar mid-transition, triple-D panel with
   no prior button. Shots in `screenshots/{onboarding,learn,station,home}/`.
   Dev server left running at http://127.0.0.1:3100 (pid 3912).
+
+## Session 8 — grid fill, tooltip portal, README — DONE
+
+- Grid: tile roots gained `flex-1` so all 8 tiles fill their bento cells
+  (hero/wind span two rows; row-3 tiles equalize to the tallest). CDP rect
+  measurement: every tile-to-wrapper gap is now 0px at 1440; tablet/mobile
+  unchanged. Committed separately (`8270697`), pushed.
+- Tooltip: rain "?" tooltip was clipped by tile `overflow:hidden` (showed
+  "his? Learn about …"). Rewrote `src/components/ui/tooltip.tsx` as a
+  `document.body` portal with `position:fixed` from the trigger rect, side
+  flip + horizontal clamp, 240px wrap. CDP hover check: full text, inside
+  viewport, no console errors. Committed separately (`3747ad3`), pushed.
+- README: expanded with all brand images (logo, tagline, 30-years, dragons),
+  badges, env + deploy guide. Committed + pushed (`4f46296`). Also moved
+  `themeColor` from `metadata` to the `viewport` export (Vercel flags it).
+- Debugging note: the :3100 dev server was a FOREIGN tree (no "Viewing as",
+  no role modal) — port had been reclaimed after a reboot. Own server now
+  on :3201; always verify "Viewing as" before trusting a screenshot run.
+
+## Session 9 — hero outlook (Open-Meteo + Groq) — DONE
+
+- `src/lib/outlook.ts`: pure statistical engine (station trend + model
+  output, unit-aware headlines) + 6 tests.
+- `src/app/api/outlook`: Open-Meteo Dresden hourly (no key) + Groq
+  `openai/gpt-oss-120b` (reasoning_effort low, max_tokens 300 — a small
+  budget starves the answer because reasoning shares it). One shared
+  15-min in-memory cache keyed by units for all visitors; statistical
+  fallback; key never leaves the server.
+- Hero "Coming up" block: 12h hand-rolled SVG temp curve + precip bars,
+  AI sentence with freshness label ("AI outlook" / "Station trends").
+- Model notes: `llama-3.1-8b-instant` and `llama-3.3-70b-versatile` are
+  retired on Groq; available chat models listed via `/models` first.
+- Verification: 179/179 tests, build (15 routes) + lint clean, CDP shot
+  `screenshots/home/hero-outlook-1440.png` shows curve + AI sentence.
+  Committed (outlook files + `.env.example` placeholders).
