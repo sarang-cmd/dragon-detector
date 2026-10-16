@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
+import { Analytics } from '@vercel/analytics/next';
 import { ThemeProviderWrapper } from '@/components/theme-provider';
 import { UnitProvider } from '@/context/unit-context';
 import { RoleProvider } from '@/context/role-context';
@@ -47,6 +48,7 @@ export default function RootLayout({
             </RoleProvider>
           </UnitProvider>
         </ThemeProviderWrapper>
+        <Analytics />
       </body>
     </html>
   );
