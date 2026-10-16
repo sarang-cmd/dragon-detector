@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono';
 import { ThemeProviderWrapper } from '@/components/theme-provider';
 import { UnitProvider } from '@/context/unit-context';
 import { RoleProvider } from '@/context/role-context';
+import { AuthProvider } from '@/context/auth-context';
 import { RoleOnboarding } from '@/components/onboarding/RoleOnboarding';
 import { DashboardEffectsProvider } from '@/components/effects/DashboardEffectsProvider';
 import './globals.css';
@@ -37,10 +38,12 @@ export default function RootLayout({
         <ThemeProviderWrapper>
           <UnitProvider>
             <RoleProvider>
-              <DashboardEffectsProvider>
-                {children}
-                <RoleOnboarding />
-              </DashboardEffectsProvider>
+              <AuthProvider>
+                <DashboardEffectsProvider>
+                  {children}
+                  <RoleOnboarding />
+                </DashboardEffectsProvider>
+              </AuthProvider>
             </RoleProvider>
           </UnitProvider>
         </ThemeProviderWrapper>

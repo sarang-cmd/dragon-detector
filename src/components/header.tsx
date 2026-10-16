@@ -7,6 +7,8 @@ import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UnitToggle } from '@/components/unit-toggle';
+import { EffectsCycleButton } from '@/components/effects/EffectsControls';
+import { AuthButton } from '@/components/auth/AuthButton';
 import {
   Sheet,
   SheetContent,
@@ -44,19 +46,15 @@ export function Header() {
             className="flex items-center gap-3 transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-[var(--accent)] rounded-[8px]"
             aria-label="DIS Weather Station Home"
           >
-            {/* 
-              TODO: Swap /brand/dis-logo-horizontal.jpg for a transparent SVG knockout 
-              when supplied by DIS IT / communications team. 
-              The JPG has a white background, so we place it on a small white rounded plate in dark mode.
-            */}
-            <div className="flex h-8 items-center justify-center rounded-[8px] bg-white px-2 py-1 border border-neutral-200">
+            {/* Dragon logo: square JPEG cropped to a circle via rounded-full + object-cover. */}
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border)]">
               <Image
-                src="/brand/dis-logo-horizontal.jpg"
-                alt="Dresden International School"
-                width={104}
-                height={26}
+                src="/dragon_detector_logo.jpeg"
+                alt="DIS Weather Station dragon logo"
+                width={32}
+                height={32}
                 priority
-                className="h-[22px] w-auto object-contain"
+                className="h-8 w-8 object-cover"
               />
             </div>
             <div className="hidden sm:flex flex-col">
@@ -108,10 +106,13 @@ export function Header() {
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden sm:flex items-center gap-2">
             <UnitToggle />
+            <EffectsCycleButton />
             <ThemeToggle />
+            <AuthButton />
           </div>
 
           <div className="flex sm:hidden items-center">
+            <EffectsCycleButton />
             <ThemeToggle />
           </div>
 
@@ -132,13 +133,13 @@ export function Header() {
                   <SheetHeader className="mb-6 text-left">
                     <SheetTitle>
                       <div className="flex items-center gap-2">
-                        <div className="flex h-8 items-center justify-center rounded-[8px] bg-white px-2 py-1 border border-neutral-200">
+                        <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-neutral-200">
                           <Image
-                            src="/brand/dis-logo-horizontal.jpg"
-                            alt="Dresden International School"
-                            width={96}
-                            height={24}
-                            className="h-5 w-auto object-contain"
+                            src="/dragon_detector_logo.jpeg"
+                            alt="DIS Weather Station dragon logo"
+                            width={32}
+                            height={32}
+                            className="h-8 w-8 object-cover"
                           />
                         </div>
                         <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]">
@@ -185,6 +186,14 @@ export function Header() {
                   <div className="flex items-center justify-between">
                     <span className="label">Unit System</span>
                     <UnitToggle />
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="label">Weather effects</span>
+                    <EffectsCycleButton />
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="label">Account</span>
+                    <AuthButton />
                   </div>
                   <div className="text-[11px] text-[var(--color-muted)]">
                     Sainlogic WS3500 &middot; Dresden
