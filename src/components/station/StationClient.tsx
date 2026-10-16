@@ -106,7 +106,7 @@ export function StationClient() {
         <Card className="p-6">
           <span className="label">Coordinates &amp; Datum</span>
           <div className="mt-3 text-lg font-medium text-[var(--color-text)] numeric">
-            51.0504&deg; N, 13.7373&deg; E
+            51.0497&deg; N, 13.7284&deg; E
           </div>
           <p className="mt-1 text-xs text-[var(--color-muted)]">
             Elevation: 112 m above sea level. Timezone: Europe/Berlin.

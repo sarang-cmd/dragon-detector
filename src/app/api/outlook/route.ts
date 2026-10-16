@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSource } from '@/lib/sources';
+import { SITE_CONFIG } from '@/lib/site';
 import {
   buildStatisticalOutlook,
   isFresh,
@@ -8,9 +9,9 @@ import {
 } from '@/lib/outlook';
 import type { UnitSystem } from '@/lib/units';
 
-// Station coordinates (docs/04 §2, footer).
-const LAT = 51.0504;
-const LON = 13.7373;
+// Station coordinates, verified on-site (src/lib/site.ts).
+const LAT = SITE_CONFIG.latitude ?? 51.0497;
+const LON = SITE_CONFIG.longitude ?? 13.7284;
 
 // One shared outlook for everyone, refreshed at most every 15 minutes.
 // Two tiers: (1) in-memory per instance, (2) Supabase `outlook_cache` shared

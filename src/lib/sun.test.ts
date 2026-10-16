@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { calculateSunTimes, formatSunTime } from './sun';
 
 describe('calculateSunTimes for Dresden', () => {
-  const dresdenLat = 51.0504;
-  const dresdenLng = 13.7373;
+  const dresdenLat = 51.04972603740881;
+  const dresdenLng = 13.728412086540333;
 
   it('calculates reasonable sunrise and sunset times on equinox (March 20)', () => {
     // Equinox ~06:00 sunrise and ~18:00 sunset UTC (or ~06:00/18:00 local)

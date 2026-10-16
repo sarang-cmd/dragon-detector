@@ -79,7 +79,7 @@ export function Footer() {
 
         <div className="mt-6 border-t border-[var(--color-border)] pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-[11px] text-[var(--color-muted)]">
           <p>&copy; {new Date().getFullYear()} Dresden International School &middot; Annenstraße 9, 01067 Dresden-Altstadt, Germany</p>
-          <p className="numeric">51.0504&deg; N, 13.7373&deg; E &middot; Elevation 112 m</p>
+          <p className="numeric">51.0497&deg; N, 13.7284&deg; E &middot; Elevation 112 m</p>
         </div>
       </div>
     </footer>
