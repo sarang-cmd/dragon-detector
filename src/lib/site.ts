@@ -10,7 +10,7 @@ export interface SiteConfig {
   city: string;
   country: string;
   /**
-   * GPS coordinates for Dresden International School (Annenstraße 9, 01067 Dresden).
+   * GPS coordinates for Dresden International School (Annenstraße 9, 01067 Dresden-Altstadt).
    * TODO: Verify exact GPS coordinates of rooftop sensor array.
    * If latitude or longitude is null/undefined, sunrise/sunset is hidden per spec.
    */

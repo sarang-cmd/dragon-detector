@@ -28,8 +28,8 @@ export default function ImprintPage() {
               <h2 className="text-base font-medium text-[var(--color-text)]">Service Provider</h2>
               <div className="text-sm leading-relaxed text-[var(--color-muted)] space-y-1">
                 <p className="font-semibold text-[var(--color-text)]">Dresden International School e.V.</p>
-                <p>Anhalter Str. 1</p>
-                <p>01069 Dresden</p>
+                <p>Annenstraße 9</p>
+                <p>01067 Dresden-Altstadt</p>
                 <p>Germany</p>
               </div>
 

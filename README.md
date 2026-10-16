@@ -1,7 +1,7 @@
 # DIS Weather Station
 
 <p align="center">
-  <img src="public/brand/dis-logo-horizontal.jpg" alt="Dresden International School" width="360" />
+  <img src="public/brand/dis-logo-horizontal.jpg" alt="Dresden International School" width="360" style="border-radius:12px" />
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <img src="public/brand/dis-tagline-banner.jpg" alt="Dresden International School tagline" width="640" />
+  <img src="public/brand/dis-tagline-banner.jpg" alt="Dresden International School tagline" width="640" style="border-radius:12px" />
 </p>
 
 Live school weather station for **Dresden International School** — a Sainlogic
@@ -148,11 +148,11 @@ stale cache, redeploy with the build cache cleared.
 ## School
 
 <p align="center">
-  <img src="public/brand/dis-30-years-logo.jpg" alt="Dresden International School — 30 Years (1996–2026)" width="220" />
+  <img src="public/brand/dis-30-years-logo.jpg" alt="Dresden International School — 30 Years (1996–2026)" width="220" style="border-radius:12px" />
 </p>
 
 Dresden International School has served Dresden's international community
-since 1996 — 30 years of learning on the Elbe.
+since 1996.
 
 ## License
 
@@ -162,7 +162,10 @@ themselves is restricted — see `src/components/canvasui/LICENSE.md`
 school before launch.
 
 <p align="center">
-  <img src="public/brand/dis-dragons-badge.jpg" alt="DIS Dragons" width="96" />
+  <img src="public/brand/dis-dragons-badge.jpg" alt="DIS Dragons" width="96" style="border-radius:50%" />
+  <img src="public/dragon_detector_logo.jpeg" alt="DIS Weather Club" width="96" style="border-radius:50%" />
   <br />
-  <sub>Built by the DIS Weather Club · Dresden International School · Anhalter Str. 1, 01069 Dresden</sub>
+  <sub>Built by the DIS Weather Club · Dresden International School · Annenstraße 9, 01067 Dresden-Altstadt</sub>
+  <br />
+  <em>Inspire, move forward, and give back.</em>
 </p>

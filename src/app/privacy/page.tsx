@@ -66,7 +66,7 @@ export default function PrivacyPage() {
               <h2 className="text-base font-medium text-[var(--color-text)]">4. Responsible Controller</h2>
               <div className="text-sm text-[var(--color-muted)] space-y-1">
                 <p className="font-medium text-[var(--color-text)]">Dresden International School e.V.</p>
-                <p>Anhalter Str. 1, 01069 Dresden, Germany</p>
+                <p>Annenstraße 9, 01067 Dresden-Altstadt, Germany</p>
                 <p>Email: <span className="numeric">info@dresden-is.de</span> &middot; Phone: <span className="numeric">+49 (0)351 44007-0</span></p>
               </div>
             </CardContent>
