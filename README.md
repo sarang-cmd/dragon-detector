@@ -173,5 +173,5 @@ attribution for the canvas effects).
 </p>
 
 <p align="center">
-  <img src="public/brand/dis-tagline-banner.jpg" alt="Inspire, move forward, and give back" width="640" style="border-radius:12px" />
+  <img src="public/brand/dis-tagline-banner.png" alt="Inspire, move forward, and give back" width="640" style="border-radius:12px" />
 </p>
