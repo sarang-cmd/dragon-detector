@@ -67,6 +67,8 @@ export default function LessonPage() {
 
   const question = node.quiz[qIndex];
   const nextNode = TRACK_NODES[TRACK_NODES.findIndex((n) => n.id === node.id) + 1];
+  const titleOf = (id: string) =>
+    concepts.find((c) => c.id === id)?.title ?? id.replace(/-/g, ' ');
 
   const pick = (i: number) => {
     if (picked != null) return;
@@ -122,8 +124,8 @@ export default function LessonPage() {
             Quick check
           </h2>
           <p className="mt-1 text-xs text-[var(--color-muted)]">
-            {node && TRACK_NODES[TRACK_NODES.findIndex((n) => n.id === node.id) + 1]
-              ? `Finish this quiz to unlock ${TRACK_NODES[TRACK_NODES.findIndex((n) => n.id === node.id) + 1].id.replace(/-/g, ' ')}. XP counts once.`
+              {node && TRACK_NODES[TRACK_NODES.findIndex((n) => n.id === node.id) + 1]
+              ? `Finish this quiz to unlock ${titleOf(TRACK_NODES[TRACK_NODES.findIndex((n) => n.id === node.id) + 1].id)}. XP counts once.`
               : 'Last lesson of the track. XP counts once.'}
           </p>
           {!finished ? (
@@ -221,12 +223,12 @@ export default function LessonPage() {
                       : 'Nice work. Track complete, you weather expert.'}
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-2">
-                {nextNode && (
-                  <Button onClick={() => router.push(`/learn/track/${nextNode.id}`)} className="gap-1">
-                    Next lesson: {nextNode.id}
-                    <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-                  </Button>
-                )}
+                  {nextNode && (
+                    <Button onClick={() => router.push(`/learn/track/${nextNode.id}`)} className="gap-1">
+                      Next lesson: {titleOf(nextNode.id)}
+                      <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
                 <Button variant="outline" onClick={() => {
                   setQIndex(0);
                   setPicked(null);

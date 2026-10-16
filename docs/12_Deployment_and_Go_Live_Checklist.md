@@ -58,15 +58,20 @@ Project: `mhbsnmtqzjehwglzcaay` ([dashboard](https://supabase.com/dashboard)).
 6. **Avatars**: run `supabase/migrations/0003_avatars.sql` to create the
    public `avatars` bucket with owner-only write policies. Profile photos
    then upload straight from the header account menu (2 MB limit).
-6. **Brand the auth emails** (Authentication → Email Templates): replace the
-   **Confirm signup** body with `supabase/templates/confirm-signup.html` and
-   **Reset password** with `supabase/templates/recovery.html` from this repo
-   (dark DIS card, amber button, correct school address). Also set
-   **Mail → From name** to `DIS Weather Station` so inboxes show the brand
-   instead of a generic sender. Note: the **template editor stays locked
-   until custom SMTP is set up** (Supabase shows "Set up custom SMTP to edit
-   templates"), and Supabase's built-in sender is rate-limited, so a whole
-   class signing up at once would see failures. Set up SMTP first:
+6. **Brand the auth emails** (Authentication → Email Templates, unlocked by
+   the SMTP step above). Subject ideas live in
+   `supabase/templates/SUBJECTS.md`; bodies:
+   - **Confirm signup** ← `confirm-signup.html`
+   - **Invite user** ← `invite-user.html`
+   - **Magic Link** ← `magic-link.html`
+   - **Change Email** ← `change-email.html`
+   - **Reset Password** ← `reset-password.html`
+   - `password-changed`, `email-changed`, `reauthentication.html` are ready
+     for later (no Supabase hook sends them yet).
+   Also set **Mail → From name** to `DIS Weather Station`. Note: the template
+   editor stays locked until custom SMTP is set up, and Supabase's built-in
+   sender is rate-limited, so a whole class signing up at once would see
+   failures without SMTP.
 
    **Option A — Resend (recommended, free 100 emails/day):**
    1. Sign up at [resend.com](https://resend.com), verify your email,

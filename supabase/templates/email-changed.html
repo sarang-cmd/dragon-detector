@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ .Email }} — your DIS Weather Station sign-in email changed</title>
+</head>
+<body style="margin:0;padding:0;background-color:#EDF0F3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#EDF0F3;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background-color:#ffffff;border:1px solid #D9E0E7;border-radius:12px;overflow:hidden;">
+          <tr>
+            <td align="center" style="background-color:#00529E;padding:20px 32px;">
+              <img src="https://mhbsnmtqzjehwglzcaay.supabase.co/storage/v1/object/public/brand/dis-logo-horizontal.jpg" alt="Dresden International School" width="200" style="display:block;width:200px;max-width:100%;height:auto;background-color:#ffffff;border-radius:8px;padding:8px 12px;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 32px 8px 32px;">
+              <div style="font-size:22px;font-weight:700;color:#00529E;line-height:1.3;">Email address updated</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 32px;color:#333333;font-size:15px;line-height:1.6;">
+              Heads up: the sign-in email on your Weather Station account is now
+              <strong>{{ .Email }}</strong>. Your XP, lessons and progress moved
+              with it, nothing was lost.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+                <td style="border-left:4px solid #00843D;background-color:#EDF7F0;border-radius:0 8px 8px 0;padding:10px 14px;color:#1d5c34;font-size:12px;line-height:1.5;">
+                  That was you? Nothing to do. Was it not you? Contact your teacher right away so the account can be secured.
+                </td>
+              </tr></table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:8px 32px;">
+              <table role="presentation" cellpadding="0" cellspacing="0"><tr><td bgcolor="#F6A800" style="border-radius:12px;">
+                <a href="{{ .SiteURL }}/learn" style="display:inline-block;color:#1a1a1a;font-size:15px;font-weight:700;text-decoration:none;padding:12px 32px;">Continue learning</a>
+              </td></tr></table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:16px 32px 0 32px;">
+              <img src="https://mhbsnmtqzjehwglzcaay.supabase.co/storage/v1/object/public/brand/dis-dragons-badge.png" alt="DIS Dragons" width="48" style="width:48px;height:48px;border-radius:50%;" />
+              <img src="https://mhbsnmtqzjehwglzcaay.supabase.co/storage/v1/object/public/brand/dragon-detector-logo.jpeg" alt="DIS Weather Club" width="48" style="width:48px;height:48px;border-radius:50%;margin-left:8px;" />
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:8px 32px 16px 32px;color:#6a7683;font-size:11px;line-height:1.6;">
+              DIS Weather Club, Dresden International School<br />Annenstraße 9, 01067 Dresden-Altstadt, Germany.
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:0 0 24px 0;">
+              <img src="https://mhbsnmtqzjehwglzcaay.supabase.co/storage/v1/object/public/brand/dis-tagline-banner.jpg" alt="Inspire, move forward, and give back" width="480" style="width:100%;max-width:480px;height:auto;display:block;" />
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

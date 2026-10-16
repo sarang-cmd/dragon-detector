@@ -1,8 +1,8 @@
 # DIS Weather Station
 
 <p align="center">
-  <img src="public/brand/dis-logo-horizontal.jpg" alt="Dresden International School" width="360" style="border-radius:12px" />
-  <img src="public/dragon_detector_logo.jpeg" alt="DIS Weather Club" width="180" style="border-radius:50%" />
+  <img src="public/brand/dis-logo-horizontal.rounded.png" alt="Dresden International School" width="360" />
+  <img src="public/dragon_detector_logo.rounded.png" alt="DIS Weather Club" width="180" />
   <br />
 </p>
 
@@ -167,7 +167,7 @@ attribution for the canvas effects).
 
 <p align="center">
   <img src="public/brand/dis-dragons-badge.jpg" alt="DIS Dragons" width="96" style="border-radius:50%" />
-  <img src="public/dragon_detector_logo.jpeg" alt="DIS Weather Club" width="96" style="border-radius:50%" />
+  <img src="public/dragon_detector_logo.rounded.png" alt="DIS Weather Club" width="96" />
   <br />
   <sub>Built by the DIS Weather Club · Maintained by Sarang Batra · Dresden International School · Annenstraße 9, 01067 Dresden-Altstadt</sub>
 </p>
