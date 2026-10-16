@@ -224,7 +224,7 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   (kids copy, 0 activities, gate note), station imperial (footnote + converted
   table), rain tile non-zero rate, top bar mid-transition, triple-D panel with
   no prior button. Shots in `screenshots/{onboarding,learn,station,home}/`.
-  Dev server left running at http://127.0.0.1:3100 (pid 3912).
+  Dev server left running at http://127.0.0.1:3201 (pid 3912).
 
 ## Session 8 — grid fill, tooltip portal, README — DONE
 
@@ -260,3 +260,23 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Verification: 179/179 tests, build (15 routes) + lint clean, CDP shot
   `screenshots/home/hero-outlook-1440.png` shows curve + AI sentence.
   Committed (outlook files + `.env.example` placeholders).
+
+## Session 10 — Supabase auth + progress store — DONE
+
+- Auth: `AuthProvider` + `useAuth` (Google OAuth, email sign-in/sign-up with
+  confirm-email handling), `/login` page, `/auth/callback` code exchange,
+  `middleware.ts` session refresh, header + mobile-sheet `AuthButton`.
+  Unconfigured deployments show a graceful fallback (weather works unsigned).
+- Progress: `src/lib/track/progress.ts` (Supabase `track_progress` row with
+  localStorage mirror + merge; local-only when signed out) and
+  `supabase/migrations/0001_track_progress.sql` (RLS owner-only; user runs
+  in the Supabase SQL editor).
+- Keys: user-supplied Groq key + Supabase URL/anon key written to gitignored
+  `.env.local` only (verified via `git check-ignore`); placeholders added to
+  `.env.example`. Keys never printed or committed.
+- Dashboard admin checklist still open (user-side): enable Google + Email
+  providers in Supabase Auth, add site/redirect URLs (localhost + vercel
+  domain), run the migration SQL, optionally disable "confirm email".
+- Verification: `tsc` + lint clean, full build clean, `/login` CDP shot
+  renders (Google button + email form behind the role modal on fresh
+  profiles). Committed auth files + header/layout wiring + supabase deps.
