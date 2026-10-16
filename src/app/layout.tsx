@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
 import { ThemeProviderWrapper } from '@/components/theme-provider';
 import { UnitProvider } from '@/context/unit-context';
 import { RoleProvider } from '@/context/role-context';
@@ -49,6 +50,7 @@ export default function RootLayout({
           </UnitProvider>
         </ThemeProviderWrapper>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
