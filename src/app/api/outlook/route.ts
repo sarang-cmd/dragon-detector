@@ -153,12 +153,14 @@ async function fetchAiOutlook(
 }
 
 /**
- * Tier 2: shared Supabase cache. Returns the cached payload when fresh,
- * null when stale/missing/unavailable (never throws).
+ * Tier 2: shared Supabase cache. Returns the cached row (payload +
+ * updatedAt) or null when missing/unavailable. Freshness is decided by the
+ * caller: fresh rows are served as-is, any-age rows only as a last resort
+ * when upstream APIs are down (marked `stale: true`).
  */
-async function readSharedCache(
+async function readSharedCacheRow(
   units: UnitSystem
-): Promise<{ payload: Record<string, unknown>; generatedAt: string } | null> {
+): Promise<{ payload: Record<string, unknown>; updatedAt: string } | null> {
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
@@ -174,11 +176,10 @@ async function readSharedCache(
       .select('payload, updated_at')
       .eq('units', units)
       .maybeSingle();
-    if (error) throw error;
-    if (!data || !isFresh(data.updated_at, Date.now())) return null;
+    if (error || !data) throw error ?? new Error('no row');
     return {
       payload: data.payload as Record<string, unknown>,
-      generatedAt: data.updated_at as string,
+      updatedAt: data.updated_at as string,
     };
   } catch {
     // Table missing, RLS, or network: back off briefly, stay memory-only.
@@ -187,8 +188,9 @@ async function readSharedCache(
   }
 }
 
-/** Persist via SECURITY DEFINER rpc (anon key has no raw write access). */
-async function writeSharedCache(
+/** Persist to the shared cache and append to the public history (both via
+ * SECURITY DEFINER rpc — the anon key has no raw write access). */
+async function persistOutlook(
   units: UnitSystem,
   payload: Record<string, unknown>
 ): Promise<void> {
@@ -206,6 +208,11 @@ async function writeSharedCache(
       p_payload: payload,
     });
     if (error) throw error;
+    const { error: histError } = await supabase.rpc('append_outlook_history', {
+      p_units: units,
+      p_payload: payload,
+    });
+    if (histError) throw histError;
   } catch {
     supabaseDownUntil = Date.now() + SUPABASE_DOWN_COOLDOWN_MS;
   }
@@ -272,8 +279,8 @@ export async function GET(req: NextRequest) {
     if (!inFlight || inFlight.units !== units) {
       const promise = (async () => {
         // Tier 2 first: another instance may have refreshed already.
-        const shared = await readSharedCache(units);
-        if (shared) {
+        const shared = await readSharedCacheRow(units);
+        if (shared && isFresh(shared.updatedAt, Date.now())) {
           cache = {
             expiresAt: Date.now() + CACHE_TTL_MS,
             payload: shared.payload,
@@ -281,11 +288,20 @@ export async function GET(req: NextRequest) {
           };
           return shared.payload;
         }
-        const payload = await buildOutlook(units);
-        cache = { expiresAt: Date.now() + CACHE_TTL_MS, payload, units };
-        // Share with every other instance; failure only costs one instance.
-        await writeSharedCache(units, payload);
-        return payload;
+        try {
+          const payload = await buildOutlook(units);
+          cache = { expiresAt: Date.now() + CACHE_TTL_MS, payload, units };
+          // Share with every other instance; failure only costs one instance.
+          await persistOutlook(units, payload);
+          return payload;
+        } catch (buildError) {
+          // Upstream APIs down: serve the newest stored outlook of any age,
+          // clearly flagged, rather than failing the hero.
+          if (shared) {
+            return { ...shared.payload, stale: true };
+          }
+          throw buildError;
+        }
       })()
         .finally(() => {
           if (inFlight?.units === units) inFlight = null;

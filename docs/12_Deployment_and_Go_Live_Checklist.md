@@ -58,6 +58,10 @@ Project: `mhbsnmtqzjehwglzcaay` ([dashboard](https://supabase.com/dashboard)).
 6. **Avatars**: run `supabase/migrations/0003_avatars.sql` to create the
    public `avatars` bucket with owner-only write policies. Profile photos
    then upload straight from the header account menu (2 MB limit).
+7. **Outlook history + samples**: run `0004_outlook_history.sql`, then
+   `0005_outlook_seed.sql`. This gives the hero a working outlook and the
+   admin panel a viewable history with zero external APIs; real builds
+   overwrite the samples automatically.
 6. **Brand the auth emails** (Authentication → Email Templates, unlocked by
    the SMTP step above). Subject ideas live in
    `supabase/templates/SUBJECTS.md`; bodies:

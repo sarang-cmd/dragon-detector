@@ -55,6 +55,10 @@ export function ScenarioDebugPanel() {
   const [testEmail, setTestEmail] = React.useState('');
   const [testStatus, setTestStatus] = React.useState<string | null>(null);
   const [testBusy, setTestBusy] = React.useState(false);
+  const [history, setHistory] = React.useState<
+    { createdAt: string; statisticalHeadline?: string; ai?: string | null; stale?: boolean; sample?: boolean }[]
+  >([]);
+  const [historyState, setHistoryState] = React.useState<'idle' | 'loading' | 'done'>('idle');
 
   const sendTestEmail = async (kind: 'signup' | 'reset' | 'magiclink') => {
     setTestStatus(null);
@@ -133,6 +137,18 @@ export function ScenarioDebugPanel() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
+
+  // Public outlook history (no login needed). Loads when the panel opens.
+  // (Above all early returns: hooks must run in the same order every render.)
+  React.useEffect(() => {
+    if (!open || historyState !== 'idle') return;
+    setHistoryState('loading');
+    fetch('/api/outlook/history?units=metric&limit=10')
+      .then((r) => (r.ok ? r.json() : { entries: [] }))
+      .then((j) => setHistory(Array.isArray(j.entries) ? j.entries : []))
+      .catch(() => setHistory([]))
+      .finally(() => setHistoryState('done'));
+  }, [open, historyState]);
 
   if (process.env.NODE_ENV === 'production') return null;
   if (!unlocked) return null;
@@ -248,6 +264,48 @@ export function ScenarioDebugPanel() {
             <p role="status" className="px-3 py-2 text-[11px] leading-relaxed text-[var(--color-text)]">
               {testStatus}
             </p>
+          )}
+        </div>
+
+        <div
+          role="group"
+          aria-label="Outlook history"
+          className="mt-1 border-t border-[var(--color-border)] pt-1"
+        >
+          <p className="px-3 pb-1 pt-1 text-[10px] uppercase tracking-wider text-[var(--color-muted)]">
+            Outlook history
+          </p>
+          {historyState !== 'done' ? (
+            <p className="px-3 py-1 text-[11px] text-[var(--color-muted)]">Loading…</p>
+          ) : history.length === 0 ? (
+            <p className="px-3 py-1 text-[11px] leading-relaxed text-[var(--color-muted)]">
+              No stored outlooks yet. Run migration 0004 (+0005 for samples),
+              then use the site once.
+            </p>
+          ) : (
+            <ol className="max-h-48 space-y-2 overflow-y-auto px-3 py-1">
+              {history.map((h, i) => (
+                <li key={`${h.createdAt}-${i}`} className="text-[11px] leading-relaxed">
+                  <span className="numeric text-[var(--color-muted)]">
+                    {new Date(h.createdAt).toLocaleString([], {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>{' '}
+                  {h.stale && <span className="text-[var(--accent)]">[stale] </span>}
+                  {h.sample && <span className="text-[var(--color-muted)]">[sample] </span>}
+                  {h.ai ? (
+                    <span className="text-[var(--color-text)]">{h.ai}</span>
+                  ) : (
+                    <span className="text-[var(--color-text)]">
+                      {String(h.statisticalHeadline ?? '—')}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ol>
           )}
         </div>
       </div>

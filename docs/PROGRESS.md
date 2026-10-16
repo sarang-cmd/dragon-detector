@@ -348,3 +348,26 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Q&A answered live: custom SMTP has NO fallback on quota exhaustion
   (signups stall silently); added a resend-confirmation path that detects
   "Email not confirmed" and offers a re-send.
+
+## Session 14 — outlook history + sample seed + answers — DONE
+
+- Outlook history: `outlook_history` table + `append_outlook_history` (capped
+  at 50/unit, migration 0004), new public endpoint
+  `GET /api/outlook/history?units=&limit=`, every fresh build appends.
+- Fallback chain is now: memory (fresh) → Supabase (fresh) → rebuild →
+  Supabase any-age flagged `stale: true` → 502. The site never shows a dead
+  hero when the APIs are down.
+- Seed (migration 0005): one current cache row per units + two history rows,
+  all flagged `sample: true`, so the hero/graph/panel work with zero
+  external APIs until real builds overwrite them.
+- Debug panel gained an Outlook history viewer (public data, empty-state
+  note pointing at the migrations). Verified via CDP.
+- Answers: sun/moon are NOT measured and use NO API — `lib/sun.ts` computes
+  sunrise/sunset from coordinates + date, `lib/moon.ts` computes the phase
+  from the date. Nothing to provide. External APIs in use: Open-Meteo (free,
+  no key) for forecast, Groq (key provided) for the AI sentence, Supabase
+  (provided) for auth/progress/cache. Live station data still needs the
+  Ecowitt integration built (stub throws) + keys.
+- Env note: two dev servers kept dying/corrupting `.next` in this shared
+  tree (parallel builds); fix is kill + wipe `.next` + restart. Do not run
+  builds while the other agent is building.
