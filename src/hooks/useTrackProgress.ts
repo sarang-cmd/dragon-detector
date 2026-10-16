@@ -5,6 +5,7 @@ import { useAuth } from '@/context/auth-context';
 import {
   loadProgress,
   saveProgress,
+  resetProgress,
   type TrackProgress,
 } from '@/lib/track/progress';
 
@@ -54,5 +55,10 @@ export function useTrackProgress() {
     [state, userId]
   );
 
-  return { ...state, completeLesson };
+  const reset = React.useCallback(async () => {
+    await resetProgress(userId);
+    setState({ xp: 0, completedLessons: [], cloud: !!userId, loading: false });
+  }, [userId]);
+
+  return { ...state, completeLesson, reset };
 }

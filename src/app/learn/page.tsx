@@ -74,7 +74,7 @@ function ActivitySheet({ activity }: { activity: Activity }) {
 export default function LearnPage() {
   const [ageBand, setAgeBand] = React.useState<'all' | AgeBand>('all');
   const { role, readingLevel, showTeachingContent } = useRole();
-  const { completedLessons, xp, loading, cloud } = useTrackProgress();
+  const { completedLessons, xp, loading, cloud, reset } = useTrackProgress();
 
   const audience = readingLevel;
 
@@ -126,6 +126,7 @@ export default function LearnPage() {
             xp={xp}
             loading={loading}
             cloud={cloud}
+            onReset={reset}
           />
         </section>
 

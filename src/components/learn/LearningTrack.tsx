@@ -1,7 +1,8 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
-import { Check, Lock } from 'lucide-react';
+import { Check, Lock, RotateCcw } from 'lucide-react';
 import { TRACK_NODES, TRACK_UNITS, XP_PER_CORRECT } from '@/lib/track/curriculum';
 
 export const MAX_XP = TRACK_NODES.length * 3 * XP_PER_CORRECT;
@@ -11,6 +12,7 @@ interface LearningTrackProps {
   xp: number;
   loading: boolean;
   cloud: boolean;
+  onReset: () => Promise<void>;
 }
 
 /**
@@ -23,7 +25,9 @@ export function LearningTrack({
   xp,
   loading,
   cloud,
+  onReset,
 }: LearningTrackProps) {
+  const [confirmingReset, setConfirmingReset] = React.useState(false);
   const isDone = (id: string) => completedLessons.includes(id);
 
   return (
@@ -62,6 +66,24 @@ export function LearningTrack({
           >
             Sign in to sync progress everywhere
           </Link>
+        )}
+        {(xp > 0 || completedLessons.length > 0) && !loading && (
+          <button
+            type="button"
+            onClick={() => {
+              if (confirmingReset) {
+                setConfirmingReset(false);
+                void onReset();
+              } else {
+                setConfirmingReset(true);
+              }
+            }}
+            onBlur={() => setConfirmingReset(false)}
+            className="inline-flex min-h-[44px] items-center gap-1 text-xs text-[var(--color-muted)] hover:text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+          >
+            <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
+            {confirmingReset ? 'Tap again to confirm reset' : 'Reset progress'}
+          </button>
         )}
       </div>
 
