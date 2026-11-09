@@ -1,0 +1,40 @@
+{
+  "generatedAt": "2026-11-09T18:56:34.560Z",
+  "git": {
+    "commits": 72,
+    "contributors": 4,
+    "firstCommit": "2026-10-14",
+    "lastCommit": "2026-11-09",
+    "branch": "arena/89736089-dragon-detector"
+  },
+  "code": {
+    "files": 122,
+    "lines": 23263,
+    "components": 59,
+    "pages": 13,
+    "apiRoutes": 8,
+    "libModules": 26,
+    "hooks": 3,
+    "stylesheets": 1,
+    "styleLines": 512
+  },
+  "tests": {
+    "files": 29,
+    "cases": 248,
+    "lines": 3149
+  },
+  "docs": {
+    "files": 19,
+    "lines": 9240,
+    "migrations": 6,
+    "scripts": 1
+  },
+  "dependencies": {
+    "runtime": 18,
+    "dev": 15
+  },
+  "repository": {
+    "trackedFiles": 227,
+    "totalLines": 123177
+  }
+}
