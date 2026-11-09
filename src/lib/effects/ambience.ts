@@ -198,6 +198,46 @@ export function pressureHaze(trend: 'rising' | 'falling' | 'steady'): TileCloudP
 }
 
 /**
+ * Rain tile: wetness from what has fallen today and what is falling now.
+ * Whichever is higher wins, so a dry morning after a wet night still reads as
+ * damp, and a sudden downpour registers before it has filled the gauge.
+ */
+export function wetness(todayMm: number, rateMmH: number): number {
+  return clamp(Math.max(todayMm / 15, rateMmH / 12), 0, 1);
+}
+
+/**
+ * Rain tile: the standing haze behind the droplets. Droplets only run while it
+ * is actually raining, so without this the tile is the one bare card on a dry
+ * day. Cool and slow-moving, thickening with how wet it has been.
+ */
+export function wetHaze(todayMm: number, rateMmH: number): TileCloudPreset {
+  const wet = wetness(todayMm, rateMmH);
+  return {
+    tint: 'cool',
+    scale: round(1.35 - wet * 0.3),
+    speed: round(0.03 + wet * 0.08),
+    cover: round(0.02 + wet * 0.07),
+    density: round(1.6 + wet * 1.2),
+    shading: 0.16,
+    opacity: round(0.05 + wet * 0.09),
+    wind: round(0.08 + wet * 0.24),
+    windRadius: 240,
+    fogBlur: round(0.3 + wet * 0.35),
+  };
+}
+
+/**
+ * Rain tile: the CSS half of the ambience — a damp wash that rises from the
+ * bottom edge, so the tile still reads as the rain card on devices that never
+ * get the canvas.
+ */
+export function wetWash(todayMm: number, rateMmH: number): string {
+  const wet = wetness(todayMm, rateMmH);
+  return `${round(4 + wet * 10, 1)}%`;
+}
+
+/**
  * Rain tile: how hard the Canvas UI droplets run. A curve rather than a
  * straight scale, so a drizzle is still visible and a cloudburst stops short
  * of covering the numbers.

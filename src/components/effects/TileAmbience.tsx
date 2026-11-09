@@ -16,6 +16,8 @@ import {
   useEffectTheme,
   uvGlow,
   uvHaze,
+  wetHaze,
+  wetWash,
   windStreak,
   type TileCloudPreset,
 } from '@/lib/effects/ambience';
@@ -246,6 +248,38 @@ export function SolarAmbience({ solarWm2 }: { solarWm2?: number }) {
       }}
     >
       {showClouds && <TileClouds preset={solarHaze(solarWm2)} />}
+    </AmbienceHost>
+  );
+}
+
+/**
+ * Rain tile: the layer that is always there. Droplets only run while it is
+ * actually raining, which left this as the one bare card on a dry day, so the
+ * haze carries the tile on its own and the drops land on top of it when they
+ * come. Rendered *after* the droplets in the DOM: the droplet layer paints an
+ * opaque surface of its own to refract, and needs the haze above it rather
+ * than buried underneath.
+ */
+export function PrecipitationAmbience({
+  todayMm,
+  rateMmH,
+  isStale = false,
+}: {
+  todayMm: number;
+  rateMmH: number;
+  isStale?: boolean;
+}) {
+  const { isEnabled, tier } = useEffects();
+  const showClouds = useAmbientEffect(!isStale && tier === 'full');
+  if (!isEnabled || isStale) return null;
+
+  return (
+    <AmbienceHost
+      label="precipitation"
+      variant="wet"
+      style={{ ['--ambience-mix' as string]: wetWash(todayMm, rateMmH) }}
+    >
+      {showClouds && <TileClouds preset={wetHaze(todayMm, rateMmH)} />}
     </AmbienceHost>
   );
 }

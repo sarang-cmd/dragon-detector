@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { EffectTier } from '@/lib/effects/tier';
 import {
   CelestialAmbience,
+  PrecipitationAmbience,
   PressureAmbience,
   SolarAmbience,
   UvAmbience,
@@ -36,6 +37,7 @@ const cases = [
   ['solar', () => <SolarAmbience solarWm2={620} />],
   ['celestial', () => <CelestialAmbience isDay />],
   ['pressure', () => <PressureAmbience trend="falling" />],
+  ['precipitation', () => <PrecipitationAmbience todayMm={4} rateMmH={2} />],
 ] as const;
 
 describe('tile ambience', () => {
@@ -65,6 +67,25 @@ describe('tile ambience', () => {
   it('renders nothing when the reading is missing', () => {
     const { container } = render(<UvAmbience />);
     expect(container.innerHTML).toBe('');
+  });
+
+  it('keeps the rain tile covered on a dry day, when droplets cannot run', () => {
+    // The regression: droplets are gated on rain, so a dry tile used to be the
+    // one bare card on the dashboard.
+    const { container } = render(<PrecipitationAmbience todayMm={0} rateMmH={0} />);
+    const host = container.querySelector('[data-ambience="precipitation"]');
+    expect(host).not.toBeNull();
+    expect(host?.className).toContain('ambience-wet');
+  });
+
+  it('thickens the rain haze with how wet it has been', () => {
+    const dry = render(<PrecipitationAmbience todayMm={0} rateMmH={0} />);
+    const soaked = render(<PrecipitationAmbience todayMm={18} rateMmH={9} />);
+    const mix = (c: HTMLElement) =>
+      (c.querySelector('[data-ambience="precipitation"]') as HTMLElement).style.getPropertyValue(
+        '--ambience-mix',
+      );
+    expect(parseFloat(mix(soaked.container))).toBeGreaterThan(parseFloat(mix(dry.container)));
   });
 
   it('renders nothing while the pressure reading is stale', () => {

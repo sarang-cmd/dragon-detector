@@ -649,3 +649,35 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   Open-Meteo, unreachable from the sandbox. **Not verifiable here:** no browser
   is installable in the sandbox, so the shader output itself (as opposed to the
   mounting logic) has not been seen; check the tiles on a real Chromium device.
+
+## Session 27 — rain tile ambience + club photos above the fold — DONE
+
+- **The rain tile was the one bare card.** Every other tile gained a Canvas UI
+  background in session 26, but precipitation was still gated on
+  `rateMmH > 0` — so on a dry day, which is most days, it showed nothing at
+  all. It now has the same ladder as the rest: a `.ambience-wet` CSS wash
+  always, plus a cool cloud field on the full tier, with the Canvas UI
+  droplets landing on top when it actually rains. New `wetness()`,
+  `wetHaze()` and `wetWash()` helpers in `src/lib/effects/ambience.ts`.
+- **Wetness takes either signal.** `max(todayMm / 15, rateMmH / 12)` — a dry
+  morning after a wet night still reads as damp, and a sudden downpour
+  registers before it has filled the gauge. A bone-dry tile still gets a haze
+  (opacity 0.05), because the point is that it stops being the empty card.
+- **The haze is rendered *after* the droplets in the DOM.** Droplets refracts
+  whatever is painted inside it, which means its layer paints an opaque
+  surface of its own; the haze has to sit above that surface rather than be
+  buried under it. Easy to undo by accident — the ordering is commented in
+  `RainGauge.tsx`.
+- **Club photos moved above "Who we are"** on `/about`. They used to sit at
+  the very bottom, after the timeline and the "what comes next" table. The
+  gallery is unchanged otherwise: it is a carousel, and it currently holds
+  two files (`public/club/club-01.jpg`, `club-03.jpg` — note `club-02` is
+  absent). More photos need no layout work: drop the file in `public/club/`
+  and add one line to `CLUB_PHOTOS` in `src/lib/content/club.ts`.
+- Verification: tsc, `pnpm lint` and `pnpm build` clean. 294 tests pass (8
+  new: 3 for `wetness`/`wetHaze`/`wetWash`, 5 pinning the rain ambience
+  including the dry-day regression). The 4 known `src/lib/route.test.ts`
+  failures remain. Confirmed over HTTP on the dev server: `/about` renders
+  the Photos section before "Who we are", both club images return 200, and
+  the compiled CSS carries the `.ambience-wet` rule. Still not verifiable
+  here: the shader output itself, since no browser is installable.
