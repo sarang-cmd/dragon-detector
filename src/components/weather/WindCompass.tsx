@@ -4,14 +4,10 @@ import * as React from 'react';
 import Link from 'next/link';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip } from '@/components/ui/tooltip';
+import { WindAmbience } from '@/components/effects/TileAmbience';
 import { Sparkline } from './Sparkline';
 import { ValueCrossfade } from './ValueCrossfade';
-import {
-  beaufort,
-  compassWord,
-  windDirectionLabel,
-  windScreenReaderText,
-} from '@/lib/beaufort';
+import { beaufort, compassWord, windDirectionLabel, windScreenReaderText } from '@/lib/beaufort';
 import { formatSpeed, UnitSystem, kmhToMph } from '@/lib/units';
 
 export interface WindCompassProps {
@@ -77,6 +73,7 @@ export function WindCompass({
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >
+      <WindAmbience windSpeedKmh={speedKmh} isStale={isOffline} />
       {/* Header */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -85,9 +82,7 @@ export function WindCompass({
             content={
               <span>
                 What is this? Learn about{' '}
-                <span className="font-medium text-[var(--accent)]">
-                  Wind speed &amp; direction
-                </span>
+                <span className="font-medium text-[var(--accent)]">Wind speed &amp; direction</span>
               </span>
             }
             side="left"
@@ -115,25 +110,27 @@ export function WindCompass({
             {formattedSpeed.unit}
           </span>
           <span className="text-xs text-[var(--color-muted)] ml-2">
-            Gusts <span className="numeric font-medium text-[var(--color-text)]">{formattedGust.value}</span> {formattedGust.unit}
+            Gusts{' '}
+            <span className="numeric font-medium text-[var(--color-text)]">
+              {formattedGust.value}
+            </span>{' '}
+            {formattedGust.unit}
           </span>
         </div>
 
         <div className="mt-1 flex items-center gap-2 text-xs text-[var(--color-muted)]">
           <span className="font-medium text-[var(--color-text)]">{bResult.name}</span>
           <span>&middot;</span>
-          <span>From {cWord} ({cLabel}, {Math.round(directionDeg)}&deg;)</span>
+          <span>
+            From {cWord} ({cLabel}, {Math.round(directionDeg)}&deg;)
+          </span>
         </div>
       </div>
 
       {/* SVG Compass Instrument */}
       <div className="my-4 flex items-center justify-center">
         <div className="relative h-[210px] w-[210px] sm:h-[220px] sm:w-[220px]">
-          <svg
-            viewBox="0 0 220 220"
-            className="h-full w-full select-none"
-            aria-hidden="true"
-          >
+          <svg viewBox="0 0 220 220" className="h-full w-full select-none" aria-hidden="true">
             {/* Outer dial ring */}
             <circle
               cx="110"
@@ -197,8 +194,7 @@ export function WindCompass({
               style={{
                 transform: `rotate(${ghostAngle}deg)`,
                 transformOrigin: '110px 110px',
-                transition:
-                  'transform 900ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                transition: 'transform 900ms cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
               className="motion-reduce:transition-none opacity-30"
             >
@@ -218,8 +214,7 @@ export function WindCompass({
               style={{
                 transform: `rotate(${continuousAngle}deg)`,
                 transformOrigin: '110px 110px',
-                transition:
-                  'transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                transition: 'transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
               className="motion-reduce:transition-none"
             >
@@ -244,10 +239,7 @@ export function WindCompass({
                 strokeLinecap="round"
               />
               {/* Needle Arrowhead pointing at perimeter */}
-              <polygon
-                points="110,18 105,32 115,32"
-                fill="var(--accent)"
-              />
+              <polygon points="110,18 105,32 115,32" fill="var(--accent)" />
             </g>
 
             {/* Center Pivot Boss */}
@@ -266,11 +258,7 @@ export function WindCompass({
       {/* Sparkline & Footer summary */}
       <div className="pt-3 border-t border-[var(--color-border)]">
         <Sparkline
-          data={
-            unitSystem === 'imperial'
-              ? historySpeedKmh.map(kmhToMph)
-              : historySpeedKmh
-          }
+          data={unitSystem === 'imperial' ? historySpeedKmh.map(kmhToMph) : historySpeedKmh}
           unit={formattedSpeed.unit}
           label="24h Wind Speed"
           height={32}

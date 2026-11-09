@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip } from '@/components/ui/tooltip';
+import { SolarAmbience } from '@/components/effects/TileAmbience';
 import { ValueCrossfade } from './ValueCrossfade';
 
 export interface SolarTileProps {
@@ -28,6 +29,7 @@ export function SolarTile({ solarWm2, isOffline = false }: SolarTileProps) {
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >
+      <SolarAmbience solarWm2={solarWm2} />
       <div>
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="label select-none">Solar Radiation</span>
@@ -58,19 +60,17 @@ export function SolarTile({ solarWm2, isOffline = false }: SolarTileProps) {
             value={val}
             className="text-3xl sm:text-4xl font-light tracking-tight text-[var(--color-text)]"
           />
-          <span className="text-sm text-[var(--color-muted)] select-none">
-            W/m&sup2;
-          </span>
+          <span className="text-sm text-[var(--color-muted)] select-none">W/m&sup2;</span>
         </div>
 
         <p className="mt-2 text-xs text-[var(--color-muted)]">
           {val < 10
             ? 'Nighttime or dusk. Minimal sunlight.'
             : val < 200
-            ? 'Overcast or low sun angle.'
-            : val < 600
-            ? 'Moderate sunlight; active solar generation.'
-            : 'Intense direct sunlight.'}
+              ? 'Overcast or low sun angle.'
+              : val < 600
+                ? 'Moderate sunlight; active solar generation.'
+                : 'Intense direct sunlight.'}
         </p>
       </div>
 

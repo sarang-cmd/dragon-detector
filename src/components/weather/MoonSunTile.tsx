@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { HelpCircle, Sunrise, Sunset } from 'lucide-react';
 import { Tooltip } from '@/components/ui/tooltip';
 import { moonPhase, MoonPhase } from '@/lib/moon';
-import { calculateSunTimes, formatSunTime } from '@/lib/sun';
+import { calculateSunTimes, formatSunTime, isDaylight } from '@/lib/sun';
 import { SITE_CONFIG } from '@/lib/site';
+import { CelestialAmbience } from '@/components/effects/TileAmbience';
 
 export interface MoonSunTileProps {
   date?: Date;
@@ -45,8 +46,8 @@ function MoonIllustration({ phase, illumination }: { phase: MoonPhase; illuminat
             isWaxing
               ? `M 20 2 A 18 18 0 0 1 20 38 Q ${20 + (illumination - 0.5) * 36} 20 20 2 Z`
               : isWaning
-              ? `M 20 2 A 18 18 0 0 0 20 38 Q ${20 - (illumination - 0.5) * 36} 20 20 2 Z`
-              : `M 20 2 A 18 18 0 0 1 20 38 Z`
+                ? `M 20 2 A 18 18 0 0 0 20 38 Q ${20 - (illumination - 0.5) * 36} 20 20 2 Z`
+                : `M 20 2 A 18 18 0 0 1 20 38 Z`
           }
           fill="var(--color-text)"
           opacity="0.85"
@@ -69,6 +70,9 @@ export function MoonSunTile({ date = new Date(), isOffline = false }: MoonSunTil
 
   const moon = moonPhase(date);
   const sun = calculateSunTimes(date, SITE_CONFIG.latitude, SITE_CONFIG.longitude);
+  // Daylight drives this tile's ambience: warm wash by day, moonlight at
+  // night. Plain expression, not a hook — this sits after an early return.
+  const isDay = isDaylight(date, sun);
 
   return (
     <div
@@ -76,6 +80,7 @@ export function MoonSunTile({ date = new Date(), isOffline = false }: MoonSunTil
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >
+      <CelestialAmbience isDay={isDay} />
       <div>
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="label select-none">Sun &amp; Moon</span>

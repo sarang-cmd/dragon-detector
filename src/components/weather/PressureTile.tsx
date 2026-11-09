@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { HelpCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Tooltip } from '@/components/ui/tooltip';
+import { PressureAmbience } from '@/components/effects/TileAmbience';
 import { Sparkline } from './Sparkline';
 import { ValueCrossfade } from './ValueCrossfade';
 import { formatPressure, UnitSystem, hPaToInHg } from '@/lib/units';
@@ -20,7 +21,7 @@ export type TrendDirection = 'rising' | 'steady' | 'falling';
 
 export function calculatePressureTrend(
   currentHpa: number | undefined,
-  history: HistoryPoint[] | undefined
+  history: HistoryPoint[] | undefined,
 ): { trend: TrendDirection; deltaHpa: number } {
   if (currentHpa == null || !history || history.length < 2) {
     return { trend: 'steady', deltaHpa: 0 };
@@ -74,9 +75,7 @@ export function PressureTile({
   const formatted = formatPressure(pressureHpa, unitSystem);
   const { trend, deltaHpa } = calculatePressureTrend(pressureHpa, history);
 
-  const historyPressures = history
-    .map((p) => p.pressureHpa)
-    .filter((v): v is number => v != null);
+  const historyPressures = history.map((p) => p.pressureHpa).filter((v): v is number => v != null);
 
   const trendIcon =
     trend === 'rising' ? (
@@ -98,6 +97,7 @@ export function PressureTile({
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >
+      <PressureAmbience trend={trend} isStale={isOffline} />
       <div>
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="label select-none">Relative Pressure</span>
@@ -128,31 +128,21 @@ export function PressureTile({
             value={formatted.value}
             className="text-3xl sm:text-4xl font-light tracking-tight text-[var(--color-text)]"
           />
-          <span className="text-sm text-[var(--color-muted)] select-none">
-            {formatted.unit}
-          </span>
+          <span className="text-sm text-[var(--color-muted)] select-none">{formatted.unit}</span>
         </div>
 
         {/* 3-hour trend arrow with words */}
         <div className="mt-2 flex items-center gap-2 text-xs text-[var(--color-muted)]">
           {trendIcon}
-          <span className="font-medium capitalize text-[var(--color-text)]">
-            {trend}
-          </span>
-          <span className="numeric text-[11px] text-[var(--color-muted)]">
-            ({deltaText} / 3h)
-          </span>
+          <span className="font-medium capitalize text-[var(--color-text)]">{trend}</span>
+          <span className="numeric text-[11px] text-[var(--color-muted)]">({deltaText} / 3h)</span>
         </div>
       </div>
 
       {/* Sparkline */}
       <div className="pt-3 border-t border-[var(--color-border)]">
         <Sparkline
-          data={
-            unitSystem === 'imperial'
-              ? historyPressures.map(hPaToInHg)
-              : historyPressures
-          }
+          data={unitSystem === 'imperial' ? historyPressures.map(hPaToInHg) : historyPressures}
           unit={formatted.unit}
           label="24h Barometric Pressure"
           height={28}

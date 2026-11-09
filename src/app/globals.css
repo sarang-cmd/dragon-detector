@@ -5,18 +5,18 @@
 @layer base {
   :root {
     /* Brand color primitives */
-    --dis-blue: #00529E;
-    --dis-amber: #F6A800;
-    --dis-green: #B3D236;
+    --dis-blue: #00529e;
+    --dis-amber: #f6a800;
+    --dis-green: #b3d236;
 
     /* Dark theme is default per docs/03 and docs/03a */
-    --color-background: #0A0A0A;
+    --color-background: #0a0a0a;
     --color-surface: #111111;
-    --color-border: #1F1F1F;
-    --color-text: #F5F5F5;
-    --color-muted: #8A8A8A;
+    --color-border: #1f1f1f;
+    --color-text: #f5f5f5;
+    --color-muted: #8a8a8a;
     --accent: var(--dis-amber);
-    --accent-foreground: #0A0A0A;
+    --accent-foreground: #0a0a0a;
 
     /* shadcn semantic tokens mapped to design system */
     --background: var(--color-background);
@@ -27,27 +27,31 @@
     --popover-foreground: var(--color-text);
     --primary: var(--accent);
     --primary-foreground: var(--accent-foreground);
-    --secondary: #1F1F1F;
-    --secondary-foreground: #F5F5F5;
-    --muted: #1A1A1A;
+    --secondary: #1f1f1f;
+    --secondary-foreground: #f5f5f5;
+    --muted: #1a1a1a;
     --muted-foreground: var(--color-muted);
-    --destructive: #7F1D1D;
-    --destructive-foreground: #F5F5F5;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #f5f5f5;
     --border: var(--color-border);
     --input: var(--color-border);
     --ring: var(--accent);
     --radius: 0.75rem; /* 12px per docs/03 section 5 */
+
+    /* Ambience tints: the sun is warm in both themes, moonlight is cool. */
+    --ambience-warm: #f6a800;
+    --ambience-cool: #8fb6e8;
   }
 
   .dark {
     /* Dark theme tokens explicitly repeated for .dark class */
-    --color-background: #0A0A0A;
+    --color-background: #0a0a0a;
     --color-surface: #111111;
-    --color-border: #1F1F1F;
-    --color-text: #F5F5F5;
-    --color-muted: #8A8A8A;
+    --color-border: #1f1f1f;
+    --color-text: #f5f5f5;
+    --color-muted: #8a8a8a;
     --accent: var(--dis-amber);
-    --accent-foreground: #0A0A0A;
+    --accent-foreground: #0a0a0a;
 
     --background: var(--color-background);
     --foreground: var(--color-text);
@@ -57,12 +61,12 @@
     --popover-foreground: var(--color-text);
     --primary: var(--accent);
     --primary-foreground: var(--accent-foreground);
-    --secondary: #1F1F1F;
-    --secondary-foreground: #F5F5F5;
-    --muted: #1A1A1A;
+    --secondary: #1f1f1f;
+    --secondary-foreground: #f5f5f5;
+    --muted: #1a1a1a;
     --muted-foreground: var(--color-muted);
-    --destructive: #7F1D1D;
-    --destructive-foreground: #F5F5F5;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #f5f5f5;
     --border: var(--color-border);
     --input: var(--color-border);
     --ring: var(--accent);
@@ -70,13 +74,13 @@
 
   .light {
     /* Light theme tokens per docs/03 and docs/03a */
-    --color-background: #FAFAFA;
-    --color-surface: #FFFFFF;
-    --color-border: #E5E5E5;
-    --color-text: #0A0A0A;
-    --color-muted: #6B6B6B;
+    --color-background: #fafafa;
+    --color-surface: #ffffff;
+    --color-border: #e5e5e5;
+    --color-text: #0a0a0a;
+    --color-muted: #6b6b6b;
     --accent: var(--dis-blue);
-    --accent-foreground: #FFFFFF;
+    --accent-foreground: #ffffff;
 
     --background: var(--color-background);
     --foreground: var(--color-text);
@@ -86,12 +90,12 @@
     --popover-foreground: var(--color-text);
     --primary: var(--accent);
     --primary-foreground: var(--accent-foreground);
-    --secondary: #F0F0F0;
-    --secondary-foreground: #0A0A0A;
-    --muted: #F4F4F4;
+    --secondary: #f0f0f0;
+    --secondary-foreground: #0a0a0a;
+    --muted: #f4f4f4;
     --muted-foreground: var(--color-muted);
-    --destructive: #DC2626;
-    --destructive-foreground: #FFFFFF;
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
     --border: var(--color-border);
     --input: var(--color-border);
     --ring: var(--accent);
@@ -129,13 +133,20 @@
 
   /* Utility class: .numeric (tabular-nums, mono) */
   .numeric {
-    font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family:
+      var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-variant-numeric: tabular-nums;
   }
 
   /* Utility class: .display (hero sizes with clamp) */
   .display {
-    font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family:
+      var(--font-geist-sans),
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      sans-serif;
     font-size: clamp(2.25rem, 5vw + 1rem, 4.5rem);
     line-height: 1.05;
     font-weight: 300;
@@ -186,13 +197,27 @@
     animation: tile-in 300ms ease-out both;
   }
 
-  .bento-enter > *:nth-child(2) { animation-delay: 40ms; }
-  .bento-enter > *:nth-child(3) { animation-delay: 80ms; }
-  .bento-enter > *:nth-child(4) { animation-delay: 120ms; }
-  .bento-enter > *:nth-child(5) { animation-delay: 160ms; }
-  .bento-enter > *:nth-child(6) { animation-delay: 200ms; }
-  .bento-enter > *:nth-child(7) { animation-delay: 240ms; }
-  .bento-enter > *:nth-child(8) { animation-delay: 280ms; }
+  .bento-enter > *:nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .bento-enter > *:nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .bento-enter > *:nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .bento-enter > *:nth-child(5) {
+    animation-delay: 160ms;
+  }
+  .bento-enter > *:nth-child(6) {
+    animation-delay: 200ms;
+  }
+  .bento-enter > *:nth-child(7) {
+    animation-delay: 240ms;
+  }
+  .bento-enter > *:nth-child(8) {
+    animation-delay: 280ms;
+  }
 
   @keyframes tile-in {
     from {
@@ -314,6 +339,90 @@
 .instrument-tile > :not(.weather-effect-host) {
   position: relative;
   z-index: 1;
+}
+
+/* Per-tile ambience. Each tile gets its own motif — drifting streaks (wind),
+   still mist (humidity), a trend band (pressure), warm corner glows (UV,
+   solar) and a day/night wash (sun & moon) — rather than one treatment
+   repeated. Decorative only (aria-hidden), always behind tile content, and
+   static under prefers-reduced-motion via the global motion rule. */
+.ambience-host {
+  border-radius: inherit;
+}
+
+.ambience-uv::after,
+.ambience-solar::after,
+.ambience-celestial-day::after,
+.ambience-celestial-night::after {
+  content: '';
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+}
+
+.ambience-uv::after {
+  background: radial-gradient(
+    circle at 78% 6%,
+    color-mix(in srgb, var(--ambience-warm) var(--ambience-mix, 6%), transparent) 0%,
+    transparent var(--ambience-size, 60%)
+  );
+}
+
+.ambience-solar::after {
+  background: radial-gradient(
+    circle at 18% 104%,
+    color-mix(in srgb, var(--ambience-warm) var(--ambience-mix, 5%), transparent) 0%,
+    transparent var(--ambience-size, 58%)
+  );
+  animation: ambience-breathe 14s ease-in-out infinite alternate;
+}
+
+.ambience-celestial-day::after {
+  background: radial-gradient(
+    circle at 50% 118%,
+    color-mix(in srgb, var(--ambience-warm) 9%, transparent) 0%,
+    transparent 64%
+  );
+}
+
+.ambience-celestial-night::after {
+  background: radial-gradient(
+    circle at 84% 6%,
+    color-mix(in srgb, var(--ambience-cool) 12%, transparent) 0%,
+    transparent 58%
+  );
+}
+
+/* Pressure: one soft band that rides high when pressure rises and sits low
+   when it falls, so the ambience carries the trend. */
+.ambience-pressure::after {
+  content: '';
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: var(--ambience-shift, 50%);
+  height: 46%;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  transform: translateY(-50%) rotate(-4deg);
+  animation: ambience-drift 28s ease-in-out infinite alternate;
+}
+
+@keyframes ambience-drift {
+  from {
+    transform: translateY(-58%) rotate(-4deg);
+  }
+  to {
+    transform: translateY(-42%) rotate(-4deg);
+  }
+}
+
+@keyframes ambience-breathe {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .hero-effect-layer > * {

@@ -17,11 +17,21 @@ const RAD2DEG = 180 / Math.PI;
  * Calculates official sunrise and sunset for a given date and coordinates.
  * Zenith is 90° 50' (90.833°) for standard atmospheric refraction at the horizon.
  */
-export function calculateSunTimes(
-  date: Date,
-  latitude: number,
-  longitude: number
-): SunTimes {
+/**
+ * True when the sun is above the horizon at `date`. Used by the Sun & Moon
+ * tile to pick its ambience (warm daylight wash vs cool moonlight).
+ */
+export function isDaylight(date: Date, sun: SunTimes): boolean {
+  if (sun.isPolarDay) return true;
+  if (sun.isPolarNight) return false;
+  const now = date.getTime();
+  const rise = sun.sunrise?.getTime();
+  const set = sun.sunset?.getTime();
+  if (rise == null || set == null) return false;
+  return now >= rise && now <= set;
+}
+
+export function calculateSunTimes(date: Date, latitude: number, longitude: number): SunTimes {
   // Day of the year
   const startOfYear = new Date(Date.UTC(date.getFullYear(), 0, 0));
   const diff = date.getTime() - startOfYear.getTime();
@@ -30,19 +40,13 @@ export function calculateSunTimes(
   const lngHour = longitude / 15;
 
   function calcTime(isSunrise: boolean): Date | null {
-    const t = isSunrise
-      ? dayOfYear + (6 - lngHour) / 24
-      : dayOfYear + (18 - lngHour) / 24;
+    const t = isSunrise ? dayOfYear + (6 - lngHour) / 24 : dayOfYear + (18 - lngHour) / 24;
 
     // Sun's mean anomaly
     const M = 0.9856 * t - 3.289;
 
     // Sun's true longitude
-    let L =
-      M +
-      1.916 * Math.sin(M * DEG2RAD) +
-      0.02 * Math.sin(2 * M * DEG2RAD) +
-      282.634;
+    let L = M + 1.916 * Math.sin(M * DEG2RAD) + 0.02 * Math.sin(2 * M * DEG2RAD) + 282.634;
     L = ((L % 360) + 360) % 360;
 
     // Sun's right ascension

@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip } from '@/components/ui/tooltip';
+import { HumidityAmbience } from '@/components/effects/TileAmbience';
 import { Sparkline } from './Sparkline';
 import { ValueCrossfade } from './ValueCrossfade';
 import { formatTemp, UnitSystem } from '@/lib/units';
@@ -21,7 +22,10 @@ export interface HumidityTileProps {
  * read); dew point only escalates inside the neutral band, e.g. a
  * muggy 60 % at 18 C dew point. Never calls 72 % "Dry" as before.
  */
-export function comfortWord(humidityPct: number, dewPointC?: number): 'dry' | 'comfortable' | 'humid' {
+export function comfortWord(
+  humidityPct: number,
+  dewPointC?: number,
+): 'dry' | 'comfortable' | 'humid' {
   if (humidityPct < 35) return 'dry';
   if (humidityPct > 65) return 'humid';
   if (dewPointC != null && dewPointC > 16) return 'humid';
@@ -49,6 +53,7 @@ export function HumidityTile({
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >
+      <HumidityAmbience humidityPct={humidityPct} isStale={isOffline} />
       <div>
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="label select-none">Relative Humidity</span>
@@ -56,9 +61,7 @@ export function HumidityTile({
             content={
               <span>
                 What is this? Learn about{' '}
-                <span className="font-medium text-[var(--accent)]">
-                  Humidity &amp; Dew Point
-                </span>
+                <span className="font-medium text-[var(--accent)]">Humidity &amp; Dew Point</span>
               </span>
             }
             side="left"
@@ -98,12 +101,7 @@ export function HumidityTile({
 
       {/* Sparkline */}
       <div className="pt-3 border-t border-[var(--color-border)]">
-        <Sparkline
-          data={historyHumidityPct}
-          unit="%"
-          label="24h Relative Humidity"
-          height={28}
-        />
+        <Sparkline data={historyHumidityPct} unit="%" label="24h Relative Humidity" height={28} />
       </div>
     </div>
   );
