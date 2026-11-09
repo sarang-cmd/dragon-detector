@@ -441,3 +441,43 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - Verification: 198/198 tests, build + lint clean, live API checks
   (11.3C matched Open-Meteo direct, 24h + 168-point 7d history), CDP shots
   of hero + data page on real data.
+
+## Session 21 — where the Ecowitt keys go (+ wiring the station source) — DONE
+
+- Question: "where do I add this key to make it work?" Answer: `.env.local`
+  at the repo root (gitignored; copy from `.env.example`), and — for the live
+  site — Vercel → Project → Settings → Environment Variables (Production +
+  Preview + Development) followed by a redeploy. Restart `pnpm dev` after any
+  env edit; Next.js reads env only at boot.
+- Blocker found and fixed: the Ecowitt keys had nothing to plug into. The live
+  registry `src/lib/sources/index.ts` held a stub that threw "not
+  implemented", while the fully written adapter `src/sources/ecowitt.ts` (the
+  canonical location per docs/02 and docs/04) was imported by nobody. The
+  registry now uses the real adapter, warns once at boot when
+  `DATA_SOURCE=ecowitt` is set without credentials, and fails per request with
+  the missing variable names (never the values).
+- Unit bug fixed: requests pin metric units (temp_unitid=1, pressure_unitid=3,
+  wind_speed_unitid=7, rainfall_unitid=12, solar_irradiance_unitid=16 —
+  °C/hPa/km/h/mm/W·m⁻²), but the adapter converted again as if imperial, so
+  11 °C would have displayed as −11.7 °C. Conversion is now driven by each
+  field's `unit` string and only fires for imperial labels (both "F" and "℉").
+- History reworked: `YYYY-MM-DD HH:MM:SS` bounds, group-name `call_back`
+  (`outdoor,wind,rainfall,pressure,solar_and_uvi`), and a shape-agnostic
+  walker for the documented `{ unit, list }` series (with a legacy
+  `data.item` fallback). Timestamps in seconds are no longer read as
+  milliseconds, so readings no longer land in 1970 / show as offline.
+  Non-zero API `code` now throws with `msg` (no secrets in the message).
+- `/api/weather` records readings for Ecowitt as well as Open-Meteo
+  (`source !== 'mock'`), so station history accumulates in `readings`.
+- New `src/sources/ecowitt.test.ts` (12 tests: metric passthrough, imperial
+  conversion, unix seconds, API error code, both history shapes, credential
+  guard, query building). Verification: tsc clean, lint clean, build clean,
+  206 + 12 tests green. `src/lib/route.test.ts` (4 tests) hits the live
+  Open-Meteo API and fails in any sandbox without outbound internet — it
+  fails identically on the untouched baseline, so it is environmental, not a
+  regression.
+- Not verifiable here: no outbound access to api.ecowitt.net from this
+  sandbox, so the adapter was never called against the real station. Once the
+  keys are in, paste a real `real_time` response into
+  `docs/sample-real-time.json` — per docs/02 that sample is the final
+  authority for the normalizer.

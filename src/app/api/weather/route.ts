@@ -105,7 +105,8 @@ export async function GET(req: NextRequest) {
     const validated = WeatherApiResponseSchema.parse(responseBody)
 
     // Accumulate real history (mock data must never pollute the table).
-    if (readingResult.source === 'openmeteo') {
+    // Applies to both live backends: Open-Meteo and the Ecowitt station.
+    if (readingResult.source !== 'mock') {
       void recordCurrentReading(readingResult)
     }
 
