@@ -106,7 +106,7 @@ export function StationClient() {
         <Card className="p-6">
           <span className="label">Coordinates &amp; Datum</span>
           <div className="mt-3 text-lg font-medium text-[var(--color-text)] numeric">
-            51.0504&deg; N, 13.7373&deg; E
+            51.0497&deg; N, 13.7284&deg; E
           </div>
           <p className="mt-1 text-xs text-[var(--color-muted)]">
             Elevation: 112 m above sea level. Timezone: Europe/Berlin.
@@ -126,7 +126,7 @@ export function StationClient() {
           </p>
         </div>
 
-        <div className="overflow-x-auto rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)]">
+        <div data-tour="station-table" className="overflow-x-auto rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)]">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-[var(--color-border)] bg-[var(--color-background)]/50 text-[var(--color-muted)]">
               <tr>
@@ -188,15 +188,13 @@ export function StationClient() {
 
           {/* Dragon badge: restricted to /station per docs/03a */}
           <div className="shrink-0 flex flex-col items-center gap-2">
-            <div className="rounded-full bg-white p-2 border border-neutral-200">
-              <Image
-                src="/brand/dis-dragons-badge.jpg"
-                alt="DIS Dragons Athletic and Science Emblem"
-                width={110}
-                height={110}
-                className="h-24 w-24 object-contain rounded-full"
-              />
-            </div>
+            <Image
+              src="/brand/dis-dragons-badge.png"
+              alt="DIS Dragons Athletic and Science Emblem"
+              width={160}
+              height={160}
+              className="h-36 w-36 object-contain"
+            />
             <span className="label text-[10px]">Dresden Dragons</span>
           </div>
         </div>

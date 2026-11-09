@@ -3,7 +3,7 @@ import { z } from 'zod';
 // ---------------------------------------------------------------------------
 // Learn content model (docs/06). UI imports only these typed records.
 // Rules: accurate science; Dresden figures are rounded, clearly labelled
-// typical ranges — never invented precision. Kids text targets reading age 8:
+// typical ranges, never invented precision. Kids text targets reading age 8:
 // short sentences (under 15 words), no jargon.
 // ---------------------------------------------------------------------------
 
@@ -134,7 +134,7 @@ export const concepts: Concept[] = [
       summary:
         'Feels-like blends temperature with wind (wind chill) or humidity (heat index). Wind strips body heat away; humidity slows sweat cooling.',
       howMeasured:
-        'The console computes it from temperature, wind and humidity — no extra sensor. Wind chill applies below about 10 °C with wind; heat index applies from about 26 °C with humid air.',
+        'The console computes it from temperature, wind and humidity, no extra sensor. Wind chill applies below about 10 °C with wind; heat index applies from about 26 °C with humid air.',
       unit: '°C',
       typicalDresden: {
         winter:
@@ -143,10 +143,10 @@ export const concepts: Concept[] = [
           'On hot humid days it can feel a few degrees warmer than the thermometer shows.',
       },
     },
-    tryThis: 'When is feels-like lower than the real temperature — and why?',
+    tryThis: 'When is feels-like lower than the real temperature, and why?',
     relatedMetricKey: 'temperature',
     accuracyNote:
-      'Computed from other sensors, so it inherits their errors — mainly the ±1 °C of temperature.',
+      'Computed from other sensors, so it inherits their errors, mainly the ±1 °C of temperature.',
   }),
   concept({
     id: 'humidity',
@@ -188,7 +188,7 @@ export const concepts: Concept[] = [
       summary:
         'The dew point is the temperature to which air must cool for vapour to condense. It tracks absolute moisture, so it judges mugginess better than relative humidity: a high dew point always means sticky air.',
       howMeasured:
-        'Computed from temperature and humidity (Magnus approximation) — no separate sensor.',
+        'Computed from temperature and humidity (Magnus approximation), no separate sensor.',
       unit: '°C',
       typicalDresden: {
         winter: 'Often near or below 0 °C; frost forms instead of dew.',
@@ -200,7 +200,7 @@ export const concepts: Concept[] = [
       'Predict fog: watch for evenings when temperature and dew point sit within 2 °C.',
     relatedMetricKey: 'temperature',
     accuracyNote:
-      'Computed from other sensors, so it inherits their errors — mainly the ±1 °C of temperature and ±5 % of humidity.',
+      'Computed from other sensors, so it inherits their errors, mainly the ±1 °C of temperature and ±5 % of humidity.',
   }),
   concept({
     id: 'wind-speed',
@@ -240,7 +240,7 @@ export const concepts: Concept[] = [
     },
     students: {
       summary:
-        'A gust is the peak wind over the reporting interval — always at or above the average. The gust factor (gust ÷ average) shows how turbulent the air is: near 1 means steady, near 2 means rough.',
+        'A gust is the peak wind over the reporting interval, always at or above the average. The gust factor (gust ÷ average) shows how turbulent the air is: near 1 means steady, near 2 means rough.',
       howMeasured:
         'The same anemometer cups report the fastest spin captured during the interval.',
       formula: 'gust factor = gust speed ÷ mean speed',
@@ -306,7 +306,7 @@ export const concepts: Concept[] = [
       },
     },
     tryThis:
-      'Five millimetres on the school roof — how many litres is that?',
+      'Five millimetres on the school roof, how many litres is that?',
     relatedMetricKey: 'rain',
     accuracyNote:
       'WS3500 accuracy: ±10 % with 0.1 mm per tip (station manual).',
@@ -322,7 +322,7 @@ export const concepts: Concept[] = [
     },
     students: {
       summary:
-        'Air pressure is the weight of the air column above us, in hectopascals. Relative pressure is corrected to sea level using the station elevation, so stations at different heights can be compared. Falling pressure usually means a low-pressure system — and rain — is approaching.',
+        'Air pressure is the weight of the air column above us, in hectopascals. Relative pressure is corrected to sea level using the station elevation, so stations at different heights can be compared. Falling pressure usually means a low-pressure system, and rain, is approaching.',
       howMeasured:
         'A solid-state barometer inside the console measures absolute pressure; the app converts it to relative using the elevation you set.',
       unit: 'hPa (relative, sea-level corrected)',
@@ -372,7 +372,7 @@ export const concepts: Concept[] = [
     },
     students: {
       summary:
-        'Solar irradiance is the incoming light power per square metre, in W/m². Summed over time it becomes energy — the number that sizes solar panels and warms the schoolyard.',
+        'Solar irradiance is the incoming light power per square metre, in W/m². Summed over time it becomes energy, the number that sizes solar panels and warms the schoolyard.',
       howMeasured:
         'A silicon photodiode sensor on the outdoor array converts light into the reading.',
       formula: 'energy ≈ average W/m² × hours of sun',
@@ -399,7 +399,7 @@ export const concepts: Concept[] = [
     },
     students: {
       summary:
-        'Every sensor has limits: accuracy (how close to truth), resolution (smallest step shown) and siting error (a wall, roof or tree bending the reading). Honest science reports the value plus its uncertainty — “11.4 °C ± 1 °C” — instead of pretending the digits are perfect.',
+        'Every sensor has limits: accuracy (how close to truth), resolution (smallest step shown) and siting error (a wall, roof or tree bending the reading). Honest science reports the value plus its uncertainty, “11.4 °C ± 1 °C”, instead of pretending the digits are perfect.',
       howMeasured:
         'The WS3500 manual states the limits below; calibration against a trusted instrument and good siting shrink the rest.',
       unit: '± °C, ± %, ± mm',
@@ -411,7 +411,7 @@ export const concepts: Concept[] = [
     tryThis:
       'Compare our station with DWD Dresden. Why do the two differ?',
     accuracyNote:
-      'WS3500: temperature ±1 °C, humidity ±5 %, rain ±10 % (station manual). Official DWD stations use ventilated, calibrated instruments on open ground at standard heights — a school courtyard with walls and roofs nearby will read differently, and that is expected.',
+      'WS3500: temperature ±1 °C, humidity ±5 %, rain ±10 % (station manual). Official DWD stations use ventilated, calibrated instruments on open ground at standard heights, a school courtyard with walls and roofs nearby will read differently, and that is expected.',
   }),
 ];
 

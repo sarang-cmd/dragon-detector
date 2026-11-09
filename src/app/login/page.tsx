@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 
 function GoogleIcon() {
@@ -17,16 +17,69 @@ function GoogleIcon() {
 }
 
 /** Sign-in page: Google OAuth + email/password (sign in or create account). */
-export default function LoginPage() {
+function LoginForm() {
   const { user, loading, configured, signInWithGoogle, signInWithEmail, signUpWithEmail } =
     useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mode, setMode] = React.useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
+  const [unconfirmedEmail, setUnconfirmedEmail] = React.useState<string | null>(null);
+  // True when Supabase's mailer itself fails: email flows cannot work until
+  // the sender (SMTP / quota) is fixed, so point at Google instead.
+  const [mailServerDown, setMailServerDown] = React.useState(false);
+
+  // Links from emails are single-use and expire fast (even opening a mail
+  // preview can consume one). Explain instead of stranding the user.
+  React.useEffect(() => {
+    const err = searchParams.get('error');
+    if (err === 'link') {
+      const reason = searchParams.get('reason');
+      if (reason === 'missing') {
+        setError(
+          'That link was incomplete (some email apps cut long links). Open the newest email and tap the button itself, not a copied fragment.'
+        );
+      } else if (reason === 'expired') {
+        setNotice(
+          'That link expired. Links only live a short while: request a fresh one below and open it right away.'
+        );
+      } else if (reason === 'used') {
+        setNotice(
+          'That link was already used. Each link works exactly once: request a fresh one below.'
+        );
+      } else {
+        setNotice(
+          'That email link did not work. Type your email below, then use "Email me a sign-in link", "Forgot password?", or create a password instead: a fresh email will follow.'
+        );
+      }
+      router.replace('/login', { scroll: false });
+    } else if (err === 'oauth') {
+      setError('Google sign-in was cancelled or failed. Try again.');
+      router.replace('/login', { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const resendConfirmation = async () => {
+    if (!unconfirmedEmail) return;
+    setError(null);
+    setBusy(true);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error } = await createClient().auth.resend({
+        type: 'signup',
+        email: unconfirmedEmail,
+      });
+      if (error) setError(error.message);
+      else setNotice('Confirmation email re-sent. Check your inbox and spam folder.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   React.useEffect(() => {
     if (!loading && user) router.replace('/learn');
@@ -54,16 +107,37 @@ export default function LoginPage() {
     try {
       if (mode === 'signin') {
         const { error: err } = await signInWithEmail(email.trim(), password);
-        if (err) setError(err);
-        else router.replace('/learn');
+        if (err) {
+          // Most common stuck state: account exists but the confirmation
+          // email never arrived (e.g. sender quota exhausted). Offer resend
+          // instead of a dead end.
+          if (/email not confirmed/i.test(err)) {
+            setUnconfirmedEmail(email.trim());
+            setError(
+              'This email is registered but not confirmed yet. The confirmation may still be on its way, or the daily email quota is used up, try again later.'
+            );
+          } else {
+            setUnconfirmedEmail(null);
+            setError(err);
+          }
+        } else {
+          setUnconfirmedEmail(null);
+          router.replace('/learn');
+        }
       } else {
         const { error: err, confirmEmail } = await signUpWithEmail(
           email.trim(),
           password
         );
-        if (err) setError(err);
-        else if (confirmEmail)
-          setNotice('Account created — check your inbox for the confirmation email, then sign in.');
+        if (err) {
+          if (/confirmation email|error sending|rate limit|over .*quota|too many|mail/i.test(err)) {
+            setMailServerDown(true);
+            setError(
+              'Our mail sender is not delivering right now, so email signup cannot finish. Use "Continue with Google" above instead (no email needed), or wait a bit and try again.'
+            );
+          } else setError(err);
+        } else if (confirmEmail)
+          setNotice('Account created, check your inbox for the confirmation email, then sign in.');
         else router.replace('/learn');
       }
     } finally {
@@ -75,6 +149,48 @@ export default function LoginPage() {
     setError(null);
     const { error: err } = await signInWithGoogle();
     if (err) setError(err);
+  };
+
+  const forgotPassword = async () => {
+    if (!email.includes('@')) {
+      setError('Type your email above first, then use this button.');
+      return;
+    }
+    setError(null);
+    setNotice(null);
+    setBusy(true);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error: err } = await createClient().auth.resetPasswordForEmail(
+        email.trim(),
+        { redirectTo: `${window.location.origin}/auth/confirm` }
+      );
+      if (err) setError(err.message);
+      else setNotice('Password reset email sent. Check your inbox (and spam), then follow the link to choose a new password.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const magicLink = async () => {
+    if (!email.includes('@')) {
+      setError('Type your email above first, then use this button.');
+      return;
+    }
+    setError(null);
+    setNotice(null);
+    setBusy(true);
+    try {
+      const { createClient } = await import('@/lib/supabase/client');
+      const { error: err } = await createClient().auth.signInWithOtp({
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+      });
+      if (err) setError(err.message);
+      else setNotice('Sign-in link sent. Check your inbox (and spam), then tap the link — no password needed.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -155,14 +271,52 @@ export default function LoginPage() {
             />
           </div>
           {error && (
-            <p role="alert" className="text-xs leading-relaxed text-red-500">
-              {error}
-            </p>
+            <div role="alert" className="space-y-2">
+              <p className="text-xs leading-relaxed text-red-500">{error}</p>
+              {mailServerDown && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void google()}
+                  className="inline-flex min-h-[44px] items-center rounded-[8px] bg-[var(--accent)] px-3 text-xs font-medium text-[var(--accent-foreground)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:opacity-60"
+                >
+                  Continue with Google instead
+                </button>
+              )}
+              {unconfirmedEmail && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void resendConfirmation()}
+                  className="inline-flex min-h-[44px] items-center rounded-[8px] border border-[var(--color-border)] px-3 text-xs text-[var(--color-text)] hover:border-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:opacity-60"
+                >
+                  {busy ? 'Sending…' : 'Re-send confirmation email'}
+                </button>
+              )}
+            </div>
           )}
           {notice && (
-            <p role="status" className="text-xs leading-relaxed text-[var(--color-text)]">
-              {notice}
-            </p>
+            <div role="status" className="space-y-2">
+              <p className="text-xs leading-relaxed text-[var(--color-text)]">
+                {notice}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href="https://mail.google.com/mail/u/0/#search/%22DIS%20Weather%20Station%22"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-[44px] items-center rounded-[8px] border border-[var(--color-border)] px-3 text-xs text-[var(--color-text)] hover:border-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+                >
+                  Open in Gmail
+                </a>
+                <a
+                  href="mailto:"
+                  className="inline-flex min-h-[44px] items-center rounded-[8px] border border-[var(--color-border)] px-3 text-xs text-[var(--color-text)] hover:border-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+                >
+                  Open email app
+                </a>
+              </div>
+            </div>
           )}
           <button
             type="submit"
@@ -172,7 +326,41 @@ export default function LoginPage() {
             {busy ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
           </button>
         </form>
+
+        <div className="flex flex-wrap gap-2 pt-1">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void forgotPassword()}
+            className="inline-flex min-h-[44px] items-center rounded-[8px] px-2 text-xs text-[var(--color-muted)] underline decoration-[var(--accent)] underline-offset-4 hover:text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:opacity-60"
+          >
+            Forgot password?
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void magicLink()}
+            className="inline-flex min-h-[44px] items-center rounded-[8px] px-2 text-xs text-[var(--color-muted)] underline decoration-[var(--accent)] underline-offset-4 hover:text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:opacity-60"
+          >
+            Email me a sign-in link instead
+          </button>
+        </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-[480px] px-4 py-12" aria-busy="true">
+          <span className="label">Accounts</span>
+          <h1 className="display mt-1 text-[var(--color-text)]">Sign in</h1>
+        </div>
+      }
+    >
+      <LoginForm />
+    </React.Suspense>
   );
 }

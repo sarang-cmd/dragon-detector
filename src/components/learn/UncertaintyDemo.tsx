@@ -93,7 +93,7 @@ export function UncertaintyDemo({ liveTempC, unitSystem }: UncertaintyDemoProps)
       <p className="mt-2 text-xs leading-relaxed text-[var(--color-muted)]">
         Official DWD stations use ventilated, calibrated instruments on open
         ground at standard heights. Our courtyard has walls and roofs nearby,
-        so small differences from Dresden’s official reading are expected —
+        so small differences from Dresden’s official reading are expected,
         not errors.
       </p>
     </div>

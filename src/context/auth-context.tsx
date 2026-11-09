@@ -18,6 +18,7 @@ interface AuthContextValue {
     password: string
   ) => Promise<{ error: string | null; confirmEmail: boolean }>;
   signOut: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
@@ -91,6 +92,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut: async () => {
         await supabaseRef.current?.auth.signOut();
         setUser(null);
+      },
+      refresh: async () => {
+        const { data } = await supabaseRef.current!.auth.getUser();
+        setUser(data.user);
       },
     };
   }, [user, loading, configured]);

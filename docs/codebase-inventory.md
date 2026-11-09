@@ -1,42 +1,42 @@
-# DIS Weather Station — codebase inventory (read-only)
+# DIS Weather Station, codebase inventory (read-only)
 
 Last checked: 2026-10-14.
 
 ## Verified present
 
-- `.env.example` — Ecowitt placeholder keys + `DATA_SOURCE=mock`, `NEXT_PUBLIC_SITE_URL=`.
-- `.gitignore` — excludes `.env*.local`, `.next`, `node_modules`.
-- `package.json` — Next.js 14, TypeScript, Tailwind, pnpm, Vivest/prettier deps for later.
-- `pnpm-lock.yaml` — present.
-- `tsconfig.json` — strict, `src/` alias set up.
-- `next.config.mjs` — basic image remote patterns.
-- `tailwind.config.ts` — dark mode class, DIS colors.
-- `postcss.config.mjs` — tailwind + autoprefixer.
-- `src/app/layout.tsx` — Geist fonts, dark/light via next-themes, minimal meta.
-- `src/app/page.tsx` — bare “DIS Weather Station” heading.
-- `src/app/learn/page.tsx` — static Learn shell with Kids/Students copy, cards, activity list.
-- `src/app/api/weather/route.ts` — server cache, stale logic, scenario param.
-- `src/app/api/history/route.ts` — simple JSON route.
-- `src/app/not-found.tsx` — friendly 404.
-- `src/components/header.tsx` — DIS logo plate, nav, theme toggle, placeholder unit toggle.
-- `src/components/footer.tsx` — DIS logo copy, station/source credits, legal links.
-- `src/components/live-dot.tsx` — live/delayed/offline status dot.
-- `src/components/theme-provider.tsx` — next-themes wrapper.
-- `src/hooks/useWeather.ts` — SWR hook returning reading, history, stale/offline, secondsSinceUpdate.
-- `src/lib/types.ts` — `WeatherReading`, `HistoryPoint`, `WeatherApiResponse`, `WeatherSource`.
-- `src/lib/units.ts` — temp/speed/rain/pressure converters.
-- `src/lib/beaufort.ts` — Beaufort index, names, compass label helpers.
-- `src/lib/moon.ts` — moon phase computation.
-- `src/lib/summary.ts` — human sentence + jacket advice.
-- `src/sources/mock.ts` — seeded mock simulator with scenario override.
-- `src/sources/ecowitt.ts` — Ecowitt normalizer skeleton, defensive against unknown field names.
-- `src/sources/index.ts` — router by `DATA_SOURCE`.
-- `src/lib/content/concepts.ts` — Learn concept cards (typed).
-- `src/lib/content/activities.ts` — classroom activities (typed, 8 activities).
-- `docs/00-09` — full spec set including 03a, 03b, 07.
-- `docs/PROGRESS.md` — project status tracking.
-- `public/brand/*` — DIS logos and brand kit assets present.
-- `public/favicon.svg` — minimal DIS logo plate.
+- `.env.example`, Ecowitt placeholder keys + `DATA_SOURCE=mock`, `NEXT_PUBLIC_SITE_URL=`.
+- `.gitignore`, excludes `.env*.local`, `.next`, `node_modules`.
+- `package.json`, Next.js 14, TypeScript, Tailwind, pnpm, Vivest/prettier deps for later.
+- `pnpm-lock.yaml`, present.
+- `tsconfig.json`, strict, `src/` alias set up.
+- `next.config.mjs`, basic image remote patterns.
+- `tailwind.config.ts`, dark mode class, DIS colors.
+- `postcss.config.mjs`, tailwind + autoprefixer.
+- `src/app/layout.tsx`, Geist fonts, dark/light via next-themes, minimal meta.
+- `src/app/page.tsx`, bare “DIS Weather Station” heading.
+- `src/app/learn/page.tsx`, static Learn shell with Kids/Students copy, cards, activity list.
+- `src/app/api/weather/route.ts`, server cache, stale logic, scenario param.
+- `src/app/api/history/route.ts`, simple JSON route.
+- `src/app/not-found.tsx`, friendly 404.
+- `src/components/header.tsx`, DIS logo plate, nav, theme toggle, placeholder unit toggle.
+- `src/components/footer.tsx`, DIS logo copy, station/source credits, legal links.
+- `src/components/live-dot.tsx`, live/delayed/offline status dot.
+- `src/components/theme-provider.tsx`, next-themes wrapper.
+- `src/hooks/useWeather.ts`, SWR hook returning reading, history, stale/offline, secondsSinceUpdate.
+- `src/lib/types.ts`, `WeatherReading`, `HistoryPoint`, `WeatherApiResponse`, `WeatherSource`.
+- `src/lib/units.ts`, temp/speed/rain/pressure converters.
+- `src/lib/beaufort.ts`, Beaufort index, names, compass label helpers.
+- `src/lib/moon.ts`, moon phase computation.
+- `src/lib/summary.ts`, human sentence + jacket advice.
+- `src/sources/mock.ts`, seeded mock simulator with scenario override.
+- `src/sources/ecowitt.ts`, Ecowitt normalizer skeleton, defensive against unknown field names.
+- `src/sources/index.ts`, router by `DATA_SOURCE`.
+- `src/lib/content/concepts.ts`, Learn concept cards (typed).
+- `src/lib/content/activities.ts`, classroom activities (typed, 8 activities).
+- `docs/00-09`, full spec set including 03a, 03b, 07.
+- `docs/PROGRESS.md`, project status tracking.
+- `public/brand/*`, DIS logos and brand kit assets present.
+- `public/favicon.svg`, minimal DIS logo plate.
 
 ## Not present yet
 

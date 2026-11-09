@@ -8,7 +8,7 @@ export interface QuizQuestion {
 }
 
 export interface TrackNode {
-  /** Matches a concept id in `concepts.ts` — the lesson's reading material. */
+  /** Matches a concept id in `concepts.ts`, the lesson's reading material. */
   id: Concept['id'];
   unit: string;
   quiz: QuizQuestion[];
@@ -68,7 +68,7 @@ export const TRACK_NODES: TrackNode[] = [
     quiz: [
       {
         question: 'What does 100% humidity mean?',
-        choices: ['The air is full of vapour — fog or mist is likely', 'It is definitely raining', 'The air is completely dry'],
+        choices: ['The air is full of vapour, fog or mist is likely', 'It is definitely raining', 'The air is completely dry'],
         answer: 0,
       },
       {

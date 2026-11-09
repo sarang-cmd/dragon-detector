@@ -74,7 +74,7 @@ function ActivitySheet({ activity }: { activity: Activity }) {
 export default function LearnPage() {
   const [ageBand, setAgeBand] = React.useState<'all' | AgeBand>('all');
   const { role, readingLevel, showTeachingContent } = useRole();
-  const { completedLessons, xp, loading, cloud } = useTrackProgress();
+  const { completedLessons, xp, loading, cloud, reset } = useTrackProgress();
 
   const audience = readingLevel;
 
@@ -100,8 +100,8 @@ export default function LearnPage() {
           <p className="max-w-2xl text-base leading-relaxed text-[var(--color-muted)] sm:text-lg">
             Follow the path, tap any lesson, earn XP
             {showTeachingContent
-              ? ' — plus classroom investigations and a handout for teachers, all from our own school station in Dresden.'
-              : ' — all from our own school station in Dresden.'}
+              ? ', plus classroom investigations and a handout for teachers, all from our own school station in Dresden.'
+              : ', all from our own school station in Dresden.'}
             {role && (
               <span className="mt-1 block text-sm">
                 Viewing as {ROLE_LABELS[role]}. Change this in the footer.
@@ -126,10 +126,11 @@ export default function LearnPage() {
             xp={xp}
             loading={loading}
             cloud={cloud}
+            onReset={reset}
           />
         </section>
 
-        {/* Every measurement is a lesson — fully clickable list */}
+        {/* Every measurement is a lesson, fully clickable list */}
         <section aria-labelledby="lessons-heading" className="mt-16 print:hidden">
           <div className="mb-4">
             <span className="label">All lessons</span>

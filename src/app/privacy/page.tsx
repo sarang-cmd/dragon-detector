@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export const metadata = {
   title: 'Privacy Policy',
-  description: 'Privacy statement for the DIS Weather Station — zero tracking, no cookies, and strict GDPR compliance.',
+  description: 'Privacy statement for the DIS Weather Station, zero tracking, no cookies, and strict GDPR compliance.',
 };
 
 export default function PrivacyPage() {

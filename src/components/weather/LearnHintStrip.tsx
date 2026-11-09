@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { BookOpen, Tv } from 'lucide-react';
+import { BookOpen, Code2, Tv } from 'lucide-react';
 
 /**
  * Editorial link strip per docs/03 and docs/04.
@@ -21,7 +21,7 @@ export function LearnHintStrip({ className = '' }: { className?: string }) {
           </span>
         </div>
         <p className="text-sm text-[var(--color-text)]">
-          New to weather data? Explore how each sensor works or view the fullscreen campus display.
+          New to weather data? Explore how each sensor works, run the fullscreen campus display, or embed the live card in another site.
         </p>
       </div>
 
@@ -32,6 +32,13 @@ export function LearnHintStrip({ className = '' }: { className?: string }) {
         >
           <BookOpen className="h-3.5 w-3.5 stroke-[1.5]" />
           <span>Student Guide</span>
+        </Link>
+        <Link
+          href="/embed"
+          className="inline-flex h-9 min-h-[44px] sm:min-h-[36px] items-center gap-2 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 text-xs font-medium text-[var(--color-text)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+        >
+          <Code2 className="h-3.5 w-3.5 stroke-[1.5]" />
+          <span>Embed</span>
         </Link>
         <Link
           href="/display"

@@ -19,7 +19,7 @@ export interface SelectorProps<T extends string> {
 
 /**
  * Custom listbox replacing native `<select>` elements.
- * Pill button + popover, 12px radius, accent focus ring — visually consistent
+ * Pill button + popover, 12px radius, accent focus ring, visually consistent
  * with UnitToggle. Full keyboard support: Enter/Space opens, arrows move,
  * Home/End jump, Esc closes and refocuses, Tab closes.
  */

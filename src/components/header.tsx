@@ -49,7 +49,7 @@ export function Header() {
             {/* Dragon logo: square JPEG cropped to a circle via rounded-full + object-cover. */}
             <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border)]">
               <Image
-                src="/dragon_detector_logo.jpeg"
+                src="/dragon_detector_logo.rounded.png"
                 alt="DIS Weather Station dragon logo"
                 width={32}
                 height={32}
@@ -135,7 +135,7 @@ export function Header() {
                       <div className="flex items-center gap-2">
                         <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-neutral-200">
                           <Image
-                            src="/dragon_detector_logo.jpeg"
+                            src="/dragon_detector_logo.rounded.png"
                             alt="DIS Weather Station dragon logo"
                             width={32}
                             height={32}

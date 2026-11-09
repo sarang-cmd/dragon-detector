@@ -1,18 +1,32 @@
 import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
 import { ThemeProviderWrapper } from '@/components/theme-provider';
 import { UnitProvider } from '@/context/unit-context';
 import { RoleProvider } from '@/context/role-context';
+import { TourProvider } from '@/components/tour/TourProvider';
 import { AuthProvider } from '@/context/auth-context';
 import { RoleOnboarding } from '@/components/onboarding/RoleOnboarding';
+import { SidChat } from '@/components/sid/SidChat';
 import { DashboardEffectsProvider } from '@/components/effects/DashboardEffectsProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
+  // Absolute base so the generated Open Graph/Twitter preview (rendered from
+  // the live reading) resolves to a full URL wherever the link is shared.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://dragon-detector.vercel.app'
+  ),
   title: { default: 'DIS Weather Station', template: '%s | DIS Weather Station' },
   description: 'Live weather from the DIS Weather Club station on the school grounds in Dresden.',
+  openGraph: {
+    title: 'DIS Weather Station',
+    description:
+      'Live weather from the DIS Weather Club station on the school grounds in Dresden.',
+    type: 'website',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },
@@ -39,15 +53,19 @@ export default function RootLayout({
         <ThemeProviderWrapper>
           <UnitProvider>
             <RoleProvider>
-              <AuthProvider>
+              <TourProvider>
+                <AuthProvider>
                 <DashboardEffectsProvider>
                   {children}
                   <RoleOnboarding />
+                  <SidChat />
                 </DashboardEffectsProvider>
-              </AuthProvider>
+                </AuthProvider>
+              </TourProvider>
             </RoleProvider>
           </UnitProvider>
         </ThemeProviderWrapper>
+        <SpeedInsights />
         <Analytics />
       </body>
     </html>

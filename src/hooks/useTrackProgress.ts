@@ -5,6 +5,7 @@ import { useAuth } from '@/context/auth-context';
 import {
   loadProgress,
   saveProgress,
+  resetProgress,
   type TrackProgress,
 } from '@/lib/track/progress';
 
@@ -14,7 +15,7 @@ interface TrackState extends TrackProgress {
 
 /**
  * Track progress bound to the signed-in user (Supabase) or the guest
- * (localStorage). `completeLesson` is idempotent — replaying a finished
+ * (localStorage). `completeLesson` is idempotent, replaying a finished
  * lesson banks no extra XP.
  */
 export function useTrackProgress() {
@@ -54,5 +55,10 @@ export function useTrackProgress() {
     [state, userId]
   );
 
-  return { ...state, completeLesson };
+  const reset = React.useCallback(async () => {
+    await resetProgress(userId);
+    setState({ xp: 0, completedLessons: [], cloud: !!userId, loading: false });
+  }, [userId]);
+
+  return { ...state, completeLesson, reset };
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { getSource } from '@/lib/sources'
+import { recordCurrentReading } from '@/lib/sources/openmeteo'
 import { WeatherApiResponseSchema } from '@/lib/types'
 
 const STALE_MS = 10 * 60 * 1000
@@ -75,10 +76,25 @@ export async function GET(req: NextRequest) {
   let readingResult: any = null
 
   try {
+    // History is enhancement, not load-bearing: a station whose history
+    // endpoint misbehaves must still serve the live reading (same pattern as
+    // /api/outlook). Log the failure; never leak upstream details.
     const [readingResult_, history24, history7] = await Promise.all([
       source.getCurrent(),
-      source.getHistory('24h'),
-      source.getHistory('7d'),
+      source.getHistory('24h').catch((err) => {
+        console.error(
+          '[weather-api] 24h history unavailable:',
+          err instanceof Error ? err.message : 'unknown error'
+        )
+        return []
+      }),
+      source.getHistory('7d').catch((err) => {
+        console.error(
+          '[weather-api] 7d history unavailable:',
+          err instanceof Error ? err.message : 'unknown error'
+        )
+        return []
+      }),
     ])
 
     readingResult = readingResult_
@@ -102,6 +118,12 @@ export async function GET(req: NextRequest) {
     }
 
     const validated = WeatherApiResponseSchema.parse(responseBody)
+
+    // Accumulate real history (mock data must never pollute the table).
+    // Applies to both live backends: Open-Meteo and the Ecowitt station.
+    if (readingResult.source !== 'mock') {
+      void recordCurrentReading(readingResult)
+    }
 
     const isMock = readingResult.source === 'mock'
     const cacheHeaders = isMock

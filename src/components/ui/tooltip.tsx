@@ -114,7 +114,7 @@ export function Tooltip({
     place();
   }, [isOpen, side, content]);
 
-  // Position goes stale on scroll/resize — just close.
+  // Position goes stale on scroll/resize, just close.
   React.useEffect(() => {
     if (!isOpen) return;
     const close = () => setIsOpen(false);

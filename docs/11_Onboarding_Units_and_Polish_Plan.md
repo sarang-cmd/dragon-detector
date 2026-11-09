@@ -38,7 +38,7 @@ export type Role = 'kindergarten' | 'pyp' | 'myp' | 'dp' | 'teacher' | 'family';
 - Migration: on first load, if `dis_role` is absent but legacy
   `dis_learn_audience` exists, pre-select `kids → pyp`, `students → myp`
   (do not auto-commit; the user still confirms in the picker). Afterwards the
-  legacy key is left alone (harmless) — do not add new readers of it.
+  legacy key is left alone (harmless), do not add new readers of it.
 - `src/app/learn/page.tsx` drops its local `usePersistedAudience` hook and
   reads the role context instead. The `.audience-kids` large-type class is kept
   and driven by the mapped reading level, not by a separate toggle.
@@ -88,7 +88,7 @@ export type Role = 'kindergarten' | 'pyp' | 'myp' | 'dp' | 'teacher' | 'family';
   - MYP: "Full detail, charts and data downloads."
   - DP: "Full detail, charts and data downloads."
   - Teacher: "Everything, plus classroom activities and the handout."
-  - Family: "Plain words — is it raining, do we need jackets?"
+  - Family: "Plain words, is it raining, do we need jackets?"
 - Footer note: "You can change this anytime below." (points at the footer
   switcher, §3.3).
 - Styling: 12px radius cards, surface background, 1px border, accent ring on
@@ -122,7 +122,7 @@ export type Role = 'kindergarten' | 'pyp' | 'myp' | 'dp' | 'teacher' | 'family';
 - Delete the subject `<select>` and its label; keep the age-band filter,
   rebuilt on the custom Selector (§5).
 - `ActivitySheet` header line currently prints
-  `{ageLabel} · {minutes} min · {programme} · {subjects}` — drop the subjects
+  `{ageLabel} · {minutes} min · {programme} · {subjects}`, drop the subjects
   segment.
 
 ### 4.3 Tests (`src/lib/content/content.test.ts`)
@@ -135,16 +135,16 @@ export type Role = 'kindergarten' | 'pyp' | 'myp' | 'dp' | 'teacher' | 'family';
 
 - New `src/components/ui/selector.tsx`: a listbox, not a restyled select.
   - Closed: pill button showing current value + chevron, `aria-expanded`,
-    `aria-haspopup="listbox"`, 12px radius, surface bg, 1px border —
+    `aria-haspopup="listbox"`, 12px radius, surface bg, 1px border,
     visually consistent with `UnitToggle`.
   - Open: popover list with `role="listbox"`, options with `role="option"`
     + `aria-selected`, checkmark on the active one.
   - Keyboard: Enter/Space opens, arrows move, Home/End jump, Esc closes and
     refocuses the button, Tab closes. Focus ring in `var(--accent)`.
 - Used in exactly two places: Learn age-band filter, footer role switcher.
-- The data-page range/metric controls are already custom buttons — untouched.
+- The data-page range/metric controls are already custom buttons, untouched.
 
-## 6. Top loading bar (already existed — kept, not rebuilt)
+## 6. Top loading bar (already existed, kept, not rebuilt)
 
 During implementation a `TopProgressBar` was found already live at
 `src/components/effects/TopProgressBar.tsx` (wired in
@@ -152,15 +152,15 @@ During implementation a `TopProgressBar` was found already live at
 ease-out trickle toward 90%, completion + fade, reduced-motion + print
 handling. Verified live via CDP polling (bar `data-visible="true"` during a
 client-side link transition, hidden after settle). A duplicate
-`src/components/navigation/TopProgressBar.tsx` was written, then deleted —
+`src/components/navigation/TopProgressBar.tsx` was written, then deleted,
 no new file was needed.
 
-- New `src/components/navigation/TopProgressBar.tsx` — SUPERSEDED, see heading above.
+- New `src/components/navigation/TopProgressBar.tsx`, SUPERSEDED, see heading above.
 - Mechanism: watches `usePathname()` + `useSearchParams()`. On change, bar
   appears at ~10% width and a `requestAnimationFrame` trickle eases it toward
-  90% (fast start, slow approach — that easing curve is the "satisfying" part).
+  90% (fast start, slow approach, that easing curve is the "satisfying" part).
   When the route settles, it completes to 100% and fades over 150ms.
-- Color: `background: var(--accent)` — DIS Amber in dark mode, DIS Blue in
+- Color: `background: var(--accent)`, DIS Amber in dark mode, DIS Blue in
   light, automatically. Height 2px, fixed to viewport top, `z-index` above the
   sticky header.
 - `prefers-reduced-motion`: no trickle; bar appears and disappears instantly.
@@ -201,7 +201,7 @@ Replace the static unit string with a per-system pair, e.g. temperature
 
 ### 7.4 CSV stays metric
 
-`buildHistoryCsv` always exports metric — already documented in the table
+`buildHistoryCsv` always exports metric, already documented in the table
 footnote. Keep; add the same one-line note wherever imperial values appear.
 
 ## 8. Dashboard grid and skeleton polish
@@ -216,16 +216,16 @@ hide when the sensor is absent). Geometry differs, so the swap jumps.
 ### 8.2 Fix
 
 - Skeleton mirrors the real grid 1:1: hero skeleton (6-col, 2-row), tall wind
-  skeleton (3-col, 2-row), six 3-col tile skeletons — each sharing the exact
+  skeleton (3-col, 2-row), six 3-col tile skeletons, each sharing the exact
   `min-h` classes of its real tile. Conditional tiles keep reserved slots so
   presence/absence doesn't reflow the grid.
 - Replace flat `animate-pulse` with a slow monochrome luminance sweep built
-  from surface tones only (no color gradients — anti-AI-look rule stands).
+  from surface tones only (no color gradients, anti-AI-look rule stands).
 - Real tiles fade in with a 40ms stagger (max ~400ms), `motion-reduce` safe,
   matching docs/03 §8 cadence.
 - Verify: no `scrollWidth` overflow at 360/390/768/1024/1440, dark + light.
 - Fallback if the bento still reads as unsatisfying: uniform 3-col grid with a
-  full-width hero. Structural fallback only — offered for review, not default.
+  full-width hero. Structural fallback only, offered for review, not default.
 
 ## 9. Precipitation fix
 
@@ -235,7 +235,7 @@ Default mock scenario starts a rain event with 2% probability per 5 s sample
 (`src/lib/sources/mock.ts`, `maybeRain`), and each rainy sample adds only
 `rate × 5 / 3600 ≈ 0.001–0.006 mm` to `rainToday`. With `roundRain` at 2dp and
 metric display at 1dp, "today" reads `0.0 mm` essentially forever, and `isDry`
-(`todayMm === 0 && rateMmH === 0`) is near-permanently true. The tile works —
+(`todayMm === 0 && rateMmH === 0`) is near-permanently true. The tile works,
 it just never sees rain.
 
 ### 9.2 Fix
@@ -245,7 +245,7 @@ it just never sees rain.
   a demo session (tune probability/duration, keep totals plausible for Dresden).
 - Display rule: `0` + rate `0` → "No rain today."; `0 < today < 0.05` →
   "Trace"; otherwise the formatted value.
-- History `rainTodayMm` cumulative logic is correct — untouched.
+- History `rainTodayMm` cumulative logic is correct, untouched.
 - Regression test: force a rain event → `rainTodayMm > 0` and the tile shows
   a non-zero today value with `isDry === false`.
 
@@ -255,10 +255,10 @@ it just never sees rain.
   floating "Scenario: …" button.
 - Reveal: the letter `d` pressed 3 times within 800ms opens the panel.
   Unlock persists in `sessionStorage` (survives page views, not visits).
-  Esc closes the panel (not the unlock — reopening is one triple-press away).
+  Esc closes the panel (not the unlock, reopening is one triple-press away).
 - Keep the `NODE_ENV === 'production'` null-guard and the cookie mechanism
   (`weather_scenario` → API routes) exactly as-is.
-- Staff handoff: document the combo in `docs/PROGRESS.md` only — never in UI
+- Staff handoff: document the combo in `docs/PROGRESS.md` only, never in UI
   copy, tooltips, or committed screenshots.
 
 ## 11. Screenshot and script housekeeping (done 2026-10-15)
@@ -266,17 +266,17 @@ it just never sees rain.
 - Everything from `Temp/opencode/` was moved into the repo and the Temp copy
   deleted. Layout:
   - `screenshots/data/{temperature,wind,rain,pressure,humidity,sun,table}/`
-    — data-page tab shots. Filename convention (kept):
+   , data-page tab shots. Filename convention (kept):
     `{tab}-{width}[-tall|-7d][-dark].png`, width ∈ {390, 1440}.
-  - `screenshots/learn/` — `learn-*.png` (students/kids/print/teachers/
+  - `screenshots/learn/`, `learn-*.png` (students/kids/print/teachers/
     uncertainty views).
-  - `screenshots/header/` — `header-fix-check*.png` (sticky-header overlap
+  - `screenshots/header/`, `header-fix-check*.png` (sticky-header overlap
     verification).
-  - `screenshots/dom/` — `dom-dark*.html` (accessibility DOM dumps).
-  - `scripts/screenshots/` — `learn-check.mjs`, `scroll-to-shot.mjs`,
+  - `screenshots/dom/`, `dom-dark*.html` (accessibility DOM dumps).
+  - `scripts/screenshots/`, `learn-check.mjs`, `scroll-to-shot.mjs`,
     `scrolled-shot.mjs` (reusable CDP capture helpers).
 - `screenshots/` is gitignored (large regenerable binaries); scripts are
-  committed. All future verification shots go directly into this structure —
+  committed. All future verification shots go directly into this structure,
   nothing new lands in Temp.
 
 ## 12. Files touched by the implementation (forbidden to touch anything else)
@@ -303,7 +303,7 @@ Do not rewrite files outside this list.
 
 ## 13. Verification checklist (done 2026-10-16, Session 7)
 
-- [x] `vitest run`: 173/173 — role mapping/gating, station conversion table,
+- [x] `vitest run`: 173/173, role mapping/gating, station conversion table,
       ExplainerCard imperial unit rows, summary imperial sentences, rain
       regression (sustained rain → non-zero today). Selector keyboard behavior
       verified by code review (roving `activeIndex`, Esc refocus); no

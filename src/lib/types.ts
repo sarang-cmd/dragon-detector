@@ -6,7 +6,7 @@ export const UnitSystemSchema = z.enum(['metric', 'imperial']);
 
 export const WeatherReadingSchema = z.object({
   timestamp: z.string(),
-  source: z.enum(['mock', 'ecowitt']),
+  source: z.enum(['mock', 'ecowitt', 'openmeteo']),
   temperatureC: z.number(),
   feelsLikeC: z.number().optional(),
   dewPointC: z.number().optional(),
@@ -62,7 +62,7 @@ export const WeatherApiResponseSchema = z.object({
     stale: z.boolean(),
     offline: z.boolean(),
     measuredAt: z.string(),
-    source: z.enum(['mock', 'ecowitt']),
+    source: z.enum(['mock', 'ecowitt', 'openmeteo']),
     scenario: z.string().optional(),
   }),
 });
