@@ -152,6 +152,39 @@ node scripts/screenshots/verify-docs11.mjs http://localhost:3000 .
 Shots land in `screenshots/` (never committed). Dev panels stay hidden,
 the scenario switcher appears only after pressing `D` three times.
 
+## Share & embed
+
+### Link previews show live conditions
+
+`src/app/opengraph-image.tsx` renders a 1200x630 card from the live reading,
+so a link shared in Slack, Teams, WhatsApp or on the school site shows the
+actual temperature, feels-like, humidity and wind instead of a static logo.
+The card names the real backend (`Ecowitt Cloud API · station WS3500`) and how
+long ago the reading was taken, and falls back to a branded "Live data
+unavailable" card if the API cannot be reached. Regenerated at most every two
+minutes (`revalidate = 120`).
+
+### Embedding the live card
+
+`/embed` is a compact card that fills its iframe and refreshes with the
+dashboard (60 s on live data). It follows the visitor's system light/dark
+setting, or you can force one:
+
+```html
+<iframe
+  src="https://dragon-detector.vercel.app/embed"
+  title="DIS Weather Station — live conditions"
+  width="360"
+  height="240"
+  loading="lazy"
+  style="border: 0; border-radius: 12px; color-scheme: light dark;"
+></iframe>
+```
+
+Force a theme with `?theme=dark` or `?theme=light`. The page is `noindex`
+(it exists to be framed, not to be found in search), and both preview and
+embed read through `/api/weather`, so neither ever touches Ecowitt directly.
+
 ## Deployment
 
 Hosted on Vercel (`dragon-detector.vercel.app`), auto-deploying from `main`.

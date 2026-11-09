@@ -14,8 +14,19 @@ import { DashboardEffectsProvider } from '@/components/effects/DashboardEffectsP
 import './globals.css';
 
 export const metadata: Metadata = {
+  // Absolute base so the generated Open Graph/Twitter preview (rendered from
+  // the live reading) resolves to a full URL wherever the link is shared.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || 'https://dragon-detector.vercel.app'
+  ),
   title: { default: 'DIS Weather Station', template: '%s | DIS Weather Station' },
   description: 'Live weather from the DIS Weather Club station on the school grounds in Dresden.',
+  openGraph: {
+    title: 'DIS Weather Station',
+    description:
+      'Live weather from the DIS Weather Club station on the school grounds in Dresden.',
+    type: 'website',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico' },

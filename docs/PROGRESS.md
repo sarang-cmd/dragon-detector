@@ -509,3 +509,27 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   `isDaylight`). The same 4 `src/lib/route.test.ts` failures remain — they
   call the live Open-Meteo API and fail identically on the untouched
   baseline without outbound internet.
+
+## Session 23 — share preview + embeddable live card — DONE
+
+- Link previews are now generated from the live reading:
+  `src/app/opengraph-image.tsx` (1200x630, `next/og`) shows temperature,
+  feels-like, humidity, wind, the real backend label and the reading's age,
+  using the brand rules (dark surface, amber accent, the three-colour banner
+  strip, flat colour). Twitter/X re-exports it via `twitter-image.tsx`.
+  `revalidate = 120`, and it degrades to a branded "Live data unavailable"
+  card rather than a broken share link.
+- `src/lib/embed/live.ts` centralises the server-side self-fetch
+  (`fetchLivePreview`, `previewBaseUrl`, `shortAge`, `sourceLabel`), so
+  neither preview nor embed ever calls Ecowitt directly.
+- New `/embed` route + `EmbedCard`: a compact card that fills its iframe,
+  refreshes with the dashboard (60 s on live data), follows the visitor's
+  system theme unless `?theme=dark|light` is passed, and is `noindex`.
+  Discovered via a new "Embed" button in `LearnHintStrip`.
+- `metadataBase` added to the root metadata so the generated preview resolves
+  to an absolute URL when shared.
+- Verification: dev server with mock data — `/opengraph-image` returns
+  image/png (46 KB), `/embed` and `/` return 200, `og:image` and
+  `twitter:image` meta tags emitted. Satori requires explicit
+  `display: flex` on any element with more than one child; two rows broke
+  that on the first run and were fixed.
