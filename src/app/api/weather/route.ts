@@ -76,10 +76,25 @@ export async function GET(req: NextRequest) {
   let readingResult: any = null
 
   try {
+    // History is enhancement, not load-bearing: a station whose history
+    // endpoint misbehaves must still serve the live reading (same pattern as
+    // /api/outlook). Log the failure; never leak upstream details.
     const [readingResult_, history24, history7] = await Promise.all([
       source.getCurrent(),
-      source.getHistory('24h'),
-      source.getHistory('7d'),
+      source.getHistory('24h').catch((err) => {
+        console.error(
+          '[weather-api] 24h history unavailable:',
+          err instanceof Error ? err.message : 'unknown error'
+        )
+        return []
+      }),
+      source.getHistory('7d').catch((err) => {
+        console.error(
+          '[weather-api] 7d history unavailable:',
+          err instanceof Error ? err.message : 'unknown error'
+        )
+        return []
+      }),
     ])
 
     readingResult = readingResult_
