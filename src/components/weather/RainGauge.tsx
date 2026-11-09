@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip } from '@/components/ui/tooltip';
+import { PrecipitationAmbience } from '@/components/effects/TileAmbience';
 import { Sparkline } from './Sparkline';
 import { ValueCrossfade } from './ValueCrossfade';
 import { formatRain, UnitSystem, mmToIn } from '@/lib/units';
@@ -61,6 +62,13 @@ export function RainGauge({
     >
       <div className="weather-effect-host pointer-events-none absolute inset-0 z-0 overflow-hidden rounded-[inherit]" aria-hidden="true">
         <RainWeatherEffect rateMmH={rateMmH} isStale={isStale || isOffline} />
+        {/* After the droplets on purpose: the droplet layer paints its own
+            surface to refract, so the haze has to sit above it. */}
+        <PrecipitationAmbience
+          todayMm={todayMm}
+          rateMmH={rateMmH}
+          isStale={isStale || isOffline}
+        />
       </div>
       {/* Header */}
       <div>

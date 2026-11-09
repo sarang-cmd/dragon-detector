@@ -57,6 +57,16 @@ export default function AboutPage() {
           ))}
         </dl>
 
+        {/* Photos */}
+        {CLUB_PHOTOS.length > 0 && (
+          <section className="mb-12">
+            <SectionTitle hint="Add more by dropping a file in public/club and listing it in src/lib/content/club.ts">
+              Photos
+            </SectionTitle>
+            <ClubGallery photos={CLUB_PHOTOS} />
+          </section>
+        )}
+
         {/* Who we are */}
         <section className="mb-12">
           <SectionTitle hint="The six of us, and what each of us does">
@@ -206,16 +216,6 @@ export default function AboutPage() {
             </table>
           </div>
         </section>
-
-        {/* Photos */}
-        {CLUB_PHOTOS.length > 0 && (
-          <section className="mb-12">
-            <SectionTitle hint="Add more by dropping a file in public/club and listing it in src/lib/content/club.ts">
-              Photos
-            </SectionTitle>
-            <ClubGallery photos={CLUB_PHOTOS} />
-          </section>
-        )}
 
         {/* Closing note */}
         <Card>

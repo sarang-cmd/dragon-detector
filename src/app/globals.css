@@ -384,7 +384,8 @@
 .ambience-uv::after,
 .ambience-solar::after,
 .ambience-celestial-day::after,
-.ambience-celestial-night::after {
+.ambience-celestial-night::after,
+.ambience-wet::after {
   content: '';
   position: absolute;
   inset: -25%;
@@ -421,6 +422,17 @@
     circle at 84% 6%,
     color-mix(in srgb, var(--ambience-cool) 12%, transparent) 0%,
     transparent 58%
+  );
+}
+
+/* Rain: a damp wash rising off the bottom edge, deepened by how wet it has
+   been. Droplets only run during rain, so this is what keeps the tile from
+   being the one bare card on a dry day. */
+.ambience-wet::after {
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--ambience-cool) var(--ambience-mix, 4%), transparent) 0%,
+    transparent 62%
   );
 }
 

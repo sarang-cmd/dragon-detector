@@ -11,6 +11,9 @@ import {
   TILE_CLOUD_BASE,
   uvGlow,
   uvHaze,
+  wetHaze,
+  wetness,
+  wetWash,
   windStreak,
 } from './ambience';
 
@@ -111,6 +114,32 @@ describe('tile haze presets', () => {
     expect(uvHaze(-3)).toEqual(uvHaze(0));
     expect(uvHaze(400)).toEqual(uvHaze(12));
     expect(solarHaze(9000)).toEqual(solarHaze(1000));
+  });
+});
+
+describe('rain tile wetness', () => {
+  it('counts a wet night as well as a live downpour', () => {
+    // Either signal on its own has to register: 15 mm already fallen, or a
+    // rate of 12 mm/h right now.
+    expect(wetness(15, 0)).toBeCloseTo(1, 5);
+    expect(wetness(0, 12)).toBeCloseTo(1, 5);
+    expect(wetness(0, 0)).toBe(0);
+    expect(wetness(60, 0)).toBe(1);
+  });
+
+  it('thickens and speeds up the haze with the wetness', () => {
+    const dry = wetHaze(0, 0);
+    const soaked = wetHaze(18, 9);
+    expect(soaked.opacity).toBeGreaterThan(dry.opacity);
+    expect(soaked.cover).toBeGreaterThan(dry.cover);
+    expect(soaked.wind).toBeGreaterThan(dry.wind);
+    // A dry tile still gets a haze, otherwise it is the bare card again.
+    expect(dry.opacity).toBeGreaterThan(0.03);
+  });
+
+  it('returns a CSS-ready wash percentage', () => {
+    expect(wetWash(0, 0)).toBe('4%');
+    expect(parseFloat(wetWash(18, 9))).toBeGreaterThan(parseFloat(wetWash(1, 0)));
   });
 });
 
