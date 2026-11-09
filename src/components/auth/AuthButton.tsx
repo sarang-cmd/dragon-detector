@@ -43,7 +43,7 @@ export function AuthButton() {
     return (
       <span
         aria-hidden="true"
-        className="inline-block h-9 w-9 rounded-full bg-[var(--color-border)]"
+        className="dodecagon inline-block h-9 w-9 bg-[var(--color-border)]"
       />
     );
   }
@@ -115,14 +115,20 @@ export function AuthButton() {
           setError(null);
           setMenuOpen((o) => !o);
         }}
-        className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+        className="group flex h-9 w-9 items-center justify-center rounded-[4px] text-sm font-medium text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
       >
-        {avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-        ) : (
-          initial
-        )}
+        {/* The shape sits inside the button: clipping the button itself would
+            cut away its focus ring. */}
+        <span className="dodecagon dodecagon-ring flex h-full w-full bg-[var(--color-border)] transition-colors group-hover:bg-[var(--color-text)]">
+          <span className="dodecagon flex h-full w-full items-center justify-center overflow-hidden bg-[var(--color-surface)]">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              initial
+            )}
+          </span>
+        </span>
       </button>
 
       {menuOpen && (
