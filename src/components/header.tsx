@@ -48,16 +48,20 @@ export function Header() {
             className="flex items-center gap-3 transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-[var(--accent)] rounded-[8px]"
             aria-label="DIS Weather Station Home"
           >
-            {/* Dragon logo: square JPEG cropped to a circle via rounded-full + object-cover. */}
-            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-[var(--color-border)]">
-              <Image
-                src="/dragon_detector_logo.rounded.png"
-                alt="DIS Weather Station dragon logo"
-                width={32}
-                height={32}
-                priority
-                className="h-8 w-8 object-cover"
-              />
+            {/* Dragon logo: cropped to the club's dodecagon (12-sided) mark.
+                The outer element is the 1px edge — clip-path would cut a
+                real border away. */}
+            <div className="dodecagon dodecagon-ring h-8 w-8 shrink-0 bg-[var(--color-border)]">
+              <div className="dodecagon flex h-full w-full items-center justify-center overflow-hidden bg-[var(--color-surface)]">
+                <Image
+                  src="/dragon_detector_logo.rounded.png"
+                  alt="DIS Weather Station dragon logo"
+                  width={32}
+                  height={32}
+                  priority
+                  className="h-full w-full object-cover"
+                />
+              </div>
             </div>
             <div className="hidden sm:flex flex-col">
               <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]">
@@ -135,14 +139,16 @@ export function Header() {
                   <SheetHeader className="mb-6 text-left">
                     <SheetTitle>
                       <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-neutral-200">
-                          <Image
-                            src="/dragon_detector_logo.rounded.png"
-                            alt="DIS Weather Station dragon logo"
-                            width={32}
-                            height={32}
-                            className="h-8 w-8 object-cover"
-                          />
+                        <div className="dodecagon dodecagon-ring h-8 w-8 shrink-0 bg-neutral-200">
+                          <div className="dodecagon flex h-full w-full items-center justify-center overflow-hidden bg-[var(--color-surface)]">
+                            <Image
+                              src="/dragon_detector_logo.rounded.png"
+                              alt="DIS Weather Station dragon logo"
+                              width={32}
+                              height={32}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
                         </div>
                         <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]">
                           Weather

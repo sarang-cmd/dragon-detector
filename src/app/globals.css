@@ -153,6 +153,37 @@
     letter-spacing: -0.035em;
   }
 
+  /* Brand mark shape: the club logo and the account avatar are cut to a
+     regular 12-sided polygon (dodecagon) rather than a circle. Vertices sit
+     on the cardinal axes, so the shape is inscribed exactly in its box —
+     no scaling surprises at any size.
+
+     clip-path also clips borders and outlines, so an element that needs a
+     ring gets `.dodecagon-ring` on a wrapper 1px larger instead: the wrapper
+     shows through as a 1px edge. Never put clip-path on a focusable
+     element, or its focus ring disappears. */
+  .dodecagon {
+    clip-path: polygon(
+      100% 50%,
+      93.301% 75%,
+      75% 93.301%,
+      50% 100%,
+      25% 93.301%,
+      6.699% 75%,
+      0% 50%,
+      6.699% 25%,
+      25% 6.699%,
+      50% 0%,
+      75% 6.699%,
+      93.301% 25%
+    );
+  }
+
+  /* 1px of padding turns the wrapper's own background into the mark's edge. */
+  .dodecagon-ring {
+    padding: 1px;
+  }
+
   /* Anti-AI design rule enforcement: strict 1px border, 12px radius, no shadows */
   .instrument-tile {
     background-color: var(--color-surface);
