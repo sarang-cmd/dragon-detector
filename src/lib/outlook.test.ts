@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   buildStatisticalOutlook,
   displayTemp,
+  outlookAiStatus,
   type ForecastHour,
 } from './outlook';
 import type { HistoryPoint, WeatherReading } from './types';
@@ -106,5 +107,27 @@ describe('displayTemp', () => {
     expect(displayTemp(20.4, 'metric')).toBe('20°');
     expect(displayTemp(20, 'imperial')).toBe('68°');
     expect(displayTemp(null, 'metric')).toBe(null);
+  });
+});
+
+describe('outlookAiStatus', () => {
+  it('trusts an explicit status', () => {
+    expect(outlookAiStatus({ ai: null, aiStatus: 'pending' })).toBe('pending');
+    expect(outlookAiStatus({ ai: 'Rain clearing.', aiStatus: 'ready' })).toBe('ready');
+    expect(outlookAiStatus({ ai: null, aiStatus: 'unavailable' })).toBe(
+      'unavailable'
+    );
+  });
+
+  it('falls back to the sentence for payloads written before aiStatus existed', () => {
+    expect(outlookAiStatus({ ai: 'Rain clearing.' })).toBe('ready');
+    expect(outlookAiStatus({ ai: null })).toBe('unavailable');
+  });
+
+  it('never calls an empty payload ready', () => {
+    expect(outlookAiStatus({ ai: '', aiStatus: 'ready' })).toBe('ready');
+    expect(outlookAiStatus({ ai: undefined, aiStatus: undefined })).toBe(
+      'unavailable'
+    );
   });
 });
