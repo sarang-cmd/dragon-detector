@@ -59,6 +59,13 @@ export function Footer() {
               <TourRestartButton />
               <span className="text-[var(--color-border)]" aria-hidden="true">|</span>
               <Link
+                href="/about"
+                className="min-h-[44px] px-2 inline-flex items-center text-[var(--color-muted)] hover:text-[var(--color-text)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--accent)] rounded-[6px]"
+              >
+                About
+              </Link>
+              <span className="text-[var(--color-border)]" aria-hidden="true">|</span>
+              <Link
                 href="/privacy"
                 className="min-h-[44px] px-2 inline-flex items-center text-[var(--color-muted)] hover:text-[var(--color-text)] transition-colors focus-visible:outline-2 focus-visible:outline-[var(--accent)] rounded-[6px]"
               >
