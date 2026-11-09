@@ -3,6 +3,10 @@
 import * as React from 'react';
 import { useSWRConfig } from 'swr';
 import { setMascotChoice, useMascotChoice, type MascotChoice } from '@/components/learn/Mascot';
+import {
+  setDevRain,
+  useDevEffectOverride,
+} from '@/lib/effects/dev-overrides';
 
 const SCENARIOS = ['default', 'storm', 'calm', 'rain', 'offline'] as const;
 type Scenario = (typeof SCENARIOS)[number];
@@ -18,6 +22,14 @@ const SCENARIO_LABELS: Record<Scenario, string> = {
 const COOKIE_NAME = 'weather_scenario';
 const UNLOCK_KEY = 'weather_scenario_unlocked';
 const TRIPLE_WINDOW_MS = 800;
+
+/** Rain rates the Droplets layer can be forced to, in mm/h. */
+const RAIN_PRESETS = [
+  { id: 'off', label: 'Off (follow the data)', value: null },
+  { id: 'drizzle', label: 'Drizzle — 1 mm/h', value: 1 },
+  { id: 'rain', label: 'Rain — 6 mm/h', value: 6 },
+  { id: 'downpour', label: 'Downpour — 24 mm/h', value: 24 },
+] as const;
 
 function readScenarioCookie(): string | null {
   const match = document.cookie
@@ -52,6 +64,7 @@ export function ScenarioDebugPanel() {
   const [unlocked, setUnlocked] = React.useState(false);
   const [active, setActive] = React.useState<Scenario>('default');
   const mascot = useMascotChoice();
+  const { rain: devRain } = useDevEffectOverride();
   const [testEmail, setTestEmail] = React.useState('');
   const [testStatus, setTestStatus] = React.useState<string | null>(null);
   const [testBusy, setTestBusy] = React.useState(false);
@@ -199,6 +212,35 @@ export function ScenarioDebugPanel() {
 
         <div
           role="group"
+          aria-label="Droplets effect"
+          className="mt-1 border-t border-[var(--color-border)] pt-1"
+        >
+          <p className="px-3 pb-1 pt-1 text-[10px] uppercase tracking-wider text-[var(--color-muted)]">
+            Droplets
+          </p>
+          {RAIN_PRESETS.map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              aria-pressed={devRain === preset.value}
+              onClick={() => setDevRain(preset.value)}
+              className={`w-full rounded-[8px] px-3 py-2 text-left text-xs focus-visible:outline-2 focus-visible:outline-[var(--accent)] ${
+                devRain === preset.value
+                  ? 'bg-[var(--color-border)] font-medium text-[var(--color-text)]'
+                  : 'text-[var(--color-muted)] hover:bg-[var(--color-border)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+          <p className="px-3 pb-1 pt-1 text-[10px] leading-relaxed text-[var(--color-muted)]">
+            Forces the Canvas UI droplets on the Precipitation tile at this rate.
+            Needs effects on and the full tier.
+          </p>
+        </div>
+
+        <div
+          role="group"
           aria-label="Mascot selector"
           className="mt-1 border-t border-[var(--color-border)] pt-1"
         >
@@ -308,6 +350,12 @@ export function ScenarioDebugPanel() {
             </ol>
           )}
         </div>
+
+        <p className="mt-1 border-t border-[var(--color-border)] px-3 pb-1 pt-2 text-[10px] leading-relaxed text-[var(--color-muted)]">
+          Shortcut: press <kbd className="font-mono">d</kbd> three times within{' '}
+          {TRIPLE_WINDOW_MS} ms to reopen this panel; <kbd className="font-mono">Esc</kbd> closes
+          it.
+        </p>
       </div>
     </section>
   );

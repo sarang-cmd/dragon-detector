@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { CLOUD_BASE, mistParams, pressureShift, solarWash, uvGlow, windStreak } from './ambience';
+import {
+  celestialHaze,
+  CLOUD_BASE,
+  dropletParams,
+  mistParams,
+  pressureHaze,
+  pressureShift,
+  solarHaze,
+  solarWash,
+  TILE_CLOUD_BASE,
+  uvGlow,
+  uvHaze,
+  windStreak,
+} from './ambience';
 
 describe('CLOUD_BASE', () => {
   it('stays dark on the dark theme and mid-tone on the light theme', () => {
@@ -56,5 +69,60 @@ describe('pressureShift', () => {
   it('rides high when rising and low when falling', () => {
     expect(pressureShift('rising')).toBeLessThan(pressureShift('steady'));
     expect(pressureShift('falling')).toBeGreaterThan(pressureShift('steady'));
+  });
+});
+
+describe('TILE_CLOUD_BASE', () => {
+  it('keeps the light-theme tints above mid-luminance so they stay visible', () => {
+    const lum = ([r, g, b]: [number, number, number]) => 0.299 * r + 0.587 * g + 0.114 * b;
+    for (const tint of ['neutral', 'warm', 'cool'] as const) {
+      expect(lum(TILE_CLOUD_BASE[tint].dark)).toBeLessThan(0.5);
+      expect(lum(TILE_CLOUD_BASE[tint].light)).toBeGreaterThan(0.5);
+    }
+  });
+});
+
+describe('tile haze presets', () => {
+  it('scale with their reading', () => {
+    expect(uvHaze(11).opacity).toBeGreaterThan(uvHaze(0).opacity);
+    expect(uvHaze(11).cover).toBeGreaterThan(uvHaze(0).cover);
+    expect(solarHaze(900).opacity).toBeGreaterThan(solarHaze(50).opacity);
+  });
+
+  it('give each tile a different character', () => {
+    const day = celestialHaze(true);
+    const night = celestialHaze(false);
+    expect(day.tint).toBe('warm');
+    expect(night.tint).toBe('cool');
+    expect(night.speed).toBeLessThan(day.speed);
+    // The pressure veil is the widest and the stillest of the set.
+    expect(pressureHaze('steady').scale).toBeGreaterThan(day.scale);
+  });
+
+  it('make a falling pressure move faster and cooler than a rising one', () => {
+    const rising = pressureHaze('rising');
+    const falling = pressureHaze('falling');
+    expect(falling.wind).toBeGreaterThan(rising.wind);
+    expect(falling.tint).toBe('cool');
+    expect(rising.tint).toBe('warm');
+  });
+
+  it('clamp out-of-range input', () => {
+    expect(uvHaze(-3)).toEqual(uvHaze(0));
+    expect(uvHaze(400)).toEqual(uvHaze(12));
+    expect(solarHaze(9000)).toEqual(solarHaze(1000));
+  });
+});
+
+describe('dropletParams', () => {
+  it('gets heavier with the rain rate and stays capped', () => {
+    const drizzle = dropletParams(0.5);
+    const downpour = dropletParams(24);
+    expect(downpour.intensity).toBeGreaterThan(drizzle.intensity);
+    expect(downpour.fallSpeed).toBeGreaterThan(drizzle.fallSpeed);
+    expect(dropletParams(500)).toEqual(dropletParams(30));
+    expect(downpour.intensity).toBeLessThanOrEqual(0.75);
+    // A drizzle still has to be visible.
+    expect(drizzle.intensity).toBeGreaterThan(0.25);
   });
 });

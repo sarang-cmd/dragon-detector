@@ -6,12 +6,18 @@ import { useAmbientEffect, useEffects } from '@/context/effects-context';
 import { EffectBoundary } from './EffectBoundary';
 import {
   CLOUD_BASE,
+  celestialHaze,
   mistParams,
+  pressureHaze,
   pressureShift,
+  solarHaze,
   solarWash,
+  TILE_CLOUD_BASE,
   useEffectTheme,
   uvGlow,
+  uvHaze,
   windStreak,
+  type TileCloudPreset,
 } from '@/lib/effects/ambience';
 
 const Clouds = dynamic(
@@ -28,6 +34,7 @@ function AmbienceHost({
   label,
   variant,
   style,
+  children,
 }: React.PropsWithChildren<{
   label: string;
   variant: string;
@@ -39,7 +46,37 @@ function AmbienceHost({
       data-ambience={label}
       aria-hidden="true"
       style={style}
-    />
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * The Canvas UI cloud field, sized for a tile. Every tile calls this with its
+ * own preset so no two look alike, but the knobs that are about cost rather
+ * than character — quality, shadow, refraction — are pinned here so a tile
+ * cannot ask for more than a small decorative layer needs.
+ */
+function TileClouds({ preset }: { preset: TileCloudPreset }) {
+  const theme = useEffectTheme();
+  const { tint, ...options } = preset;
+
+  return (
+    <EffectBoundary fallback={null}>
+      <Clouds
+        key={theme}
+        className="h-full w-full"
+        style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+        color={TILE_CLOUD_BASE[tint][theme]}
+        refraction={0}
+        shadow={0}
+        quality={0.4}
+        {...options}
+      >
+        <div className="h-full w-full bg-transparent" />
+      </Clouds>
+    </EffectBoundary>
   );
 }
 
@@ -156,7 +193,8 @@ export function PressureAmbience({
   trend: 'rising' | 'falling' | 'steady';
   isStale?: boolean;
 }) {
-  const { isEnabled } = useEffects();
+  const { isEnabled, tier } = useEffects();
+  const showClouds = useAmbientEffect(!isStale && tier === 'full');
   if (!isEnabled || isStale) return null;
 
   return (
@@ -164,13 +202,16 @@ export function PressureAmbience({
       label="pressure"
       variant="pressure"
       style={{ ['--ambience-shift' as string]: `${pressureShift(trend)}%` }}
-    />
+    >
+      {showClouds && <TileClouds preset={pressureHaze(trend)} />}
+    </AmbienceHost>
   );
 }
 
 /** UV tile: warm glow from the top-right corner, scaled by the index. */
 export function UvAmbience({ uvIndex }: { uvIndex?: number }) {
-  const { isEnabled } = useEffects();
+  const { isEnabled, tier } = useEffects();
+  const showClouds = useAmbientEffect(uvIndex != null && tier === 'full');
   if (!isEnabled || uvIndex == null) return null;
 
   const { mix, size } = uvGlow(uvIndex);
@@ -182,13 +223,16 @@ export function UvAmbience({ uvIndex }: { uvIndex?: number }) {
         ['--ambience-mix' as string]: mix,
         ['--ambience-size' as string]: size,
       }}
-    />
+    >
+      {showClouds && <TileClouds preset={uvHaze(uvIndex)} />}
+    </AmbienceHost>
   );
 }
 
 /** Solar tile: broader warm wash with a slow breathing pulse. */
 export function SolarAmbience({ solarWm2 }: { solarWm2?: number }) {
-  const { isEnabled } = useEffects();
+  const { isEnabled, tier } = useEffects();
+  const showClouds = useAmbientEffect(solarWm2 != null && tier === 'full');
   if (!isEnabled || solarWm2 == null) return null;
 
   const { mix, size } = solarWash(solarWm2);
@@ -200,7 +244,9 @@ export function SolarAmbience({ solarWm2 }: { solarWm2?: number }) {
         ['--ambience-mix' as string]: mix,
         ['--ambience-size' as string]: size,
       }}
-    />
+    >
+      {showClouds && <TileClouds preset={solarHaze(solarWm2)} />}
+    </AmbienceHost>
   );
 }
 
@@ -209,8 +255,13 @@ export function SolarAmbience({ solarWm2 }: { solarWm2?: number }) {
  * tile whose ambience is driven by time rather than by a reading.
  */
 export function CelestialAmbience({ isDay }: { isDay: boolean }) {
-  const { isEnabled } = useEffects();
+  const { isEnabled, tier } = useEffects();
+  const showClouds = useAmbientEffect(tier === 'full');
   if (!isEnabled) return null;
 
-  return <AmbienceHost label="celestial" variant={isDay ? 'celestial-day' : 'celestial-night'} />;
+  return (
+    <AmbienceHost label="celestial" variant={isDay ? 'celestial-day' : 'celestial-night'}>
+      {showClouds && <TileClouds preset={celestialHaze(isDay)} />}
+    </AmbienceHost>
+  );
 }

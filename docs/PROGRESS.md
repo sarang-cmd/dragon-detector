@@ -594,3 +594,58 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   `ResizeObserver` stub for recharts). Engine also run against the real
   `/api/history?range=7d` payload: 336 readings, 30-min step, 100 % coverage,
   4.8–16.2 °C, prevailing W, 7.1 mm rain over 8 calendar days.
+
+## Session 26 — per-tile background effects, scoped toggle, droplets — DONE
+
+- **Every instrument tile now has a Canvas UI background.** Sun & moon, solar
+  radiation, UV index and relative pressure already had a CSS layer, but it was
+  painted at 2.5–12 % opacity and read as nothing at all. Each keeps that motif
+  and gains its own cloud field on top, with its own character: UV is thin,
+  high and quick; solar is broad and slow; sun & moon is warm by day and a
+  cooler, stiller veil at night; pressure is the widest and stillest of the
+  set, and its trend picks the tint as well as the pace (rising warms and
+  settles, falling cools and moves). New pure helpers in
+  `src/lib/effects/ambience.ts` (`uvHaze`, `solarHaze`, `celestialHaze`,
+  `pressureHaze`) plus `TILE_CLOUD_BASE`, which carries the same caveat as
+  `CLOUD_BASE`: the shader lifts *from* the base on dark surfaces and darkens
+  *from* it on light ones, so each theme and tint needs its own mid-tone.
+- **The canvas is the top rung of a ladder, not the whole thing.** A tile's
+  ambience is CSS always, CSS-only on the lite tier, and CSS + one cloud field
+  on the full tier — so a Chromebook still gets the motif, just not the motion.
+  `TileClouds` pins `quality`, `shadow` and `refraction` so a tile cannot ask
+  for more than a small decorative layer needs.
+- **The rain tile now runs the supplied Canvas UI `Droplets` properly.** It was
+  already the right component but driven as a hint: `refraction` 0.04, `blur`
+  0, `vignette` 0, a transparent child. Droplets refracts whatever is painted
+  inside it, so over a transparent child the drops have nothing to bend and
+  are all but invisible. It now gets `.rain-refraction-surface` — a wash close
+  enough to the card colour to read as part of the tile — and runs at the
+  strength the component is designed for. Rates come from `dropletParams`, a
+  curve rather than a straight scale, so a drizzle is visible and a cloudburst
+  stops short of covering the numbers. On browsers without html-in-canvas the
+  child renders on its own and still reads as a soft sheen.
+- **The effects toggle is now scoped to background effects.** It used to gate
+  the unit-switch ASCII sweep as well, which is a transition rather than a
+  background, so turning effects off quietly changed behaviour that had
+  nothing to do with ambience. The sweep now answers to what the *device* can
+  do (`tier`) and not to the visitor's on/off choice. `TopProgressBar` no
+  longer lists `mode` as a dependency, which was retriggering the bar every
+  time the toggle was used. The settings copy says what the switch covers.
+- **Droplets can be forced from the developer console.** `src/lib/effects/dev-overrides.ts`
+  is a small `useSyncExternalStore` store — deliberately not React context,
+  because the console and the tiles sit in different subtrees, and values do
+  not survive a reload so a developer cannot forget they forced a downpour.
+  The console gained a **Droplets** group (Off / Drizzle 1 mm/h / Rain 6 mm/h /
+  Downpour 24 mm/h) and a footer line reminding you of the shortcut. Writes
+  are no-ops in production, where the console is not rendered at all.
+- **Shortcut:** press <kbd>d</kbd> three times within 800 ms to open the
+  developer console, <kbd>Esc</kbd> to close. It is dev-only (returns `null`
+  in production) and is mounted for every path except `/display`.
+- Verification: tsc clean, `pnpm lint` clean, `pnpm build` clean. 286 tests
+  pass (30 new: 13 for the haze/droplet helpers, 3 for the override store, 15
+  pinning the ambience ladder across full / lite / off, 6 for
+  `RainWeatherEffect` including the console override on a stale, dry tile).
+  The same 4 `src/lib/route.test.ts` failures remain — they call live
+  Open-Meteo, unreachable from the sandbox. **Not verifiable here:** no browser
+  is installable in the sandbox, so the shader output itself (as opposed to the
+  mounting logic) has not been seen; check the tiles on a real Chromium device.
