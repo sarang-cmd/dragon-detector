@@ -55,6 +55,7 @@ Full hardware detail lives on the **Station** page and in
 |---|---|
 | **Live** (`/`) | Bento-grid instrument tiles, temperature hero with editorial summary + jacket advice, wind compass, rain gauge, humidity, pressure with trend, UV, solar, sun & moon. Every tile links into the student guide. |
 | **Coming up** (in hero) | 12-hour temperature curve + precipitation-probability bars from Open-Meteo model data fused with station readings, plus one plain-language sentence, AI-written via Groq when configured, station statistics otherwise. The sentence arrives in a second, cancellable request: the hero shows "Generating your AI outlook…" with a Stop button while the model works, and says so plainly (with Retry) when it cannot answer. One shared 15-minute server cache serves every visitor. |
+| **Statistics** (`/stats`) | Records with the moment each was set, a day-by-day table, rainfall totals and dry/wet/frost runs, the wind rose, a "typical day" chart, and the numbers behind this website. |
 | **Data** (`/data`) | 24h/7d history table and charts, metric/imperial toggle, CSV export (always metric). |
 | **Learn** (`/learn`) | 12 measurement explainers in two reading levels (kids / students), classroom activities and a printable teacher handout. Activities are teacher-only; everyone else sees a note. |
 | **Station** (`/station`) | Specs, siting geometry, sensor tolerances (unit-converted), maintenance records. |
@@ -184,6 +185,32 @@ setting, or you can force one:
 Force a theme with `?theme=dark` or `?theme=light`. The page is `noindex`
 (it exists to be framed, not to be found in search), and both preview and
 embed read through `/api/weather`, so neither ever touches Ecowitt directly.
+
+### Statistics page
+
+`/stats` counts up everything in the archive: highest and lowest of every
+sensor (with the timestamp), a row per calendar day, rainfall totals, the
+longest dry, wet and frost runs, the wind rose and the mean temperature for
+each hour of the day. Every figure is computed in the browser from the same
+archive the CSV download uses — nothing is stored, so the numbers cannot drift
+from the data. Series the station never reported are left out rather than shown
+as zero, and the page says so when a window is empty.
+
+## Project statistics
+
+`pnpm stats` counts the project and writes `src/lib/project-stats.json`, which
+the Statistics page renders under "This build". Run it after a chunk of work so
+the numbers stay true; the JSON records when it was generated.
+
+| | |
+|---|---|
+| Application code | 122 files · 23,263 lines |
+| Tests | 29 files · 248 cases |
+| Pages / API routes | 13 / 8 |
+| Components | 59 |
+| Docs & migrations | 19 docs · 6 SQL migrations |
+| Dependencies | 18 runtime · 15 dev |
+| Commits | 72 since 2026-10-14 |
 
 ## Deployment
 

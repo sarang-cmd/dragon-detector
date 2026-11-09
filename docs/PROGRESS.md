@@ -566,3 +566,31 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   including the `fresh=1` retry, 3 new `outlookAiStatus` tests, tsc + lint
   clean, 225 tests pass; the same 4 `src/lib/route.test.ts` failures remain
   (they call live Open-Meteo, unreachable from the sandbox).
+
+## Session 25 — statistics page (`/stats`) — DONE
+
+- New **Statistics** page (`src/app/stats/page.tsx` +
+  `src/components/stats/StatsClient.tsx`), linked from the header nav between
+  Data and Learn. It reads the same `/api/history` window the Data page uses
+  (24 h / 7 d switch) plus `/api/weather` for the live counters.
+- New stats engine `src/lib/stats.ts` (pure, no network): extremes for every
+  sensor with the timestamp that set them, record **coverage** (readings vs.
+  readings the window should hold — an honest stand-in for uptime, since gaps
+  are shown rather than hidden), a row per **Berlin calendar day**, rainfall
+  integrated from the rain rate × sampling step, **hour-of-day means**, an
+  eight-sector **wind rose**, and **dry / wet / frost runs** in hours.
+  Everything is computed in metric and converted only at render, and a sensor
+  the station never reported is left out instead of shown as 0.
+- `scripts/project-stats.mjs` (`pnpm stats`) counts the project — code, tests,
+  pages, routes, components, docs, migrations, dependencies, commits — and
+  writes `src/lib/project-stats.json`, which the page shows under "This build".
+  A shallow clone reports no commit count rather than a wrong one (the sandbox
+  clone was unshallowed to get the real history: 72 commits since 2026-10-14).
+  README gained the table and the regenerate command.
+- Verification: 21 new tests for the engine (`src/lib/stats.test.ts`, including
+  Berlin-day grouping across midnight, gaps breaking streaks, sector wrapping
+  at 350° and the empty-window case) and 5 for the page
+  (`src/components/stats/StatsClient.test.tsx` — jsdom needs a
+  `ResizeObserver` stub for recharts). Engine also run against the real
+  `/api/history?range=7d` payload: 336 readings, 30-min step, 100 % coverage,
+  4.8–16.2 °C, prevailing W, 7.1 mm rain over 8 calendar days.
