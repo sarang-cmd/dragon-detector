@@ -152,4 +152,9 @@ export const CLUB_PHOTOS: ClubPhoto[] = [
     alt: 'The weather station and its data',
     caption: 'The station, and the data it sends us.',
   },
+  {
+    src: '/club/club-03.jpg',
+    alt: 'The weather station club at work',
+    caption: 'The club at work on the station.',
+  },
 ];
