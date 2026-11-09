@@ -1,17 +1,13 @@
 import { WeatherSource } from '@/lib/types'
 import createMockSource from './mock'
 import { createOpenMeteoSource, recordCurrentReading } from './openmeteo'
-
-function createEcowittSource(): WeatherSource {
-  return {
-    getCurrent: async () => {
-      throw new Error('Ecowitt real-time source not implemented')
-    },
-    getHistory: async () => {
-      throw new Error('Ecowitt history source not implemented')
-    },
-  }
-}
+// The Ecowitt adapter lives in src/sources (see docs/02 and docs/04): it is
+// the only module that knows the vendor API. Keys are read server-side only.
+import {
+  createRealSource,
+  hasEcowittCredentials,
+  missingCredentialsMessage,
+} from '../../sources/ecowitt'
 
 let cachedSource: WeatherSource | null = null
 let cachedSourceKind: string | null = null
@@ -24,7 +20,12 @@ export function getSource(): WeatherSource {
   }
 
   if (dataSource === 'ecowitt') {
-    cachedSource = createEcowittSource()
+    if (!hasEcowittCredentials()) {
+      // Not fatal here: fail per request with an explicit message so the app
+      // still boots (build, other routes) without station credentials.
+      console.warn(`[sources] DATA_SOURCE=ecowitt — ${missingCredentialsMessage()}`)
+    }
+    cachedSource = createRealSource()
   } else if (dataSource === 'mock') {
     const scenario = (process.env.MOCK_SCENARIO || 'default').toLowerCase() as
       | 'default'

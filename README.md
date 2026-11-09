@@ -91,8 +91,14 @@ npx vitest run  # unit tests (engine, content, conversions, regressions)
 Copy `.env.example` to `.env.local` (gitignored, **never commit real keys**):
 
 ```bash
-DATA_SOURCE=mock          # live data: switch to ecowitt + credentials when ready
+DATA_SOURCE=openmeteo     # openmeteo (default, no key) | mock | ecowitt (station)
 MOCK_SCENARIO=default     # dev only: storm | calm | rain | offline
+
+# Station link: switch DATA_SOURCE to ecowitt and fill all three in.
+# Keys: ecowitt.net -> profile -> API management. MAC: WS View app device list.
+ECOWITT_APPLICATION_KEY=
+ECOWITT_API_KEY=
+ECOWITT_MAC=
 
 GROQ_API_KEY=             # optional: enables the AI outlook sentence
                           # (free tier; without it, statistics are used)
@@ -101,6 +107,10 @@ GROQ_API_KEY=             # optional: enables the AI outlook sentence
 NEXT_PUBLIC_SUPABASE_URL=       # learning-track accounts (Google + email)
 NEXT_PUBLIC_SUPABASE_ANON_KEY=  # publishable key: public-by-design, RLS enforced
 ```
+
+Restart `pnpm dev` after editing `.env.local` — Next.js reads env only at boot.
+If `DATA_SOURCE=ecowitt` but a credential is missing, `/api/weather` answers
+503 and the server log names the missing var (never the values).
 
 Keys are server-only: the browser talks to our `/api/*` routes, never to
 Groq or Ecowitt directly. The Supabase publishable key is designed for
@@ -145,9 +155,17 @@ the scenario switcher appears only after pressing `D` three times.
 ## Deployment
 
 Hosted on Vercel (`dragon-detector.vercel.app`), auto-deploying from `main`.
-Set `DATA_SOURCE=ecowitt` plus the Ecowitt and Groq keys in the Vercel project
-environment when going live with real data. If a deploy ever fails on a
-stale cache, redeploy with the build cache cleared.
+Add the same variables under **Vercel → Project → Settings → Environment
+Variables** for Production, Preview and Development, then redeploy:
+
+- `DATA_SOURCE=ecowitt` to serve the real station, plus
+  `ECOWITT_APPLICATION_KEY`, `ECOWITT_API_KEY`, `ECOWITT_MAC`
+- `GROQ_API_KEY` for the AI outlook sentence
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` for accounts
+
+Vercel env changes only reach the app after a redeploy (**Deployments →
+⋯ → Redeploy**). If a deploy ever fails on a stale cache, redeploy with the
+build cache cleared.
 
 ## School
 
