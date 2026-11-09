@@ -54,7 +54,7 @@ Full hardware detail lives on the **Station** page and in
 | Page | What you get |
 |---|---|
 | **Live** (`/`) | Bento-grid instrument tiles, temperature hero with editorial summary + jacket advice, wind compass, rain gauge, humidity, pressure with trend, UV, solar, sun & moon. Every tile links into the student guide. |
-| **Coming up** (in hero) | 12-hour temperature curve + precipitation-probability bars from Open-Meteo model data fused with station readings, plus one plain-language sentence, AI-written via Groq when configured, station statistics otherwise. One shared 15-minute server cache serves every visitor. |
+| **Coming up** (in hero) | 12-hour temperature curve + precipitation-probability bars from Open-Meteo model data fused with station readings, plus one plain-language sentence, AI-written via Groq when configured, station statistics otherwise. The sentence arrives in a second, cancellable request: the hero shows "Generating your AI outlook…" with a Stop button while the model works, and says so plainly (with Retry) when it cannot answer. One shared 15-minute server cache serves every visitor. |
 | **Data** (`/data`) | 24h/7d history table and charts, metric/imperial toggle, CSV export (always metric). |
 | **Learn** (`/learn`) | 12 measurement explainers in two reading levels (kids / students), classroom activities and a printable teacher handout. Activities are teacher-only; everyone else sees a note. |
 | **Station** (`/station`) | Specs, siting geometry, sensor tolerances (unit-converted), maintenance records. |

@@ -11,6 +11,47 @@ export interface ForecastHour {
   humidityPct: number | null;
 }
 
+/**
+ * Lifecycle of the AI sentence. The API sends statistics first and lets the
+ * model catch up, so the hero can say what it is doing instead of going quiet.
+ * - `ready`       the model answered, `ai` holds the sentence
+ * - `pending`     not generated yet (or a previous attempt was cancelled)
+ * - `unavailable` no key configured, the call failed, or it was rate limited
+ */
+export type OutlookAiStatus = 'ready' | 'pending' | 'unavailable';
+
+/** Shape returned by `GET /api/outlook` (and stored in the shared cache). */
+export interface OutlookPayload {
+  generatedAt: string;
+  units: UnitSystem;
+  statisticalHeadline: string;
+  tempDirection: 'rising' | 'falling' | 'steady';
+  rainExpected: boolean;
+  ai: string | null;
+  aiModel: string | null;
+  aiStatus: OutlookAiStatus;
+  hours: ForecastHour[];
+  tempMinNext12h: number | null;
+  tempMaxNext12h: number | null;
+  /** True when this is the last saved outlook because upstream APIs failed. */
+  stale?: boolean;
+}
+
+/**
+ * Resolve the AI status of a payload that may predate `aiStatus` (older
+ * cached rows, or a cached HTTP response from a previous deploy). Never
+ * claims the model failed when it simply has not been asked yet.
+ */
+export function outlookAiStatus(payload: {
+  ai?: string | null;
+  aiStatus?: string | null;
+}): OutlookAiStatus {
+  if (payload.aiStatus === 'ready' || payload.aiStatus === 'pending') {
+    return payload.aiStatus;
+  }
+  return payload.ai ? 'ready' : 'unavailable';
+}
+
 export interface StatisticalOutlook {
   tempDirection: 'rising' | 'falling' | 'steady';
   /** Forecasted change from now to ~6h out, in °C. */

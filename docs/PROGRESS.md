@@ -533,3 +533,36 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   `twitter:image` meta tags emitted. Satori requires explicit
   `display: flex` on any element with more than one child; two rows broke
   that on the first run and were fixed.
+
+## Session 24 — honest AI outlook states + cancellable generation — DONE
+
+- The outlook no longer goes quiet. `Outlook.tsx` used to `return null` on any
+  endpoint failure and silently swapped the AI sentence for statistics, so a
+  broken model was indistinguishable from a working one. Now every state is
+  visible: "Generating your AI outlook…" with a **Stop** button while the model
+  works, "AI outlook unavailable — showing the station trend." with **Retry**
+  when it fails, "Generation stopped." with **Generate** after a cancel, and a
+  "The forecast isn't loading right now." block (with Retry) when the whole
+  endpoint 502s.
+- Two-phase API (`src/app/api/outlook/route.ts`): `GET /api/outlook` returns
+  the statistics immediately with `aiStatus: 'ready' | 'pending' |
+  'unavailable'`, and `?ai=1` runs (or reuses) the model call. Statistics
+  therefore stay CDN-cacheable (`s-maxage=900`) while the AI request is
+  per-visitor and `no-store`.
+- Cancellation is real, not cosmetic: `requestAi()` refcounts the waiters on
+  one shared generation; the last one out aborts the upstream Groq call, and
+  an `aborted` run is never cached, so the next visitor starts clean. Two
+  waiters where one gives up does **not** cancel the other (verified against a
+  local slow stand-in: one upstream request, completed normally).
+  `cancellable()` merges the visitor's abort with the 15 s hard timeout
+  because Node 18 has no `AbortSignal.any`.
+- Caches are split (statistics vs. the model answer) so the shared Supabase
+  row can still hand a finished sentence to other instances; `withAi()` merges
+  at serve time and `normalizeStored()`/`outlookAiStatus()` keep payloads
+  written before `aiStatus` existed readable and honest.
+- `?fresh=1` (sent by Retry/Generate) retries past a stored *failure*; a stored
+  success is never regenerated, so retrying is free but idempotent.
+- Verification: 6 new component tests (`Outlook.test.tsx`) pin each state
+  including the `fresh=1` retry, 3 new `outlookAiStatus` tests, tsc + lint
+  clean, 225 tests pass; the same 4 `src/lib/route.test.ts` failures remain
+  (they call live Open-Meteo, unreachable from the sandbox).
