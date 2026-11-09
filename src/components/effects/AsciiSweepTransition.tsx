@@ -79,7 +79,10 @@ export function AsciiSweepTransition({
   unitSystem,
   children,
 }: React.PropsWithChildren<{ unitSystem: UnitSystem }>) {
-  const { tier, isEnabled } = useEffects();
+  // The effects toggle is scoped to the background ambience; this is a
+  // transition, so it answers to what the *device* can do (tier) and not to
+  // the visitor's on/off choice.
+  const { tier } = useEffects();
   const [sweep, setSweep] = React.useState<SweepContent | null>(null);
   const previousUnit = React.useRef(unitSystem);
   const previousChildren = React.useRef<React.ReactNode>(children);
@@ -89,7 +92,7 @@ export function AsciiSweepTransition({
     const changed = previousUnit.current !== unitSystem;
     previousUnit.current = unitSystem;
 
-    if (changed && isEnabled && tier === 'full') {
+    if (changed && tier === 'full') {
       setSweep({
         id: ++nextId.current,
         from: previousChildren.current,
@@ -97,12 +100,12 @@ export function AsciiSweepTransition({
       });
     }
     previousChildren.current = children;
-  }, [children, isEnabled, tier, unitSystem]);
+  }, [children, tier, unitSystem]);
 
   return (
     <div className="relative">
       {children}
-      {sweep && isEnabled && tier === 'full' && (
+      {sweep && tier === 'full' && (
         <div
           className="dashboard-data-sweep pointer-events-none absolute inset-0 z-20"
           aria-hidden="true"

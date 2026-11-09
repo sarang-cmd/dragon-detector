@@ -119,7 +119,7 @@ export function EffectsModeControl({
             </div>
           )}
           <p className="mt-2 text-[11px] leading-relaxed text-[var(--color-muted)]">
-            Pretty rain and clouds. If the page gets slow, they turn themselves off. The numbers keep working.
+            This only switches the background graphics behind the tiles — clouds, rain, frost and glows. Everything else on the site keeps working either way. If the page gets slow, they turn themselves off. The numbers keep working.
           </p>
         </>
       )}

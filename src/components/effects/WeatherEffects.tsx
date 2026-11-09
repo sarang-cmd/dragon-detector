@@ -4,7 +4,8 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import { useAmbientEffect, useEffects } from '@/context/effects-context';
 import { EffectBoundary } from './EffectBoundary';
-import { CLOUD_BASE, useEffectTheme } from '@/lib/effects/ambience';
+import { CLOUD_BASE, dropletParams, useEffectTheme } from '@/lib/effects/ambience';
+import { useDevEffectOverride } from '@/lib/effects/dev-overrides';
 
 const Clouds = dynamic(
   () => import('@/components/canvasui/Clouds').then((module) => module.Clouds),
@@ -118,12 +119,26 @@ export function HeroWeatherEffects({
   );
 }
 
+/**
+ * Rain tile: the Canvas UI droplets, run at the strength the component is
+ * designed for rather than as a barely-there hint.
+ *
+ * Two details matter. First, Droplets refracts whatever is painted inside it,
+ * so it needs a surface to bend — an empty child makes the drops all but
+ * invisible. `.rain-refraction-surface` gives it a wash that reads as part of
+ * the card. Second, the developer console can override the rate (see
+ * `useDevEffectOverride`), which also lifts the staleness guard so the effect
+ * can be inspected on a stopped station.
+ */
 export function RainWeatherEffect({ rateMmH, isStale }: { rateMmH: number; isStale: boolean }) {
   const { tier } = useEffects();
-  const enabled = useAmbientEffect(rateMmH > 0 && !isStale && tier === 'full');
+  const { rain: devRain } = useDevEffectOverride();
+  const forced = devRain != null;
+  const rate = devRain ?? rateMmH;
+  const enabled = useAmbientEffect(rate > 0 && (!isStale || forced) && tier === 'full');
   if (!enabled) return null;
 
-  const intensity = Math.min(0.24, 0.06 + Math.max(0, rateMmH) * 0.035);
+  const { intensity, fallSpeed, scale } = dropletParams(rate);
   return (
     <EffectBoundary fallback={null}>
       <WeatherCanvasLayer label="droplets">
@@ -131,20 +146,20 @@ export function RainWeatherEffect({ rateMmH, isStale }: { rateMmH: number; isSta
           className="h-full w-full"
           style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
           intensity={intensity}
-          speed={0.35}
-          scale={0.5}
-          dropWidth={0.55}
-          dropLength={0.65}
-          refraction={0.04}
-          blur={0}
-          vignette={0}
-          fallSpeed={0.45}
-          wiggle={0.15}
-          staticDrops={0.1}
+          speed={0.55}
+          scale={scale}
+          dropWidth={0.7}
+          dropLength={0.8}
+          refraction={0.32}
+          blur={0.04}
+          vignette={0.12}
+          fallSpeed={fallSpeed}
+          wiggle={0.35}
+          staticDrops={0.18}
           interactive={false}
           tintStrength={0}
         >
-          <div className="h-full w-full bg-transparent" />
+          <div className="rain-refraction-surface h-full w-full" />
         </Droplets>
       </WeatherCanvasLayer>
     </EffectBoundary>

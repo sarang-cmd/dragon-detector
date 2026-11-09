@@ -2,12 +2,10 @@
 
 import * as React from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffects } from '@/context/effects-context';
 
 export function TopProgressBar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { mode } = useEffects();
   const routeKey = `${pathname}?${searchParams.toString()}`;
   const previousRoute = React.useRef(routeKey);
   const [visible, setVisible] = React.useState(false);
@@ -41,7 +39,7 @@ export function TopProgressBar() {
       window.clearTimeout(finishTimer);
       window.cancelAnimationFrame(frame);
     };
-  }, [mode, routeKey]);
+  }, [routeKey]);
 
   return (
     <div

@@ -456,6 +456,19 @@
   }
 }
 
+/* The Droplets effect refracts whatever is painted inside it, so it needs a
+   surface to bend — over a transparent child the drops are invisible. This
+   wash sits close enough to the card colour that it reads as part of the tile
+   on every browser, including the ones where html-in-canvas is unavailable
+   and the child renders on its own. */
+.rain-refraction-surface {
+  background: linear-gradient(
+    180deg,
+    var(--color-surface) 0%,
+    color-mix(in srgb, var(--color-text) 5%, var(--color-surface)) 100%
+  );
+}
+
 .hero-effect-layer > * {
   position: absolute !important;
   inset: 0 !important;
