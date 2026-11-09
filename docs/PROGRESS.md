@@ -481,3 +481,31 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   keys are in, paste a real `real_time` response into
   `docs/sample-real-time.json` — per docs/02 that sample is the final
   authority for the normalizer.
+
+## Session 22 — production switch + light-mode ambience — DONE
+
+- Production was serving `source: "openmeteo"` while the preview served the
+  station: `DATA_SOURCE` had never been set for the production target (it was
+  an empty var), so the app fell back to the default. Set to `ecowitt` for
+  production and redeployed `main`; production and preview now match.
+- Light-mode hero fix: the Clouds shader paints *from* a base colour and with
+  `color="auto"` it samples the tile surface, so on the light theme's white
+  surface it rendered white-on-white (invisible), and while the theme was
+  switching it kept the previous base for a frame — the "inverted" blob.
+  `src/lib/effects/ambience.ts` now supplies an explicit per-theme base
+  (dark = surface, light = cool mid-tone) plus a `key` on theme change so no
+  stale frame survives, and a slightly higher ceiling on cloud opacity in
+  light mode where the shader reads fainter.
+- Per-tile ambience (`src/components/effects/TileAmbience.tsx`), each with its
+  own motif rather than one repeated treatment: wind = fast drifting streaks
+  that quicken with wind speed; humidity = slow, windless mist that thickens
+  with humidity; pressure = a soft band that rides high when pressure rises
+  and low when it falls; UV = warm corner glow scaled by index; solar =
+  broader warm wash with a slow breathe; sun & moon = cool moonlight at night,
+  warm daylight by day (driven by `isDaylight()` in `src/lib/sun.ts`).
+  All are aria-hidden, sit behind tile content, honour the effects mode/tier
+  gates and go static under `prefers-reduced-motion`.
+- Verification: tsc + lint clean, 216 tests pass (10 new: ambience helpers,
+  `isDaylight`). The same 4 `src/lib/route.test.ts` failures remain — they
+  call the live Open-Meteo API and fail identically on the untouched
+  baseline without outbound internet.

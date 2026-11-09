@@ -4,23 +4,22 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import { useAmbientEffect, useEffects } from '@/context/effects-context';
 import { EffectBoundary } from './EffectBoundary';
+import { CLOUD_BASE, useEffectTheme } from '@/lib/effects/ambience';
 
 const Clouds = dynamic(
   () => import('@/components/canvasui/Clouds').then((module) => module.Clouds),
-  { ssr: false }
+  { ssr: false },
 );
 const Droplets = dynamic(
   () => import('@/components/canvasui/Droplets').then((module) => module.Droplets),
-  { ssr: false }
+  { ssr: false },
 );
-const Frost = dynamic(
-  () => import('@/components/canvasui/Frost').then((module) => module.Frost),
-  { ssr: false }
-);
-const VHS = dynamic(
-  () => import('@/components/canvasui/VHS').then((module) => module.VHS),
-  { ssr: false }
-);
+const Frost = dynamic(() => import('@/components/canvasui/Frost').then((module) => module.Frost), {
+  ssr: false,
+});
+const VHS = dynamic(() => import('@/components/canvasui/VHS').then((module) => module.VHS), {
+  ssr: false,
+});
 
 function WeatherCanvasLayer({
   children,
@@ -28,11 +27,7 @@ function WeatherCanvasLayer({
   className = '',
 }: React.PropsWithChildren<{ label: string; className?: string }>) {
   return (
-    <div
-      className={`weather-effect-layer ${className}`}
-      aria-hidden="true"
-      data-effect={label}
-    >
+    <div className={`weather-effect-layer ${className}`} aria-hidden="true" data-effect={label}>
       {children}
     </div>
   );
@@ -48,11 +43,15 @@ export function HeroWeatherEffects({
   isStale: boolean;
 }) {
   const { tier } = useEffects();
+  const theme = useEffectTheme();
   const isFreezing = temperatureC < 0;
   const showClouds = useAmbientEffect(!isFreezing && !isStale);
   const showFrost = useAmbientEffect(isFreezing && !isStale);
   const isLite = tier === 'lite';
-  const cloudOpacity = Math.min(0.12, Math.max(0.035, humidityPct * 0.0012));
+  // Light surfaces need a touch more presence: the shader darkens its base
+  // there, so the same opacity reads fainter than on the dark theme.
+  const maxOpacity = theme === 'light' ? 0.17 : 0.12;
+  const cloudOpacity = Math.min(maxOpacity, Math.max(0.035, humidityPct * 0.0012));
 
   return (
     <>
@@ -60,13 +59,15 @@ export function HeroWeatherEffects({
         <EffectBoundary fallback={null}>
           <WeatherCanvasLayer label="clouds" className="hero-effect-layer">
             <Clouds
+              key={`clouds-${theme}`}
               className="h-full w-full"
               style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+              color={CLOUD_BASE[theme]}
               scale={1.2}
               speed={isLite ? 0 : 0.12}
               cover={0.08}
               density={2.5}
-              shading={0.05}
+              shading={theme === 'light' ? 0.22 : 0.05}
               opacity={cloudOpacity}
               shadow={0}
               wind={isLite ? 0 : 0.16}
@@ -74,7 +75,6 @@ export function HeroWeatherEffects({
               refraction={0}
               fogBlur={0}
               quality={isLite ? 0.3 : 0.55}
-              color="auto"
             >
               <div className="h-full w-full bg-transparent" />
             </Clouds>
@@ -85,6 +85,7 @@ export function HeroWeatherEffects({
         <EffectBoundary fallback={null}>
           <WeatherCanvasLayer label="frost" className="hero-effect-layer">
             <Frost
+              key={`frost-${theme}`}
               className="h-full w-full"
               style={{
                 position: 'absolute',
@@ -117,13 +118,7 @@ export function HeroWeatherEffects({
   );
 }
 
-export function RainWeatherEffect({
-  rateMmH,
-  isStale,
-}: {
-  rateMmH: number;
-  isStale: boolean;
-}) {
+export function RainWeatherEffect({ rateMmH, isStale }: { rateMmH: number; isStale: boolean }) {
   const { tier } = useEffects();
   const enabled = useAmbientEffect(rateMmH > 0 && !isStale && tier === 'full');
   if (!enabled) return null;

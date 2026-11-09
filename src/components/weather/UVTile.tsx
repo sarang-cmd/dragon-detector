@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip } from '@/components/ui/tooltip';
+import { UvAmbience } from '@/components/effects/TileAmbience';
 import { ValueCrossfade } from './ValueCrossfade';
 
 export interface UVTileProps {
@@ -47,6 +48,7 @@ export function UVTile({ uvIndex, isOffline = false }: UVTileProps) {
         isOffline ? 'opacity-70 grayscale-[30%]' : ''
       }`}
     >
+      <UvAmbience uvIndex={uvIndex} />
       <div>
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="label select-none">UV Index</span>
@@ -86,8 +88,8 @@ export function UVTile({ uvIndex, isOffline = false }: UVTileProps) {
           {uv < 3
             ? 'No protection needed. Safe for outdoor activities.'
             : uv < 8
-            ? 'Seek shade during midday; wear hat and sunscreen.'
-            : 'Take extra precautions; avoid prolonged midday sun.'}
+              ? 'Seek shade during midday; wear hat and sunscreen.'
+              : 'Take extra precautions; avoid prolonged midday sun.'}
         </p>
       </div>
 
@@ -110,9 +112,7 @@ export function UVTile({ uvIndex, isOffline = false }: UVTileProps) {
                 }`}
                 aria-current={isActive ? 'true' : undefined}
               >
-                <span className="text-[10px] tracking-tight leading-none">
-                  {b.label}
-                </span>
+                <span className="text-[10px] tracking-tight leading-none">{b.label}</span>
                 <span className="numeric text-[9px] text-[var(--color-muted)] mt-1">
                   {b.max === Infinity ? '11+' : `${b.min}-${Math.floor(b.max)}`}
                 </span>

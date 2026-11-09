@@ -193,12 +193,14 @@ export function fetchRealTime(): Promise<{ reading: WeatherReading; raw: string 
   url.searchParams.set('rainfall_unitid', '12');
   url.searchParams.set('solar_irradiance_unitid', '16');
 
-  return fetch(url.toString(), { signal: AbortSignal.timeout(8000) })
-    .then((res) => {
-      if (!res.ok) throw new Error(`Ecowitt real_time HTTP ${res.status}`);
-      return res.text();
-    })
-    .then((raw) => ({ raw, reading: normalizeRealTime(raw) }));
+  return serialize(() =>
+    fetch(url.toString(), { signal: AbortSignal.timeout(8000) })
+      .then((res) => {
+        if (!res.ok) throw new Error(`Ecowitt real_time HTTP ${res.status}`);
+        return res.text();
+      })
+      .then((raw) => ({ raw, reading: normalizeRealTime(raw) }))
+  );
 }
 
 export function buildHistoryQuery(
@@ -254,7 +256,6 @@ const FIELD_BY_LEAF: Record<string, SeriesField> = {
   rain: 'rain',
   relative: 'pressure',
   relative_pressure: 'pressure',
-  absolute: 'pressure',
 };
 
 const KIND_BY_FIELD: Record<SeriesField, UnitKind> = {
@@ -408,6 +409,26 @@ export function normalizeHistory(raw: string): HistoryPoint[] {
   return points;
 }
 
+/**
+ * One upstream request at a time, with a small gap. /api/weather asks for
+ * current + 24h + 7d simultaneously and the cloud throttles concurrent
+ * calls, which silently starved one of the three.
+ */
+const MIN_GAP_MS = 220;
+let upstreamChain: Promise<unknown> = Promise.resolve();
+
+function serialize<T>(task: () => Promise<T>): Promise<T> {
+  const run = upstreamChain.then(async () => {
+    try {
+      return await task();
+    } finally {
+      await new Promise((resolve) => setTimeout(resolve, MIN_GAP_MS));
+    }
+  });
+  upstreamChain = run.catch(() => undefined);
+  return run;
+}
+
 export async function fetchHistory(range: '24h' | '7d'): Promise<{ points: HistoryPoint[]; raw: string }> {
   if (!hasEcowittCredentials()) {
     throw new Error(missingCredentialsMessage());
@@ -420,12 +441,22 @@ export async function fetchHistory(range: '24h' | '7d'): Promise<{ points: Histo
   );
   const url = buildHistoryQuery(range, start, end);
 
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!res.ok) throw new Error(`Ecowitt history HTTP ${res.status}`);
-  const raw = await res.text();
-  // Exact field nesting is version-specific; docs/sample-history.json (once
-  // pasted from a real call) is the final authority for this normalizer.
-  return { raw, points: normalizeHistory(raw) };
+  const load = () =>
+    serialize(async () => {
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) throw new Error(`Ecowitt history HTTP ${res.status}`);
+      const raw = await res.text();
+      // Exact field nesting is version-specific; docs/sample-history.json
+      // (once pasted from a real call) is the final authority here.
+      return { raw, points: normalizeHistory(raw) };
+    });
+
+  const first = await load();
+  if (first.points.length > 0) return first;
+  // A throttled call answers 200 with an empty payload; try once more.
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  const retry = await load();
+  return retry.points.length > 0 ? retry : first;
 }
 
 export function createRealSource(): WeatherSource {
