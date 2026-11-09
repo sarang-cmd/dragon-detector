@@ -1,8 +1,13 @@
 'use client';
 
+import * as React from 'react';
+
 import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useUnitSystem, type UnitSystem } from '@/context/unit-context';
+import { CLUB } from '@/lib/content/club';
 
 interface SensorRow {
   name: string;
@@ -173,16 +178,31 @@ export function StationClient() {
               DIS Weather Club &amp; The Dragons
             </h3>
             <p className="text-sm leading-relaxed text-[var(--color-muted)]">
-              The station was installed and is maintained by students of the
-              Dresden International School Weather Club. Observations are used
-              in secondary science coursework to investigate urban heat
-              islands, Elbe river microclimates, and regional frontal
-              passages.
+              The station was installed and is maintained by six Dresden
+              International School students as their CAS project:{' '}
+              {CLUB.members.map((m, i) => (
+                <React.Fragment key={m.name}>
+                  {i > 0 && (i === CLUB.members.length - 1 ? ' and ' : ', ')}
+                  {m.name}
+                </React.Fragment>
+              ))}
+              . The club meets {CLUB.meeting}, and has done since{' '}
+              {CLUB.started} — running diagnostics on the sensors, keeping the
+              upload alive, and building this website. Next: teaching the school
+              how to read it.
             </p>
-            <div className="pt-2 text-xs text-[var(--color-muted)] flex items-center gap-4">
-              <span>Faculty Advisor: Science Department</span>
-              <span>&middot;</span>
-              <span>Established 2026</span>
+            <div className="pt-2 text-xs text-[var(--color-muted)] flex flex-wrap items-center gap-x-4 gap-y-1">
+              <span>Supervised by {CLUB.supervisors.join(' and ')}</span>
+              <span aria-hidden="true">&middot;</span>
+              <span>Established {CLUB.started}</span>
+              <span aria-hidden="true">&middot;</span>
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-1 text-[var(--accent)] hover:underline focus-visible:outline-2 focus-visible:outline-[var(--accent)]"
+              >
+                Meet the club
+                <ArrowRight aria-hidden="true" className="h-3 w-3 stroke-[1.5]" />
+              </Link>
             </div>
           </div>
 

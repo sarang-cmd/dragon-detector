@@ -28,6 +28,7 @@ const navItems: NavItem[] = [
   { href: '/stats', label: 'Stats' },
   { href: '/learn', label: 'Learn' },
   { href: '/station', label: 'Station' },
+  { href: '/about', label: 'About' },
 ];
 
 export function Header() {
