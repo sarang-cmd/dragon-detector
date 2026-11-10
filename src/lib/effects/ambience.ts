@@ -56,10 +56,23 @@ export function windStreak(windSpeedKmh: number): {
   };
 }
 
-/** Humidity tile: denser, slower mist as humidity rises. */
-export function mistParams(humidityPct: number): { cover: number; opacity: number } {
+/**
+ * Humidity tile: denser, slower mist as humidity rises. It stays windless —
+ * `wind` is 0 by design, which is what makes it read as still rather than as a
+ * slow version of the wind tile — but it has to boil visibly, so `speed` is
+ * now in the same range as the other tiles instead of the 0.03 it started at.
+ */
+export function mistParams(humidityPct: number): {
+  cover: number;
+  opacity: number;
+  speed: number;
+} {
   const h = clamp(humidityPct, 0, 100) / 100;
-  return { cover: round(0.14 + h * 0.22), opacity: round(0.05 + h * 0.12) };
+  return {
+    cover: round(0.14 + h * 0.22),
+    opacity: round(0.05 + h * 0.12),
+    speed: round(0.12 + h * 0.16),
+  };
 }
 
 /** UV tile: warm glow that grows with the index. */
@@ -105,6 +118,13 @@ export const TILE_CLOUD_BASE: Record<CloudTint, Record<EffectTheme, [number, num
 };
 
 /**
+ * How fast the tiles drift, for reference. The shader advances by
+ * `delta * speed * 0.03` each frame, so anything much below ~0.15 reads as
+ * frozen next to the wind tile — which is what went wrong: the per-tile
+ * presets started at 0.015–0.14 while wind ran at 0.16–0.62. The personalities
+ * are kept by the *spread* (UV quickest, pressure stillest, humidity the only
+ * windless one) rather than by being uniformly slow.
+ *
  * The subset of `CloudsOptions` a tile may vary. `quality`, `shadow` and
  * `refraction` are fixed by the caller: tiles never want the drop shadow, and
  * refraction reads as a smeared lens at tile size.
@@ -128,12 +148,12 @@ export function uvHaze(uvIndex: number): TileCloudPreset {
   return {
     tint: 'warm',
     scale: round(1.5 - v * 0.35),
-    speed: round(0.05 + v * 0.09),
+    speed: round(0.18 + v * 0.34),
     cover: round(0.016 + v * 0.05),
     density: round(1 - v * 0.3, 2),
     shading: 0.22,
     opacity: round(0.05 + v * 0.09),
-    wind: round(0.1 + v * 0.2),
+    wind: round(0.18 + v * 0.34),
     windRadius: 260,
     fogBlur: round(0.1 + v * 0.25),
   };
@@ -145,12 +165,12 @@ export function solarHaze(solarWm2: number): TileCloudPreset {
   return {
     tint: 'warm',
     scale: round(0.95 - w * 0.2),
-    speed: round(0.03 + w * 0.05),
+    speed: round(0.14 + w * 0.26),
     cover: round(0.02 + w * 0.06),
     density: round(1.5 + w * 0.9),
     shading: 0.2,
     opacity: round(0.045 + w * 0.1),
-    wind: round(0.04 + w * 0.1),
+    wind: round(0.12 + w * 0.22),
     windRadius: 200,
     fogBlur: round(0.25 + w * 0.3),
   };
@@ -162,12 +182,12 @@ export function celestialHaze(isDay: boolean): TileCloudPreset {
     return {
       tint: 'warm',
       scale: 1.15,
-      speed: 0.05,
+      speed: 0.2,
       cover: 0.035,
       density: 1.4,
       shading: 0.18,
       opacity: 0.07,
-      wind: 0.08,
+      wind: 0.18,
       windRadius: 230,
       fogBlur: 0.3,
     };
@@ -175,12 +195,12 @@ export function celestialHaze(isDay: boolean): TileCloudPreset {
   return {
     tint: 'cool',
     scale: 1.6,
-    speed: 0.018,
+    speed: 0.11,
     cover: 0.04,
     density: 2.1,
     shading: 0.14,
     opacity: 0.085,
-    wind: 0.03,
+    wind: 0.08,
     windRadius: 180,
     fogBlur: 0.45,
   };
@@ -195,12 +215,12 @@ export function pressureHaze(trend: 'rising' | 'falling' | 'steady'): TileCloudP
   return {
     tint: trend === 'falling' ? 'cool' : 'warm',
     scale: 2.3,
-    speed: trend === 'steady' ? 0.015 : 0.03,
+    speed: trend === 'steady' ? 0.12 : trend === 'rising' ? 0.18 : 0.24,
     cover: 0.018,
     density: 0.9,
     shading: 0.12,
     opacity: trend === 'steady' ? 0.055 : 0.075,
-    wind: trend === 'falling' ? 0.14 : trend === 'rising' ? 0.05 : 0.02,
+    wind: trend === 'falling' ? 0.3 : trend === 'rising' ? 0.16 : 0.08,
     windRadius: 320,
     fogBlur: 0.6,
   };
@@ -225,12 +245,12 @@ export function wetHaze(todayMm: number, rateMmH: number): TileCloudPreset {
   return {
     tint: 'cool',
     scale: round(1.35 - wet * 0.3),
-    speed: round(0.03 + wet * 0.08),
+    speed: round(0.16 + wet * 0.32),
     cover: round(0.02 + wet * 0.07),
     density: round(1.6 + wet * 1.2),
     shading: 0.16,
     opacity: round(0.05 + wet * 0.09),
-    wind: round(0.08 + wet * 0.24),
+    wind: round(0.16 + wet * 0.34),
     windRadius: 240,
     fogBlur: round(0.3 + wet * 0.35),
   };

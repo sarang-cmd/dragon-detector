@@ -756,3 +756,37 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
 - **Not verifiable here:** no browser is installable, so the acceptance
   criterion `scrollWidth <= clientWidth` at 1440 / 1100 / 800px has not been
   measured. jsdom does no layout. Check those three widths in a real browser.
+
+## Session 30 — the tile backgrounds were not moving — DONE
+
+- **They were moving, just 5–20× slower than the wind tile.** The Clouds
+  shader advances `time += delta * speed * 0.03` per frame, so `speed` is the
+  whole story. Wind ran at 0.16–0.62; every other tile was set between 0.015
+  and 0.14, which beside it reads as a still image. The fix is not one shared
+  value but a shared *floor*: every preset now sits in wind's range while
+  keeping its personality — UV quickest, solar next, pressure stillest, night
+  stiller than day, and humidity the only one left windless (`wind: 0`, which
+  is what makes it read as still mist rather than as slow wind).
+- **Speeds now:** wind 0.16–0.62 · UV 0.18–0.52 · solar 0.14–0.40 · day 0.20 /
+  night 0.11 · pressure 0.12–0.24 · rain 0.16–0.48 · humidity 0.12–0.28.
+- **Humidity's speed was hardcoded** at the call site rather than coming from
+  `mistParams` like the rest of its knobs; it now returns with them.
+- **The CSS motifs pan as well,** so a tile still drifts when the canvas cannot
+  start (no WebGL, a refused context). New `ambience-pan` keyframe on the UV,
+  celestial and rain washes; solar keeps its breathe and pans too. Pressure
+  keeps its own band drift, since that one animates `transform` already.
+- **The developer console reports what is actually running:** a live
+  "Canvas layers: n/m" count (how many ambience hosts have a live canvas in
+  them) and whether `prefers-reduced-motion` is on. Those are the two things
+  that would leave a background present but frozen, and both were invisible
+  before. `prefersReducedMotion()` is guarded — a missing `matchMedia` must not
+  take the panel down.
+- Verification: tsc, `pnpm lint` and `pnpm build` clean; 314 tests pass, 2 new
+  (one asserting every preset clears 0.6× the wind floor so this cannot
+  silently regress, one asserting the personalities survive the change). The 4
+  known `src/lib/route.test.ts` failures remain. `ambience-pan` confirmed in
+  the production CSS.
+- **Not verifiable here:** no browser is installable, so the motion itself has
+  not been watched. If a tile still looks frozen after this, open the console
+  (`?dev=1`) and read the "Canvas layers" line — 0/n means the canvas is not
+  starting at all and the cause is upstream of these numbers.

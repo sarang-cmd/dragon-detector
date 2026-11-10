@@ -19,6 +19,8 @@ function press(key: string, target?: HTMLElement) {
 beforeEach(() => {
   sessionStorage.clear();
   window.history.replaceState({}, '', '/');
+  // jsdom has no matchMedia; the panel now guards for it but also reads it.
+  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener() {}, removeEventListener() {} })));
   // Never resolves: the panel's history fetch would otherwise land a state
   // update after the test has finished.
   vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})));

@@ -51,6 +51,15 @@ export function areDevEmailsEnabled(): boolean {
  * page has focus, which it will not have inside a preview iframe or after a
  * click on the surrounding page. `?dev=1` sidesteps that entirely.
  */
+/**
+ * Guarded because `matchMedia` is missing in some test and embedded
+ * environments, and a missing preference query should not take the panel down.
+ */
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 function readDevFlag(): boolean {
   try {
     return (
@@ -193,6 +202,26 @@ export function ScenarioDebugPanel() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
+  /**
+   * How much of the ambience is actually running. If the count reads 0/6 the
+   * tiles are showing their CSS motif only — which looks like a background
+   * that will not move — and the cause is upstream (no WebGL, a refused
+   * context, or reduced motion freezing the shader clock).
+   */
+  const [layerCount, setLayerCount] = React.useState('—');
+  const reducedMotion = prefersReducedMotion();
+  React.useEffect(() => {
+    if (!open) return;
+    const read = () => {
+      const hosts = Array.from(document.querySelectorAll('[data-ambience]'));
+      const live = hosts.filter((host) => host.querySelector('canvas')).length;
+      setLayerCount(`${live}/${hosts.length}`);
+    };
+    read();
+    const id = window.setInterval(read, 1500);
+    return () => window.clearInterval(id);
+  }, [open]);
+
   // Public outlook history (no login needed). Loads when the panel opens.
   // (Above all early returns: hooks must run in the same order every render.)
   React.useEffect(() => {
@@ -236,6 +265,22 @@ export function ScenarioDebugPanel() {
         aria-label="Mock scenario selector"
         className="flex min-w-[220px] flex-col gap-1 rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-sm"
       >
+        <div
+          role="group"
+          aria-label="Effects status"
+          className="border-b border-[var(--color-border)] pb-1"
+        >
+          <p className="px-3 pb-1 pt-1 text-[10px] uppercase tracking-wider text-[var(--color-muted)]">
+            Effects
+          </p>
+          <p className="px-3 pb-1 text-[11px] leading-relaxed text-[var(--color-text)]">
+            Canvas layers: {layerCount}
+          </p>
+          <p className="px-3 pb-1 text-[10px] leading-relaxed text-[var(--color-muted)]">
+            Reduced motion: {reducedMotion ? 'on — the shader clock is frozen and CSS animations are off' : 'off'}
+          </p>
+        </div>
+
         {SCENARIOS.map((scenario) => (
           <button
             key={scenario}

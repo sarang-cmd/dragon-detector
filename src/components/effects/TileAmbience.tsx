@@ -151,7 +151,7 @@ export function HumidityAmbience({
   const enabled = useAmbientEffect(!isStale && tier !== 'off');
   if (!enabled) return null;
 
-  const { cover, opacity } = mistParams(humidityPct);
+  const { cover, opacity, speed } = mistParams(humidityPct);
   const lite = tier === 'lite';
 
   return (
@@ -167,7 +167,7 @@ export function HumidityAmbience({
           style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
           color={CLOUD_BASE[theme]}
           scale={0.9}
-          speed={lite ? 0 : 0.03}
+          speed={lite ? 0 : speed}
           cover={cover}
           density={3.2}
           shading={theme === 'light' ? 0.14 : 0.08}
