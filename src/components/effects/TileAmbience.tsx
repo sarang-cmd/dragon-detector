@@ -95,10 +95,12 @@ export function WindAmbience({
 }) {
   const { tier } = useEffects();
   const theme = useEffectTheme();
-  const enabled = useAmbientEffect(!isStale && tier !== 'off' && windSpeedKmh > 0);
+  // Not gated on the wind blowing: every other tile has its background
+  // regardless of the reading, and a calm day should not leave this one bare.
+  const enabled = useAmbientEffect(!isStale && tier !== 'off');
   if (!enabled) return null;
 
-  const { speed, wind, opacity } = windStreak(windSpeedKmh);
+  const { speed, wind, opacity, cover } = windStreak(windSpeedKmh);
   const lite = tier === 'lite';
 
   return (
@@ -115,7 +117,7 @@ export function WindAmbience({
           color={CLOUD_BASE[theme]}
           scale={1.7}
           speed={lite ? 0 : speed}
-          cover={0.012}
+          cover={cover}
           density={1.1}
           shading={theme === 'light' ? 0.2 : 0.12}
           opacity={opacity}

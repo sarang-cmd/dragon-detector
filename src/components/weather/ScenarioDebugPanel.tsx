@@ -26,17 +26,23 @@ const TRIPLE_WINDOW_MS = 800;
 const DEV_FLAG = 'dev';
 
 /**
- * The console is a development tool: it can replace the station's readings
- * with mock scenarios and send real signup emails, so it must never reach the
- * live site.
+ * The console ships everywhere, including the live site — it is the only way
+ * to check the weather effects against real data. Opening it still takes
+ * deliberate action (`?dev=1`, or `d` three times), and nothing in it changes
+ * anything for anybody else: scenarios are a per-browser cookie, the mascot is
+ * localStorage, and the effect overrides are in-memory.
  *
- * `NODE_ENV` covers local development, and `NEXT_PUBLIC_VERCEL_ENV` adds Vercel
- * preview deployments, where there is no real data to protect. Production
- * stays locked regardless of any flag in the URL.
+ * The one exception is the test-email tool, which can send mail to an address
+ * typed into a public page. That stays behind `NEXT_PUBLIC_DEV_EMAILS=1`.
  */
 export function isDevConsoleEnabled(): boolean {
+  return true;
+}
+
+export function areDevEmailsEnabled(): boolean {
   return (
-    process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview'
+    process.env.NODE_ENV !== 'production' ||
+    process.env.NEXT_PUBLIC_DEV_EMAILS === '1'
   );
 }
 
@@ -98,6 +104,7 @@ export function ScenarioDebugPanel() {
   const [active, setActive] = React.useState<Scenario>('default');
   const mascot = useMascotChoice();
   const { rain: devRain } = useDevEffectOverride();
+  const emailsEnabled = areDevEmailsEnabled();
   const [testEmail, setTestEmail] = React.useState('');
   const [testStatus, setTestStatus] = React.useState<string | null>(null);
   const [testBusy, setTestBusy] = React.useState(false);
@@ -312,6 +319,12 @@ export function ScenarioDebugPanel() {
           <p className="px-3 pb-1 pt-1 text-[10px] uppercase tracking-wider text-[var(--color-muted)]">
             Test emails
           </p>
+          {!emailsEnabled && (
+            <p className="px-3 pb-1 text-[10px] leading-relaxed text-[var(--color-muted)]">
+              Sending is off on the live site. Set{' '}
+              <span className="font-mono">NEXT_PUBLIC_DEV_EMAILS=1</span> to turn it on.
+            </p>
+          )}
           <input
             type="email"
             value={testEmail}
@@ -330,7 +343,7 @@ export function ScenarioDebugPanel() {
             <button
               key={kind}
               type="button"
-              disabled={testBusy}
+              disabled={testBusy || !emailsEnabled}
               onClick={() => void sendTestEmail(kind)}
               className="w-full rounded-[8px] px-3 py-2 text-left text-xs text-[var(--color-muted)] hover:bg-[var(--color-border)] hover:text-[var(--color-text)] focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:opacity-60"
             >

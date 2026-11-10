@@ -1,7 +1,11 @@
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ScenarioDebugPanel, isDevConsoleEnabled } from './ScenarioDebugPanel';
+import {
+  ScenarioDebugPanel,
+  isDevConsoleEnabled,
+  areDevEmailsEnabled,
+} from './ScenarioDebugPanel';
 
 vi.mock('swr', () => ({ useSWRConfig: () => ({ mutate: vi.fn() }) }));
 
@@ -26,26 +30,45 @@ afterEach(() => {
 });
 
 describe('where the console is allowed to run', () => {
-  it('is on for local development', () => {
+  it('ships on the live site too, so effects can be checked against real data', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'production');
+    expect(isDevConsoleEnabled()).toBe(true);
+
+    window.history.replaceState({}, '', '/?dev=1');
+    render(<ScenarioDebugPanel />);
+    expect(screen.getByText('Default')).toBeTruthy();
+  });
+
+  it('opens in local development', () => {
     vi.stubEnv('NODE_ENV', 'development');
     vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', '');
     expect(isDevConsoleEnabled()).toBe(true);
   });
+});
 
-  it('is on for Vercel preview deployments', () => {
-    vi.stubEnv('NODE_ENV', 'production');
-    vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'preview');
-    expect(isDevConsoleEnabled()).toBe(true);
+describe('test emails', () => {
+  it('are on for local development', () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    vi.stubEnv('NEXT_PUBLIC_DEV_EMAILS', '');
+    expect(areDevEmailsEnabled()).toBe(true);
   });
 
-  it('stays locked on the live site, whatever the URL says', () => {
+  it('are off on the live site unless explicitly switched on', () => {
     vi.stubEnv('NODE_ENV', 'production');
-    vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', 'production');
-    expect(isDevConsoleEnabled()).toBe(false);
+    vi.stubEnv('NEXT_PUBLIC_DEV_EMAILS', '');
+    expect(areDevEmailsEnabled()).toBe(false);
 
+    vi.stubEnv('NEXT_PUBLIC_DEV_EMAILS', '1');
+    expect(areDevEmailsEnabled()).toBe(true);
+  });
+
+  it('disables the send buttons when switched off', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('NEXT_PUBLIC_DEV_EMAILS', '');
     window.history.replaceState({}, '', '/?dev=1');
-    const { container } = render(<ScenarioDebugPanel />);
-    expect(container.innerHTML).toBe('');
+    render(<ScenarioDebugPanel />);
+    expect(screen.getByText('Signup confirm').closest('button')?.disabled).toBe(true);
   });
 });
 

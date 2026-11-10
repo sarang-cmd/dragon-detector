@@ -30,8 +30,32 @@ export function detectEffectTier(signals: EffectDeviceSignals): EffectTier {
   return 'full';
 }
 
-/** Browser-only probe, called once after mount. */
+/**
+ * Browser-only probe, called once after mount.
+ *
+ * The effects are part of what the site looks like, so they are on for every
+ * visitor on every machine: `detectEffectTier` is no longer consulted here.
+ * The one thing that still switches them off is the run-time frame-rate guard
+ * (`FpsGuard`), which reacts to the page struggling rather than to a guess
+ * about the hardware.
+ *
+ * `detectEffectTier` is kept as a pure function — it is what the developer
+ * console reports, and it is what to reach for if this decision is ever
+ * revisited.
+ */
 export function readEffectTier(): EffectTier {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return 'off';
+  }
+
+  return 'full';
+}
+
+/**
+ * What the hardware would have been graded as, for diagnostics only. Nothing
+ * in the render path calls this.
+ */
+export function readDeviceTier(): EffectTier {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return 'off';
   }

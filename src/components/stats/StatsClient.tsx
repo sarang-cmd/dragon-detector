@@ -29,6 +29,7 @@ import {
   formatTemp,
   cToF,
 } from '@/lib/units';
+import { windDirectionLabel } from '@/lib/beaufort';
 import { formatStatTime } from '@/lib/history';
 import projectStats from '@/lib/project-stats.json';
 
@@ -81,20 +82,24 @@ function TileGrid({ children }: { children: React.ReactNode }) {
 function StatTile({
   label,
   value,
+  unit,
   sub,
 }: {
   label: string;
   value: React.ReactNode;
+  /** Rendered small and muted beside the number, so the two never split. */
+  unit?: string;
   sub?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-      <dt className="label">{label}</dt>
-      <dd className="numeric mt-1 text-xl font-medium text-[var(--color-text)]">
+    <div className="stat-tile rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
+      <dt className="label stat-label">{label}</dt>
+      <dd className="numeric stat-value mt-1 text-[var(--color-text)]">
         {value}
+        {unit ? <span className="stat-unit">&#160;{unit}</span> : null}
       </dd>
       {sub ? (
-        <dd className="mt-0.5 text-[11px] leading-snug text-[var(--color-muted)]">
+        <dd className="stat-sub mt-0.5 text-[11px] leading-snug text-[var(--color-muted)]">
           {sub}
         </dd>
       ) : null}
@@ -249,6 +254,19 @@ export function StatsClient() {
   );
   const pct = (v: number | null | undefined, digits = 0) =>
     v == null ? '—' : `${v.toFixed(digits)} %`;
+
+  // Same numbers as `wind`/`pct` but split, so a tile can keep the figure and
+  // its unit on one line and set the unit in a smaller face.
+  const windParts = React.useCallback(
+    (kmh: number | null | undefined): { value: string; unit?: string } => {
+      if (kmh == null) return { value: '—' };
+      const f = formatSpeed(kmh, unitSystem);
+      return { value: f.value, unit: f.unit };
+    },
+    [unitSystem]
+  );
+  const pctParts = (v: number | null | undefined, digits = 0): { value: string; unit?: string } =>
+    v == null ? { value: '—' } : { value: v.toFixed(digits), unit: '%' };
 
   const { coverage, rain: rainTotals, streaks, wind: windSummary } = stats;
   const hasData = coverage.points > 0;
@@ -512,7 +530,7 @@ export function StatsClient() {
 
           {/* Wind */}
           <Section title="Wind" hint="Direction is where the wind comes from">
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,min(46%,420px))]">
               <div className="space-y-2">
                 {windSummary.sectors.map((sector) => (
                   <div key={sector.label} className="flex items-center gap-3">
@@ -534,24 +552,33 @@ export function StatsClient() {
                   </div>
                 ))}
               </div>
-              <TileGrid>
+              {/* 2x2, not TileGrid's four-across: inside this column four
+                  columns left each tile about 90px wide, which clipped the
+                  labels and split values from their units. */}
+              <dl className="grid grid-cols-2 gap-3">
                 <StatTile
                   label="Prevailing"
-                  value={windSummary.prevailingLabel}
-                  sub={`${Math.round(windSummary.prevailingDeg)}°`}
+                  value={windDirectionLabel(windSummary.prevailingDeg)}
+                  sub={`${windSummary.prevailingLabel} · ${Math.round(windSummary.prevailingDeg)}°`}
                 />
-                <StatTile label="Mean speed" value={wind(windSummary.avgSpeed)} />
+                <StatTile
+                  label="Mean speed"
+                  value={windParts(windSummary.avgSpeed).value}
+                  unit={windParts(windSummary.avgSpeed).unit}
+                />
                 <StatTile
                   label="Strongest gust"
-                  value={wind(windSummary.maxGust)}
+                  value={windParts(windSummary.maxGust).value}
+                  unit={windParts(windSummary.maxGust).unit}
                   sub={windSummary.maxGustTime ? formatStatTime(windSummary.maxGustTime) : undefined}
                 />
                 <StatTile
                   label="Calm readings"
-                  value={pct(windSummary.calmPercent, 1)}
+                  value={pctParts(windSummary.calmPercent, 1).value}
+                  unit={pctParts(windSummary.calmPercent, 1).unit}
                   sub="below 1 km/h"
                 />
-              </TileGrid>
+              </dl>
             </div>
           </Section>
 
