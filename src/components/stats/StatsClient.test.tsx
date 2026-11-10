@@ -175,3 +175,63 @@ describe('StatsClient', () => {
     expect(screen.queryByRole('heading', { name: 'Records' })).toBeNull();
   });
 });
+
+describe('StatsClient wind card', () => {
+  // Scoped to tiles: "Strongest gust" is also a row header in the records
+  // table further down the page.
+  function tileFor(label: string): HTMLElement {
+    const tile = Array.from(document.querySelectorAll('.stat-tile')).find(
+      (t) => t.querySelector('dt')?.textContent === label,
+    );
+    if (!tile) throw new Error(`no tile for ${label}`);
+    return tile as HTMLElement;
+  }
+
+  it('lays the four tiles out two across, not four', async () => {
+    renderStats();
+    await waitFor(() => {
+      expect(screen.getByText('Prevailing')).toBeTruthy();
+    });
+
+    const grid = tileFor('Prevailing').parentElement;
+    expect(grid?.tagName).toBe('DL');
+    // Four across inside the wind column left each tile ~90px wide, which
+    // clipped the labels and split values from their units.
+    expect(grid?.className).toContain('grid-cols-2');
+    expect(grid?.className).not.toContain('lg:grid-cols-4');
+    expect(grid?.querySelectorAll('.stat-tile')).toHaveLength(4);
+  });
+
+  it('shows the prevailing direction as a short abbreviation', async () => {
+    renderStats();
+    await waitFor(() => {
+      expect(screen.getByText('Prevailing')).toBeTruthy();
+    });
+
+    const tile = tileFor('Prevailing');
+    const value = tile.querySelector('.stat-value')?.textContent?.trim() ?? '';
+    // "East-northeast" in a large monospace face was the worst case: it broke
+    // mid-word. The abbreviation is three characters at most.
+    expect(value).toMatch(/^[NSEW]{1,3}$/);
+    // The long name is still there, just demoted to the secondary line.
+    expect(tile.querySelector('.stat-sub')?.textContent ?? '').toMatch(/(North|East|South|West)/);
+  });
+
+  it('welds each value to its unit so they cannot split across lines', async () => {
+    renderStats();
+    await waitFor(() => {
+      expect(screen.getByText('Mean speed')).toBeTruthy();
+    });
+
+    for (const label of ['Mean speed', 'Strongest gust', 'Calm readings']) {
+      const tile = tileFor(label);
+      const dd = tile.querySelector('.stat-value');
+      const unit = tile.querySelector('.stat-unit');
+      expect(unit).not.toBeNull();
+      // A non-breaking space is the only thing separating number and unit,
+      // so a narrow tile can no longer park the unit on its own line.
+      expect(dd?.textContent ?? '').toContain('\u00a0');
+      expect(unit?.textContent?.trim()).toBeTruthy();
+    }
+  });
+});

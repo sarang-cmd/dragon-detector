@@ -33,17 +33,26 @@ function round(value: number, places = 3): number {
   return Math.round(value * f) / f;
 }
 
-/** Wind tile: faster drift and stronger streaks as the wind picks up. */
+/**
+ * Wind tile: faster drift and stronger streaks as the wind picks up.
+ *
+ * `cover` is returned here rather than hardcoded at the call site because it
+ * is what made this tile read as bare — at 0.012 it was a tenth of what the
+ * other tiles use, so next to them the wind card looked like it had no
+ * background at all.
+ */
 export function windStreak(windSpeedKmh: number): {
   speed: number;
   wind: number;
   opacity: number;
+  cover: number;
 } {
   const s = clamp(windSpeedKmh, 0, 120) / 120;
   return {
     speed: round(0.16 + s * 0.46),
     wind: round(0.28 + s * 0.52),
-    opacity: round(0.05 + s * 0.09),
+    opacity: round(0.055 + s * 0.085),
+    cover: round(0.035 + s * 0.055),
   };
 }
 

@@ -10,8 +10,6 @@ import { useSyncExternalStore } from 'react';
  * It is deliberately *not* React context: the console and the tiles sit in
  * different subtrees, and the values must not survive a reload (a developer
  * who forgets they forced a downpour would otherwise chase a phantom bug).
- * Writes are no-ops in production, and the console that sets them is not
- * rendered there either.
  */
 
 export interface DevEffectOverride {
@@ -46,9 +44,13 @@ function update(next: DevEffectOverride): void {
   listeners.forEach((listener) => listener());
 }
 
-/** Force the rain rate the Droplets layer sees. `null` hands it back to data. */
+/**
+ * Force the rain rate the Droplets layer sees. `null` hands it back to data.
+ *
+ * Allowed in production on purpose: the developer console ships there, and
+ * this only changes what the one browser holding it sees.
+ */
 export function setDevRain(rainMmH: number | null): void {
-  if (process.env.NODE_ENV === 'production') return;
   update({ rain: rainMmH });
 }
 

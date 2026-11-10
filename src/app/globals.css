@@ -565,3 +565,37 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Statistics tiles. The wind card puts these in a narrow column beside the
+   sector bars, so they have to survive being roughly 200px wide: the label
+   wraps instead of clipping, the value can never be wider than the tile, and
+   the unit stays welded to its number with a non-breaking space. */
+.stat-tile {
+  min-width: 0;
+}
+
+.stat-label {
+  letter-spacing: 0.04em;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.stat-value {
+  font-size: clamp(1rem, 1.6vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1.2;
+  min-width: 0;
+  /* Last resort only — the number and unit are joined with a non-breaking
+     space, so this only ever breaks somewhere less bad. */
+  overflow-wrap: anywhere;
+}
+
+.stat-unit {
+  font-size: 0.6em;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.stat-sub {
+  overflow-wrap: break-word;
+}

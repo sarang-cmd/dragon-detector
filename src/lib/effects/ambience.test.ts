@@ -35,6 +35,17 @@ describe('windStreak', () => {
     expect(gale.speed).toBeGreaterThan(calm.speed);
     expect(gale.wind).toBeGreaterThan(calm.wind);
     expect(gale.opacity).toBeGreaterThan(calm.opacity);
+    expect(gale.cover).toBeGreaterThan(calm.cover);
+  });
+
+  it('is dense enough to read next to the other tiles', () => {
+    // Regression: at cover 0.012 the wind card looked like it had no
+    // background at all once the other tiles gained theirs.
+    const calm = windStreak(0);
+    expect(calm.cover).toBeGreaterThan(0.03);
+    expect(calm.opacity).toBeGreaterThan(0.05);
+    // ...and a dead-calm tile is still covered, not blank.
+    expect(calm.cover).toBeGreaterThan(0);
   });
 
   it('clamps out-of-range input', () => {

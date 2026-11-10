@@ -707,3 +707,52 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   plain URL staying shut, and the three environment cases including
   production-stays-locked. tsc, `pnpm lint` and `pnpm build` clean; 306 tests
   pass. The 4 known `src/lib/route.test.ts` failures remain.
+
+## Session 29 — stats wind card layout, wind background, effects always on, console in production — DONE
+
+- **The wind card on `/stats` was unreadable.** Its tile group reused
+  `TileGrid`, which is `grid-cols-2 lg:grid-cols-4` — four across inside a
+  320px column, so each tile was about 90px wide. That is what clipped
+  "PREVAILING" mid-word and parked units ("km/h", "%") on their own line.
+  Fixed by: a 2×2 grid for the wind tiles specifically, a wider column
+  (`minmax(0, min(46%, 420px))`), `min-width: 0` on every tile, letter-spacing
+  cut from 0.08em to 0.04em with wrapping allowed, and the value font dropped
+  to `clamp(1rem, 1.6vw, 1.5rem)`.
+- **Number and unit are now welded together.** `StatTile` takes a `unit` prop
+  rendered as a 0.6em muted span, separated from the figure by a non-breaking
+  space, so a narrow tile can no longer split them across lines.
+- **Prevailing direction shows the abbreviation.** `windDirectionLabel()` (already
+  in `beaufort.ts`) gives "ENE" as the large value, with "East-northeast · 77°"
+  demoted to the secondary line. No data logic touched — this is presentation
+  only, and `windSummary` is unchanged.
+- **The wind card had drifted to being invisible.** Two causes: it was gated on
+  `windSpeedKmh > 0`, so a calm day left it bare, and its `cover` was
+  hardcoded at 0.012 — roughly a tenth of what the other tiles use, which is
+  why it looked like it had no background once the rest gained theirs. The
+  gate is gone and `cover` now comes from `windStreak()` alongside the other
+  knobs, at comparable strength.
+- **Effects are on for every machine.** `readEffectTier()` returns `'full'`
+  unconditionally instead of probing cores, memory, Save-Data and
+  `prefers-reduced-motion`. What still switches them off is the run-time
+  `FpsGuard`, which reacts to the page struggling rather than to a guess about
+  the hardware. `detectEffectTier` is kept as a pure function for diagnostics
+  and is still fully tested. **This does override `prefers-reduced-motion`, an
+  accessibility setting — deliberately, and worth revisiting if anyone
+  complains.**
+- **The developer console now ships in production.** It was gated off there,
+  which is why it "did not work" after merging; there was no other kill switch
+  in the codebase. Opening it still takes deliberate action (`?dev=1`, or `d`
+  three times), and nothing in it affects anyone else: scenarios are a
+  per-browser cookie, the mascot is localStorage, effect overrides are
+  in-memory. The one exception is the test-email tool, which can send mail to
+  an address typed into a public page — that stays behind
+  `NEXT_PUBLIC_DEV_EMAILS=1`, and the panel says so when it is off.
+- Verification: tsc, `pnpm lint` and `pnpm build` clean; 312 tests pass, 6 new
+  (3 for the stats wind card — two-across layout, abbreviated direction,
+  unit welded to the value; 2 for the wind haze; 1 for the console shipping
+  in production) plus reworked console/email tests. The 4 known
+  `src/lib/route.test.ts` failures remain. Confirmed the console and the new
+  tile CSS are both present in the **production** bundle.
+- **Not verifiable here:** no browser is installable, so the acceptance
+  criterion `scrollWidth <= clientWidth` at 1440 / 1100 / 800px has not been
+  measured. jsdom does no layout. Check those three widths in a real browser.
