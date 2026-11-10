@@ -22,6 +22,39 @@ const SCENARIO_LABELS: Record<Scenario, string> = {
 const COOKIE_NAME = 'weather_scenario';
 const UNLOCK_KEY = 'weather_scenario_unlocked';
 const TRIPLE_WINDOW_MS = 800;
+/** `?dev=1` or `#dev` opens the console directly — see `readDevFlag`. */
+const DEV_FLAG = 'dev';
+
+/**
+ * The console is a development tool: it can replace the station's readings
+ * with mock scenarios and send real signup emails, so it must never reach the
+ * live site.
+ *
+ * `NODE_ENV` covers local development, and `NEXT_PUBLIC_VERCEL_ENV` adds Vercel
+ * preview deployments, where there is no real data to protect. Production
+ * stays locked regardless of any flag in the URL.
+ */
+export function isDevConsoleEnabled(): boolean {
+  return (
+    process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview'
+  );
+}
+
+/**
+ * An escape hatch for the triple-press: a keydown listener only fires when the
+ * page has focus, which it will not have inside a preview iframe or after a
+ * click on the surrounding page. `?dev=1` sidesteps that entirely.
+ */
+function readDevFlag(): boolean {
+  try {
+    return (
+      new URLSearchParams(window.location.search).get(DEV_FLAG) === '1' ||
+      window.location.hash === `#${DEV_FLAG}`
+    );
+  } catch {
+    return false;
+  }
+}
 
 /** Rain rates the Droplets layer can be forced to, in mm/h. */
 const RAIN_PRESETS = [
@@ -113,7 +146,9 @@ export function ScenarioDebugPanel() {
     if (current && (SCENARIOS as readonly string[]).includes(current)) {
       setActive(current as Scenario);
     }
-    if (readUnlocked()) setUnlocked(true);
+    const flagged = readDevFlag();
+    if (readUnlocked() || flagged) setUnlocked(true);
+    if (flagged) setOpen(true);
 
     let presses: number[] = [];
     const onKeyDown = (e: KeyboardEvent) => {
@@ -163,7 +198,7 @@ export function ScenarioDebugPanel() {
       .finally(() => setHistoryState('done'));
   }, [open, historyState]);
 
-  if (process.env.NODE_ENV === 'production') return null;
+  if (!isDevConsoleEnabled()) return null;
   if (!unlocked) return null;
 
   const choose = (scenario: Scenario) => {
@@ -352,9 +387,9 @@ export function ScenarioDebugPanel() {
         </div>
 
         <p className="mt-1 border-t border-[var(--color-border)] px-3 pb-1 pt-2 text-[10px] leading-relaxed text-[var(--color-muted)]">
-          Shortcut: press <kbd className="font-mono">d</kbd> three times within{' '}
-          {TRIPLE_WINDOW_MS} ms to reopen this panel; <kbd className="font-mono">Esc</kbd> closes
-          it.
+          Shortcut: click the page, then press <kbd className="font-mono">d</kbd> three times
+          within {TRIPLE_WINDOW_MS} ms — or add <kbd className="font-mono">?dev=1</kbd> to the
+          URL. <kbd className="font-mono">Esc</kbd> closes it.
         </p>
       </div>
     </section>

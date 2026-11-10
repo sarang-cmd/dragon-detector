@@ -681,3 +681,29 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   the Photos section before "Who we are", both club images return 200, and
   the compiled CSS carries the `.ambience-wet` rule. Still not verifiable
   here: the shader output itself, since no browser is installable.
+
+## Session 28 — the developer console could not be opened — DONE
+
+- **It was never a bug in the shortcut.** `d` three times within 800 ms is
+  correct and tested. The console was gated on
+  `process.env.NODE_ENV === 'production'` returning `null`, so it did not
+  render at all on any production build — the live site *and* every Vercel
+  preview deployment. Anyone testing on a preview URL saw a dead shortcut.
+- **It now runs on Vercel preview deployments too.** `isDevConsoleEnabled()`
+  accepts `NODE_ENV !== 'production'` **or**
+  `NEXT_PUBLIC_VERCEL_ENV === 'preview'`. There is no real data to protect on
+  a preview, and that is where the effects get checked. Production stays
+  locked no matter what the URL says — the console can replace the station's
+  readings with mock scenarios and send real signup emails, so it must not
+  reach the live site.
+- **`?dev=1` (or `#dev`) opens it directly.** A `keydown` listener only fires
+  when the page has focus, which it does not have inside a preview iframe or
+  after clicking the surrounding page. The URL flag sidesteps focus entirely
+  and is the reliable way in. The panel's own footer now says both.
+- Verification: 12 new tests in `ScenarioDebugPanel.test.tsx` — the
+  triple-press, two presses not being enough, presses outside the 800 ms
+  window, Escape closing it, `d` typed into an input being ignored, the
+  sessionStorage flag surviving a remount, the `?dev=1` and `#dev` forms, a
+  plain URL staying shut, and the three environment cases including
+  production-stays-locked. tsc, `pnpm lint` and `pnpm build` clean; 306 tests
+  pass. The 4 known `src/lib/route.test.ts` failures remain.
