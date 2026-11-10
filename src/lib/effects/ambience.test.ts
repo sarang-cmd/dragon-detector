@@ -63,6 +63,7 @@ describe('mistParams', () => {
     expect(muggy.cover).toBeGreaterThan(dry.cover);
     expect(muggy.opacity).toBeGreaterThan(dry.opacity);
     expect(muggy.opacity).toBeLessThanOrEqual(0.18);
+    expect(muggy.speed).toBeGreaterThan(dry.speed);
   });
 
   it('handles missing readings', () => {
@@ -125,6 +126,38 @@ describe('tile haze presets', () => {
     expect(uvHaze(-3)).toEqual(uvHaze(0));
     expect(uvHaze(400)).toEqual(uvHaze(12));
     expect(solarHaze(9000)).toEqual(solarHaze(1000));
+  });
+});
+
+describe('every tile actually moves', () => {
+  it('runs each haze in the same range as the wind tile', () => {
+    // Regression: the per-tile presets started at 0.015-0.14 while wind ran at
+    // 0.16-0.62, so next to it the others read as completely still.
+    const windFloor = windStreak(0).speed;
+    const presets: [string, ReturnType<typeof uvHaze>][] = [
+      ['uv (low)', uvHaze(0)],
+      ['uv (high)', uvHaze(11)],
+      ['solar (low)', solarHaze(0)],
+      ['solar (high)', solarHaze(900)],
+      ['celestial day', celestialHaze(true)],
+      ['celestial night', celestialHaze(false)],
+      ['pressure steady', pressureHaze('steady')],
+      ['pressure rising', pressureHaze('rising')],
+      ['pressure falling', pressureHaze('falling')],
+      ['rain dry', wetHaze(0, 0)],
+      ['rain soaked', wetHaze(18, 9)],
+    ];
+    for (const [name, preset] of presets) {
+      expect(preset.speed, `${name} is too slow to read as motion`).toBeGreaterThan(windFloor * 0.6);
+    }
+  });
+
+  it('keeps the personalities: UV quickest, pressure stillest, humidity windless', () => {
+    expect(uvHaze(11).speed).toBeGreaterThan(solarHaze(900).speed);
+    expect(solarHaze(900).speed).toBeGreaterThan(pressureHaze('steady').speed);
+    expect(celestialHaze(true).speed).toBeGreaterThan(celestialHaze(false).speed);
+    // Humidity is the one tile that must not blow across.
+    expect(mistParams(80).speed).toBeGreaterThan(0.1);
   });
 });
 

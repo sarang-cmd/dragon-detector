@@ -406,7 +406,6 @@
     color-mix(in srgb, var(--ambience-warm) var(--ambience-mix, 5%), transparent) 0%,
     transparent var(--ambience-size, 58%)
   );
-  animation: ambience-breathe 14s ease-in-out infinite alternate;
 }
 
 .ambience-celestial-day::after {
@@ -434,6 +433,33 @@
     color-mix(in srgb, var(--ambience-cool) var(--ambience-mix, 4%), transparent) 0%,
     transparent 62%
   );
+}
+
+/* A slow pan for the motifs that have no motion of their own. The canvas does
+   the real drifting; this is what is left when it cannot start (no WebGL, or a
+   context refused), so a tile never looks like a still image. `inset: -25%`
+   above gives the gradient room to move without exposing an edge. */
+@keyframes ambience-pan {
+  from {
+    transform: translate3d(-1.5%, -1%, 0);
+  }
+  to {
+    transform: translate3d(1.5%, 1%, 0);
+  }
+}
+
+.ambience-uv::after,
+.ambience-celestial-day::after,
+.ambience-celestial-night::after,
+.ambience-wet::after {
+  animation: ambience-pan 26s ease-in-out infinite alternate;
+}
+
+/* Solar already breathes; pan it as well rather than replacing the pulse. */
+.ambience-solar::after {
+  animation:
+    ambience-breathe 14s ease-in-out infinite alternate,
+    ambience-pan 30s ease-in-out infinite alternate;
 }
 
 /* Pressure: one soft band that rides high when pressure rises and sits low
