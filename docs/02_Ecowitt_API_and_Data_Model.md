@@ -41,6 +41,23 @@ GET https://api.ecowitt.net/api/v3/device/real_time
 Each field is typically `{ "time": "<unix>", "unit": "...", "value": "..." }`. Values are strings: use `Number()`.
 The WS3500 has a standard tipping-bucket rain gauge, so expect the normal `rainfall` group (no piezo keys). Paste the real response into `/docs/sample-real-time.json`; it is the final authority.
 
+### Capturing the real response
+
+```
+pnpm probe:ecowitt            # list every field the station reports
+pnpm probe:ecowitt --write    # also save the raw response
+```
+
+`scripts/ecowitt-probe.mjs` calls `real_time` with `call_back=all` — not the
+narrower list `src/sources/ecowitt.ts` sends — so it shows groups the adapter
+never asks for. It reads `ECOWITT_APPLICATION_KEY`, `ECOWITT_API_KEY` and
+`ECOWITT_MAC` from the environment or `.env.local`, masks the keys and MAC in
+the URL it prints, and ends with a verdict on the fields in question
+(`rainfall.event`, `monthly`, `yearly`, `pressure.absolute`, `indoor.*`).
+
+`indoor` is deliberately **not** wired into the site: it is the console's own
+room, and this document lists it as never to be shown publicly.
+
 ## 4. Internal model (TypeScript)
 ```ts
 export type WeatherReading = {

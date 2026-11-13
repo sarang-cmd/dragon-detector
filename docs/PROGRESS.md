@@ -790,3 +790,41 @@ Build time: about 6 hours over 3 sessions. Stack: Next.js (App Router) + TypeScr
   not been watched. If a tile still looks frozen after this, open the console
   (`?dev=1`) and read the "Canvas layers" line — 0/n means the canvas is not
   starting at all and the cause is upstream of these numbers.
+
+## Session 31 — Ecowitt field audit + a probe script — DONE
+
+- **Question asked:** which of the values on the Ecowitt dashboard can be
+  added through the API, battery aside. Audited against
+  `docs/02_Ecowitt_API_and_Data_Model.md` and the adapter.
+- **Already wired up:** outdoor temperature / humidity / feels-like / dew
+  point, wind speed / gust / direction, rain rate and hourly / daily / weekly
+  accumulation, relative pressure, solar and UV. Most of the dashboard is on
+  the site already.
+- **Genuinely addable, and probably already arriving in the response but being
+  ignored** — `call_back` already asks for the `rainfall` and `pressure`
+  groups, so these need adapter changes only, no new API calls:
+  `rainfall.event`, `rainfall.monthly`, `rainfall.yearly`,
+  `pressure.absolute`.
+- **Not available from the API at all:** the per-sensor daily max/min, the
+  per-hour rates of change, the max gust and the 24 h pressure change. The
+  Ecowitt app tracks those itself; the site derives equivalents from its own
+  history on `/stats`. Sunrise, sunset and moon phase are not device data
+  either — `src/lib/sun.ts` and `src/lib/moon.ts` compute them from the station
+  coordinates.
+- **`indoor` stays out.** It is available, but `docs/02` lists it as never to
+  be shown publicly, and it is the reading from the room the console sits in.
+- **`scripts/ecowitt-probe.mjs` (`pnpm probe:ecowitt`) settles the guesswork.**
+  It calls `real_time` with `call_back=all` — wider than the adapter's list —
+  and prints every reading the station reports, ending with a verdict on the
+  fields in question so the answer does not depend on the docs being right.
+  It reads the three `ECOWITT_*` variables from the environment or
+  `.env.local`, and masks both keys and the MAC in the URL it prints.
+  `--write` saves the raw response to `docs/sample-real-time.json`, which
+  `docs/02` names as the final authority and which had never been captured.
+- Verification: the credentials path, the `.env.local` fallback, the masking
+  and the response parsing were each exercised here against a canned payload
+  (16 readings, correctly flagging `monthly` and `absolute` as present and
+  `event`/`yearly` as absent). The live call could **not** be made — the
+  sandbox has no `.env.local` and blocks `api.ecowitt.net` — so the field list
+  is still unconfirmed against the real WS3500. That is exactly what the probe
+  is for.
